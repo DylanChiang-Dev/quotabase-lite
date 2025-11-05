@@ -33,6 +33,9 @@ Thumbs.db
 # 依赖（虽然我们用零框架，但如果有vendor目录）
 vendor/
 
+# Codex 本地設定（含API Key，不應入庫）
+.codex/
+
 # 数据库备份文件
 *.sql.backup
 *.dump
