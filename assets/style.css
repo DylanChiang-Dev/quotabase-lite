@@ -264,6 +264,33 @@ body {
   color: var(--text-tertiary);
 }
 
+@media (max-width: 768px) {
+  .page-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-title {
+    font-size: var(--font-size-xl);
+  }
+
+  #theme-toggle {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+}
+
 /* ========================================
    主要内容区域 (Main Content)
    ======================================== */
@@ -274,6 +301,12 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--spacing-md);
+  }
 }
 
 /* ========================================
@@ -318,6 +351,20 @@ body {
 
 .card-body {
   padding: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: var(--border-radius-md);
+  }
+
+  .card-header {
+    padding: var(--spacing-md);
+  }
+
+  .card-body {
+    padding: var(--spacing-md);
+  }
 }
 
 /* ========================================
@@ -377,6 +424,21 @@ select.form-control {
   cursor: not-allowed;
 }
 
+@media (max-width: 768px) {
+  .form-group {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .form-control {
+    padding: 14px;
+    font-size: var(--font-size-sm);
+  }
+
+  .form-label {
+    font-size: var(--font-size-xs);
+  }
+}
+
 .has-error .form-control {
   border-color: var(--danger-color);
 }
@@ -409,6 +471,111 @@ select.form-control {
   text-decoration: none;
   min-height: 44px; /* iOS推荐最小点击区域 */
   gap: var(--spacing-sm);
+}
+
+.btn-compact {
+  min-height: 38px;
+  padding: 10px 18px;
+  font-size: var(--font-size-sm);
+}
+
+.list-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.list-search {
+  display: flex;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.list-search input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+}
+
+.list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.filter-pill {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: var(--transition);
+  background: var(--bg-primary);
+}
+
+.filter-pill:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.filter-pill.active {
+  background: var(--primary-color);
+  color: var(--text-light);
+  border-color: transparent;
+}
+
+.list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.list-primary-action {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .list-toolbar {
+    gap: var(--spacing-sm);
+  }
+
+  .list-search {
+    flex-direction: column;
+  }
+
+  .list-search input {
+    font-size: var(--font-size-sm);
+  }
+
+  .list-filters {
+    gap: var(--spacing-xs);
+  }
+
+  .filter-pill {
+    flex: 1 1 calc(50% - var(--spacing-xs));
+    text-align: center;
+    font-size: var(--font-size-xs);
+    padding: 8px;
+  }
+
+  .list-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .list-primary-action {
+    flex: 1 1 100%;
+    margin-left: 0;
+    text-align: center;
+  }
 }
 
 .btn:disabled {
@@ -674,6 +841,28 @@ select.form-control {
 .tab-label {
   font-size: var(--font-size-xs);
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .bottom-tabs {
+    padding: var(--spacing-sm) var(--spacing-sm) calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+    gap: var(--spacing-sm);
+  }
+
+  .tab-item {
+    padding: var(--spacing-xs);
+    gap: 2px;
+    min-height: 48px;
+  }
+
+  .tab-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .tab-label {
+    font-size: 11px;
+  }
 }
 
 /* 打印页隐藏底部导航 */

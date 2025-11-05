@@ -28,6 +28,14 @@ $page = max(1, intval($_GET['page'] ?? 1));
 $limit = 20;
 $search = trim($_GET['search'] ?? '');
 $status = trim($_GET['status'] ?? '');
+$status_filters = [
+    '' => '所有状态',
+    'draft' => '草稿',
+    'sent' => '已发送',
+    'accepted' => '已接受',
+    'rejected' => '已拒绝',
+    'expired' => '已过期'
+];
 
 // 获取报价单列表
 try {
@@ -101,41 +109,42 @@ page_header('报价管理', [
     <?php card_start('报价单列表'); ?>
 
     <!-- 工具栏 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap;">
-        <div style="display: flex; gap: 12px; flex: 1; flex-wrap: wrap;">
-            <!-- 搜索框 -->
-            <form method="GET" action="/quotes/index.php" style="display: flex; gap: 8px; flex: 1; min-width: 200px; max-width: 400px;">
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="搜索报价单号或客户名称..."
-                    value="<?php echo h($search); ?>"
-                    style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);"
-                >
-                <button type="submit" class="btn btn-secondary">搜索</button>
-            </form>
+    <div class="list-toolbar">
+        <form method="GET" action="/quotes/index.php" class="list-search">
+            <input
+                type="text"
+                name="search"
+                placeholder="搜索报价单号或客户名称..."
+                value="<?php echo h($search); ?>"
+            >
+            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+        </form>
 
-            <!-- 状态筛选 -->
-            <form method="GET" action="/quotes/index.php" style="display: flex; gap: 8px;">
-                <?php if (!empty($search)): ?>
-                    <input type="hidden" name="search" value="<?php echo h($search); ?>">
-                <?php endif; ?>
-                <select
-                    name="status"
-                    onchange="this.form.submit()"
-                    style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);"
+        <div class="list-filters" role="toolbar" aria-label="报价状态筛选">
+            <?php foreach ($status_filters as $value => $label): ?>
+                <?php
+                    $query = [];
+                    if ($search !== '') {
+                        $query['search'] = $search;
+                    }
+                    if ($value !== '') {
+                        $query['status'] = $value;
+                    }
+                    $query_string = http_build_query($query);
+                    $url = '/quotes/index.php' . ($query_string ? '?' . $query_string : '');
+                    $is_active = $status === $value || ($value === '' && $status === '');
+                ?>
+                <a
+                    href="<?php echo h($url); ?>"
+                    class="filter-pill <?php echo $is_active ? 'active' : ''; ?>"
                 >
-                    <option value="">所有状态</option>
-                    <option value="draft" <?php echo $status === 'draft' ? 'selected' : ''; ?>>草稿</option>
-                    <option value="sent" <?php echo $status === 'sent' ? 'selected' : ''; ?>>已发送</option>
-                    <option value="accepted" <?php echo $status === 'accepted' ? 'selected' : ''; ?>>已接受</option>
-                    <option value="rejected" <?php echo $status === 'rejected' ? 'selected' : ''; ?>>已拒绝</option>
-                    <option value="expired" <?php echo $status === 'expired' ? 'selected' : ''; ?>>已过期</option>
-                </select>
-            </form>
+                    <?php echo h($label); ?>
+                </a>
+            <?php endforeach; ?>
         </div>
-        <div style="display: flex; gap: 8px;">
-            <a href="/quotes/new.php" class="btn btn-primary">新建报价单</a>
+
+        <div class="list-actions">
+            <a href="/quotes/new.php" class="btn btn-primary btn-compact list-primary-action">新建报价单</a>
         </div>
     </div>
 
