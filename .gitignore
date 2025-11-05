@@ -1,0 +1,38 @@
+# 配置文件
+config.php
+.env
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+
+# 上传文件
+uploads/
+
+# 缓存文件
+cache/
+*.cache
+
+# 编译文件
+*.compiled
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 依赖（虽然我们用零框架，但如果有vendor目录）
+vendor/
+
+# 数据库备份文件
+*.sql.backup
+*.dump
