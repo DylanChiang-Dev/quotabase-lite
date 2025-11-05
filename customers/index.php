@@ -76,25 +76,20 @@ page_header('客户管理', [
     ?>
 
     <!-- 搜索表单 -->
-    <form method="GET" class="search-form mb-lg">
-        <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-                <label class="form-label" for="search">搜索客户</label>
-                <input
-                    type="text"
-                    id="search"
-                    name="search"
-                    class="form-control"
-                    placeholder="客户名称、税务登记号或邮箱"
-                    value="<?php echo h($search); ?>"
-                >
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary">搜索</button>
-                <a href="/customers/" class="btn btn-secondary">清除</a>
-            </div>
-        </div>
-    </form>
+    <div class="list-toolbar">
+        <form method="GET" class="list-search">
+            <input
+                type="text"
+                name="search"
+                placeholder="客户名称、税务登记号或邮箱"
+                value="<?php echo h($search); ?>"
+            >
+            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+            <?php if (!empty($search)): ?>
+                <a href="/customers/" class="btn btn-outline btn-compact">清除</a>
+            <?php endif; ?>
+        </form>
+    </div>
 
     <?php if (empty($customers)): ?>
         <?php empty_state('暂无客户数据', '新建客户', '/customers/new.php'); ?>

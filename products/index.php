@@ -80,22 +80,22 @@ page_header('产品管理', [
     <?php card_start('产品目录'); ?>
 
     <!-- 工具栏 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap;">
-        <div style="display: flex; gap: 12px; flex: 1;">
-            <!-- 搜索框 -->
-            <form method="GET" action="/products/index.php" style="display: flex; gap: 8px; flex: 1; max-width: 400px;">
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="搜索 SKU 或产品名称..."
-                    value="<?php echo h($search); ?>"
-                    style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);"
-                >
-                <button type="submit" class="btn btn-secondary">搜索</button>
-            </form>
-        </div>
-        <div style="display: flex; gap: 12px;">
-            <a href="/products/new.php" class="btn btn-primary">新建产品</a>
+    <div class="list-toolbar">
+        <form method="GET" action="/products/index.php" class="list-search">
+            <input
+                type="text"
+                name="search"
+                placeholder="搜索 SKU 或产品名称..."
+                value="<?php echo h($search); ?>"
+            >
+            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+            <?php if (!empty($search)): ?>
+                <a href="/products/" class="btn btn-outline btn-compact">清除</a>
+            <?php endif; ?>
+        </form>
+
+        <div class="list-actions">
+            <a href="/products/new.php" class="btn btn-primary btn-compact list-primary-action">新建产品</a>
         </div>
     </div>
 
