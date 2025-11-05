@@ -30,6 +30,8 @@ $success = '';
 $category_tree = get_catalog_categories_tree('service');
 $category_map = get_catalog_category_map('service');
 $selected_category_id = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
+$generated_sku = generate_catalog_item_sku('service');
+$sku_value = $_POST['sku'] ?? $generated_sku;
 
 // 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -94,9 +96,9 @@ page_header('新建服务', [
                 <?php
                 form_field('sku', 'SKU编码', 'text', [], [
                     'required' => true,
-                    'placeholder' => '请输入唯一SKU编码',
-                    'value' => $_POST['sku'] ?? '',
-                    'help' => 'SKU用于唯一标识服务，仅支持字母、数字、-和_'
+                    'placeholder' => '系统已自动生成，可自行修改',
+                    'value' => $sku_value,
+                    'help' => 'SKU用于唯一标识服务，系统会自动生成（可手动调整，允许字母、数字、- 和 _）'
                 ]);
                 ?>
 

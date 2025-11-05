@@ -270,6 +270,49 @@ function is_valid_sku($sku) {
 }
 
 /**
+ * 取得 SKU 前綴
+ *
+ * @param string $type catalog type
+ * @return string 前綴
+ */
+function get_catalog_item_sku_prefix($type) {
+    $type = $type === 'service' ? 'service' : 'product';
+    $map = [
+        'product' => 'PRO',
+        'service' => 'SRV',
+    ];
+    return $map[$type] ?? 'CAT';
+}
+
+/**
+ * 產生唯一 SKU（依類型 + 日期 + 流水號）
+ *
+ * @param string $type 類型（product/service）
+ * @return string 生成的 SKU
+ */
+function generate_catalog_item_sku($type = 'product') {
+    $type = $type === 'service' ? 'service' : 'product';
+    $prefix = get_catalog_item_sku_prefix($type);
+    $date_segment = date('Ymd');
+    $org_id = get_current_org_id();
+    $base = sprintf('%s-%s', $prefix, $date_segment);
+
+    $latest = dbQueryOne(
+        "SELECT sku FROM catalog_items WHERE org_id = ? AND sku LIKE ? ORDER BY sku DESC LIMIT 1",
+        [$org_id, $base . '-%']
+    );
+
+    $sequence = 1;
+    if ($latest && isset($latest['sku'])) {
+        if (preg_match('/(\d+)$/', $latest['sku'], $matches)) {
+            $sequence = intval($matches[1]) + 1;
+        }
+    }
+
+    return sprintf('%s-%03d', $base, $sequence);
+}
+
+/**
  * 验证URL格式
  *
  * @param string $url URL地址
@@ -1503,10 +1546,18 @@ function create_catalog_item($data) {
     try {
         // 验证输入
         $errors = [];
-
-        if (empty($data['type']) || !in_array($data['type'], ['product', 'service'])) {
+        $data['type'] = $data['type'] ?? 'product';
+        if (!in_array($data['type'], ['product', 'service'])) {
             $errors[] = '类型必须为 product 或 service';
         }
+
+        $auto_generated_sku = false;
+        if (empty($data['sku']) && empty($errors)) {
+            $data['sku'] = generate_catalog_item_sku($data['type']);
+            $auto_generated_sku = true;
+        }
+
+        $data['sku'] = trim($data['sku'] ?? '');
 
         if (empty($data['sku'])) {
             $errors[] = 'SKU不能为空';
@@ -1545,14 +1596,19 @@ function create_catalog_item($data) {
 
         $org_id = get_current_org_id();
 
-        // 检查SKU唯一性
-        $exists = dbQueryOne(
-            "SELECT id FROM catalog_items WHERE org_id = ? AND sku = ?",
-            [$org_id, $data['sku']]
-        );
+        if ($auto_generated_sku) {
+            $attempts = 0;
+            while (!is_sku_unique($data['sku']) && $attempts < 5) {
+                $data['sku'] = generate_catalog_item_sku($data['type']);
+                $attempts++;
+            }
+        }
 
-        if ($exists) {
-            return ['success' => false, 'error' => 'SKU已存在，请使用其他SKU'];
+        if (!is_sku_unique($data['sku'])) {
+            $message = $auto_generated_sku
+                ? '系统尝试自动生成 SKU 但仍遇到冲突，请稍后再试。'
+                : 'SKU已存在，请使用其他SKU';
+            return ['success' => false, 'error' => $message];
         }
 
         $sql = "
