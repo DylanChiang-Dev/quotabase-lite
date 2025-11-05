@@ -1977,7 +1977,7 @@ function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
 function get_quote($id) {
     $org_id = get_current_org_id();
     $sql = "
-        SELECT q.*, customer.name as customer_name, customer.tax_id, customer.email, customer.phone
+        SELECT q.*, q.notes as note, customer.name as customer_name, customer.tax_id, customer.email, customer.phone
         FROM quotes q
         LEFT JOIN customers customer ON q.customer_id = customer.id
         WHERE q.id = ? AND q.org_id = ?
@@ -2054,10 +2054,12 @@ function create_quote($data, $items) {
             $sql = "
                 INSERT INTO quotes (
                     org_id, customer_id, quote_number, status,
-                    issue_date, valid_until, note,
+                    issue_date, valid_until, notes,
                     subtotal_cents, tax_cents, total_cents
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
+
+            $note = $data['note'] ?? ($data['notes'] ?? null);
 
             $params = [
                 $org_id,
@@ -2066,7 +2068,7 @@ function create_quote($data, $items) {
                 $data['status'] ?? 'draft',
                 $data['issue_date'] ?? get_current_date_utc(),
                 $data['valid_until'] ?? null,
-                $data['note'] ?? null,
+                $note,
                 0, // 临时值，稍后更新
                 0, // 临时值，稍后更新
                 0  // 临时值，稍后更新
