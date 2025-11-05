@@ -1,0 +1,226 @@
+<?php
+/**
+ * Quotabase-Lite Configuration Template
+ * 配置模板文件 - 复制为 config.php 并填入实际配置
+ *
+ * @version v2.0.0
+ */
+
+// 防止直接访问
+if (!defined('QUOTABASE_SYSTEM')) {
+    define('QUOTABASE_SYSTEM', true);
+}
+
+/**
+ * ========================================
+ * 数据库配置 (Database Configuration)
+ * ========================================
+ */
+
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');           // 数据库主机
+define('DB_NAME', getenv('DB_NAME') ?: 'quotabase_lite');      // 数据库名
+define('DB_USER', getenv('DB_USER') ?: 'your_username');       // 数据库用户名
+define('DB_PASS', getenv('DB_PASS') ?: 'your_password');       // 数据库密码
+define('DB_CHARSET', 'utf8mb4');          // 字符集
+
+/**
+ * ========================================
+ * 安全配置 (Security Configuration)
+ * ========================================
+ */
+
+define('SESSION_TIMEOUT', 3600);          // 会话超时时间（秒，默认1小时）
+define('CSRF_TOKEN_NAME', 'csrf_token');  // CSRF token 名称
+define('ENCRYPTION_KEY', 'generate_a_32_character_random_string'); // 加密密钥
+
+/**
+ * ========================================
+ * 时区配置 (Timezone Configuration)
+ * ========================================
+ */
+
+define('DEFAULT_TIMEZONE', getenv('DEFAULT_TIMEZONE') ?: 'Asia/Taipei');    // 默认时区
+define('DISPLAY_TIMEZONE', getenv('DISPLAY_TIMEZONE') ?: DEFAULT_TIMEZONE); // 显示时区
+
+/**
+ * ========================================
+ * 应用配置 (Application Configuration)
+ * ========================================
+ */
+
+define('APP_NAME', 'Quotabase-Lite');     // 应用名称
+define('APP_VERSION', '2.0.0');           // 应用版本
+define('DEFAULT_ORG_ID', 1);              // 默认组织 ID（MVP 使用 1）
+
+/**
+ * 默认分页数量
+ */
+define('DEFAULT_PAGE_SIZE', 20);
+
+/**
+ * ========================================
+ * 错误处理 (Error Handling)
+ * ========================================
+ */
+
+// 生产环境：错误信息不显示，启用日志记录
+$serverName = $_SERVER['SERVER_NAME'] ?? '';
+$isCli = php_sapi_name() === 'cli';
+
+if (!$isCli && $serverName !== 'localhost' && !isset($_GET['debug'])) {
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/logs/error.log');
+} else {
+    // 开发环境：显示错误信息
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+}
+
+// 创建日志目录
+$logDir = __DIR__ . '/logs';
+if (!is_dir($logDir)) {
+    @mkdir($logDir, 0755, true);
+}
+
+/**
+ * ========================================
+ * 启动会话 (Start Session)
+ * ========================================
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    // 会话安全配置
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
+
+    session_start();
+}
+
+/**
+ * ========================================
+ * 自动加载函数库 (Auto-load Functions)
+ * ========================================
+ */
+
+require_once __DIR__ . '/helpers/functions.php';
+
+/**
+ * ========================================
+ * 数据库连接 (Database Connection)
+ * ========================================
+ */
+
+try {
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+} catch (PDOException $e) {
+    // 生产环境不显示详细错误
+    if ($_SERVER['SERVER_NAME'] !== 'localhost') {
+        error_log("Database connection failed: " . $e->getMessage());
+        die("系统维护中，请稍后再试。");
+    } else {
+        die("数据库连接失败: " . $e->getMessage());
+    }
+}
+
+/**
+ * ========================================
+ * 初始化系统设置 (Initialize System Settings)
+ * ========================================
+ */
+
+// 获取组织设置
+function get_org_settings($org_id = DEFAULT_ORG_ID) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM settings WHERE org_id = ?");
+        $stmt->execute([$org_id]);
+        return $stmt->fetch() ?: [];
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+// 获取当前组织设置
+$org_settings = get_org_settings();
+
+/**
+ * ========================================
+ * 辅助函数 (Helper Functions)
+ * ========================================
+ */
+
+if (!function_exists('generate_csrf_token')) {
+    function generate_csrf_token() {
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('verify_csrf_token')) {
+    function verify_csrf_token($token) {
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
+}
+
+if (!function_exists('is_logged_in')) {
+    function is_logged_in() {
+        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
+}
+
+if (!function_exists('is_session_expired')) {
+    function is_session_expired() {
+        if (!isset($_SESSION['login_time'])) {
+            return true;
+        }
+        return (time() - $_SESSION['login_time']) > SESSION_TIMEOUT;
+    }
+}
+
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id() {
+        return $_SESSION['user_id'] ?? null;
+    }
+}
+
+if (!function_exists('get_current_org_id')) {
+    function get_current_org_id() {
+        return $_SESSION['org_id'] ?? DEFAULT_ORG_ID;
+    }
+}
+
+/**
+ * ========================================
+ * 页面加载检查 (Page Load Checks)
+ * ========================================
+ */
+
+if (!function_exists('is_print_page')) {
+    function is_print_page() {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        return strpos($uri, '/quotes/print.php') !== false;
+    }
+}
+
+if (!function_exists('get_current_page')) {
+    function get_current_page() {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($uri, '/customers/') !== false) return 'customers';
+        if (strpos($uri, '/products/') !== false) return 'products';
+        if (strpos($uri, '/services/') !== false) return 'services';
+        if (strpos($uri, '/quotes/') !== false) return 'quotes';
+        if (strpos($uri, '/settings/') !== false) return 'settings';
+        return 'quotes'; // 默认首页
+    }
+}

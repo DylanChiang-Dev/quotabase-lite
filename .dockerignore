@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.idea
+.vscode
+logs
+*.log
+vendor
+node_modules
+tmp
+temp
+cache
+.env
+.env.*
+.specify
+coverage/

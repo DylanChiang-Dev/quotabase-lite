@@ -1,185 +1,136 @@
-# Quotabase-Lite: 集成报价管理系统
+# Quotabase-Lite 集成报价管理系统
 
-> 专为中小企业设计的 iOS 风格报价单管理系统
+> 专为中小企业设计的简洁、高效、可信赖的报价管理解决方案
 
-[![质量检查](https://img.shields.io/badge/质量检查-100%20通过-brightgreen)](checklists/comprehensive-quality.md)
-[![规范完成](https://img.shields.io/badge/规范完成-100%25-blue)](specs/002-integrated-quote-system/)
-[![任务清单](https://img.shields.io/badge/实施任务-67个-orange)](specs/002-integrated-quote-system/tasks.md)
+## 🌟 项目概述
 
-## ✨ 核心特性
+Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系统，采用 **零框架、零 Composer** 的极简架构，提供完整的报价管理功能。
 
-### 🎯 核心业务
-- 📋 **报价单管理**: 快速创建、编辑、管理报价单
-- 👥 **客户管理**: 维护完整的客户资料库
-- 📦 **产品/服务目录**: 统一管理产品和服务
-- ⚙️ **系统设置**: 可配置的公司信息和默认设置
+### ✨ 核心特性
 
-### 🎨 用户体验
-- 📱 **iOS 风格**: 现代化界面设计
-- 🌙 **Dark Mode**: 自动深色主题切换
-- 🎯 **底部 Tab 导航**: 直观的导航体验
-- 📄 **A4 打印**: 专业格式输出，支持 PDF 导出
-
-### 🔒 安全特性
-- 🔐 **会话认证**: 基于会话的安全认证
-- 🛡️ **XSS 防护**: h() 函数输出转义
-- 🔒 **CSRF 验证**: 所有 POST 表单验证
-- 💾 **事务安全**: 原子性操作，并发安全
-
-### 💰 精确财务
-- 💵 **分精度存储**: 避免浮点精度问题
-- 🔢 **自动计算**: 小计、税额、总计精确计算
-- 📊 **年度编号**: 自动归零的唯一编号系统
+- 🎨 **iOS 风格界面** - 现代化设计，底部 Tab 导航，Dark Mode 支持
+- 💰 **精确财务处理** - 金额以分存储，避免浮点精度问题
+- 🔒 **安全可靠** - XSS 防护、CSRF 验证、PDO 预处理、事务安全
+- 📊 **完整业务流** - 客户管理、产品/服务目录、报价单创建、状态跟踪
+- 🖨️ **专业打印** - A4 格式，支持 PDF 导出，表头固定
+- 📤 **数据导出** - 支持 CSV/JSON 格式导出
+- ⚡ **高性能** - P95 响应时间 ≤ 200ms，支持 10+ 并发用户
 
 ## 🏗️ 技术架构
 
 ### 技术栈
-- **语言**: PHP 8.3 (零框架、零 Composer)
+
+- **后端**: PHP 8.3 (零框架)
 - **数据库**: MySQL 8.0+ / MariaDB 10.6+
-- **前端**: 纯 HTML/CSS/JavaScript
+- **前端**: HTML/CSS/JavaScript (原生)
 - **部署**: 宝塔面板 (aaPanel/BT)
-
-### 架构原则
-- 🎯 **极简架构**: 仅使用 PHP 核心功能
-- 🗂️ **路由即文件名**: URL 直接映射文件路径
-- 📦 **模块化组织**: 每个功能独立目录
-- 🔧 **单文件 ≤300 行**: 保持代码可读性
-
-## 📊 项目统计
-
-| 指标 | 数值 |
-|------|------|
-| 规范文档 | 14 个文件 |
-| 用户故事 | 6 个 (P1×4, P2×2) |
-| 功能需求 | 12 个 (FR-001 到 FR-012) |
-| 成功标准 | 14 个 (SC-001 到 SC-014) |
-| 数据实体 | 7 个 |
-| API 端点 | 20+ |
-| 实施任务 | 67 个 (T001-T067) |
-| 质量检查 | 100 项 |
-| 并行机会 | 28 个 |
+- **Web 服务器**: Nginx / Apache
 
 ## 🚀 快速开始
 
 ### 环境要求
-- PHP 8.3+
-- MySQL 8.0+ / MariaDB 10.6+
-- Nginx / Apache
-- 宝塔面板 (aaPanel/BT)
+
+- **PHP**: 8.3 或更高版本
+- **MySQL**: 8.0+ / MariaDB: 10.6+
+- **Web 服务器**: Nginx 或 Apache
 
 ### 安装步骤
 
-```bash
-# 1. 克隆项目
-git clone https://github.com/YOUR_USERNAME/quotabase-lite.git
-cd quotabase-lite
+1. **克隆项目**
+   ```bash
+   git clone <repository-url>
+   cd quotabase-lite
+   ```
 
-# 2. 配置数据库
-cp config.php.sample config.php
-# 编辑 config.php 中的数据库配置
+2. **配置数据库**
+   ```bash
+   mysql -u root -p
+   CREATE DATABASE quotabase_lite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   EXIT;
+   mysql -u root -p quotabase_lite < schema.sql
+   ```
 
-# 3. 导入数据库
-mysql -u username -p database_name < schema.sql
+3. **配置应用**
+   ```bash
+   cp config.php.sample config.php
+   # 编辑 config.php 配置数据库连接等信息
+   ```
 
-# 4. 设置权限
-chmod 755 .
-chmod 644 *.php
-```
+4. **设置权限**
+   ```bash
+   chown -R www:www /path/to/quotabase-lite
+   chmod -R 755 /path/to/quotabase-lite
+   ```
 
-详细安装指南请参考: [快速开始指南](specs/002-integrated-quote-system/quickstart.md)
+### 使用 Docker 快速启动
 
-## 📚 文档导航
+1. 确保已复制配置文件
+   ```bash
+   cp config.php.sample config.php
+   ```
+   > 若使用 docker compose，`DB_HOST` 将自动指向 `db` 容器，其余账号密码可沿用 `docker-compose.yml` 中的环境变量。
 
-### 核心文档
-| 文档 | 描述 |
-|------|------|
-| [需求规格](specs/002-integrated-quote-system/spec.md) | 用户故事、功能需求、验收标准 |
-| [技术计划](specs/002-integrated-quote-system/plan.md) | 架构决策、合规检查 |
-| [数据模型](specs/002-integrated-quote-system/data-model.md) | 7 实体设计、索引策略 |
-| [实施任务](specs/002-integrated-quote-system/tasks.md) | 67 个实施任务 |
+2. 构建并启动容器
+   ```bash
+   docker compose up -d --build
+   ```
 
-### 支撑文档
-| 文档 | 描述 |
-|------|------|
-| [API 契约](specs/002-integrated-quote-system/contracts/) | 6 模块接口定义 |
-| [快速开始](specs/002-integrated-quote-system/quickstart.md) | 部署指南 |
-| [质量检查](specs/002-integrated-quote-system/checklists/) | 100 项质量验证 |
+3. 初始化数据库（第一次执行）
+   ```bash
+   docker compose exec app php init.php init
+   ```
 
-## 🎯 实施路线图
+4. 访问应用
+   - 应用：http://localhost:8080
+   - MySQL：`localhost:3306`（用户 `quotabase_user` / 密码 `strong_password`）
 
-### Phase 1-2: 基础设施
-- 项目结构、配置、数据库
-- 基础组件、认证、UI
+5. 停止服务
+   ```bash
+   docker compose down
+   ```
 
-### Phase 3-8: 用户故事
-- **US1**: iOS 导航 (6 任务)
-- **US2**: 客户管理 (7 任务)
-- **US3**: 目录管理 (9 任务)
-- **US4**: 报价系统 (11 任务) 🎯 核心
-- **US5**: 设置管理 (5 任务)
-- **US6**: 打印功能 (7 任务)
+开发过程中代码会透过 volume 映射到容器内，修改后直接刷新浏览器即可；如需查看记录，可执行 `docker compose logs -f app`。
 
-### Phase 9-10: 增强功能
-- 数据导出、优化
+## 📖 使用指南
 
-## 📈 质量保证
+### 首次使用
 
-### 质量检查结果
-- ✅ **需求完整性**: 100% (10/10)
-- ✅ **需求清晰度**: 100% (10/10)
-- ✅ **需求一致性**: 100% (8/8)
-- ✅ **验收标准**: 100% (7/7)
-- ✅ **场景覆盖**: 100% (6/6)
-- ✅ **UX 要求**: 100% (10/10)
-- ✅ **实施任务**: 100% (9/9)
-- ✅ **任务追踪**: 100% (6/6)
-- ✅ **非功能需求**: 100% (7/7)
-- ✅ **可测量性**: 100% (6/6)
-- ✅ **依赖关系**: 100% (6/6)
-- ✅ **歧义冲突**: 100% (5/5)
-- ✅ **技术清晰度**: 100% (5/5)
-- ✅ **集成关注**: 100% (5/5)
+1. 登录系统
+2. 设置公司信息
+3. 创建客户
+4. 添加产品/服务
+5. 创建报价单
 
-**总计**: 100/100 项 ✅ **全部通过**
+## 📦 更新日志
 
-### 成功指标
-- 🎯 导航可用性: 100%
-- 🛡️ XSS 防护: 100%
-- 🔢 SKU 唯一性: 100%
-- 💾 事务完整性: 100%
-- 🔒 并发安全: 10+ 用户
-- ⚡ 列表加载: P95 ≤ 200ms
-- 💰 金额计算: 100% 精确
+### v2.0.1 (2025-11-06)
 
-## 🤝 贡献指南
+- ✅ 系统设置栏位与资料库结构对齐，新增时区与联系方式支持
+- ✅ 报价单编号流程引用最新设定前缀并修正存储过程调用
+- ✅ 打印版面启用自动列印并补齐 Noto Sans TC 字体
+- ✅ CSV / JSON 匯出遵循契约格式，时间戳改用 ISO 8601 UTC
 
-欢迎提交 Issue 和 Pull Request！
+### v0.1.0 (2025-11-05)
 
-### 开发流程
-1. Fork 项目
-2. 创建特性分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
-
-### 代码规范
-- 遵循 [项目宪法](.specify/memory/constitution.md)
-- 使用路由即文件名原则
-- 保持单文件 ≤ 300 行
-- 添加中文注释
+- ✨ 初始版本发布
+- ✨ 完整的报价管理功能
+- ✨ iOS 风格界面设计
+- ✨ Dark Mode 支持
+- ✨ A4 格式打印输出
+- ✨ 数据导出功能
+- ✨ 安全特性完整实现
 
 ## 📄 许可证
 
 MIT License
 
-## 🙏 致谢
+## 📞 支持
 
-感谢所有为这个项目做出贡献的开发者！
+- 项目类型: 单体 Web 应用
+- 部署环境: Linux + 宝塔面板
+- 技术栈: PHP 8.3 + MySQL + Nginx
 
----
-
-**项目状态**: ✅ 规范完成，质量检查通过，准备实施
-
-**质量验证**: 100/100 项质量检查通过
-
-**最后更新**: 2025-11-05
+**快速链接**:
+- 📖 [完整文档](specs/002-integrated-quote-system/)
+- 🎯 [任务清单](specs/002-integrated-quote-system/tasks.md)
+- 🚀 [快速开始](specs/002-integrated-quote-system/quickstart.md)

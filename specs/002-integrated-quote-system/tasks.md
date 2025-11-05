@@ -25,11 +25,11 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Purpose**: Project initialization and basic structure for PHP 8.3 single web application
 
-- [ ] T001 Create project directory structure per implementation plan (customers/, products/, services/, quotes/, settings/, partials/, assets/, helpers/, exports/)
-- [ ] T002 Create config.php.sample with database, security, and timezone configuration
-- [ ] T003 Create schema.sql with all 7 entities (Organizations, Customers, CatalogItems, Quotes, QuoteItems, QuoteSequences, Settings)
-- [ ] T004 Create db.php with PDO connection and error handling
-- [ ] T005 Create helpers/functions.php with utility functions (h() for XSS escape, format_currency_cents(), etc.)
+ - [X] T001 Create project directory structure per implementation plan (customers/, products/, services/, quotes/, settings/, partials/, assets/, helpers/, exports/)
+ - [X] T002 Create config.php.sample with database, security, and timezone configuration
+ - [X] T003 Create schema.sql with all 7 entities (Organizations, Customers, CatalogItems, Quotes, QuoteItems, QuoteSequences, Settings)
+ - [X] T004 Create db.php with PDO connection and error handling
+ - [X] T005 Create helpers/functions.php with utility functions (h() for XSS escape, format_currency_cents(), etc.)
 
 ---
 
@@ -39,12 +39,12 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create partials/ui.php with shared UI components (header, bottom navigation, footer)
-- [ ] T007 Create index.php redirecting to quotes/index.php
-- [ ] T008 Implement authentication system (login.php, logout.php, session management)
-- [ ] T009 Create init.php for system initialization (default org, settings, quote sequence)
-- [ ] T010 [P] Create assets/style.css with iOS-like styling, Dark Mode support, and print media queries
-- [ ] T011 Create database storage procedure next_quote_number() for annual quote numbering
+- [X] T006 Create partials/ui.php with shared UI components (header, bottom navigation, footer)
+- [X] T007 Create index.php redirecting to quotes/index.php
+- [X] T008 Implement authentication system (login.php, logout.php, session management)
+- [X] T009 Create init.php for system initialization (default org, settings, quote sequence)
+- [X] T010 [P] Create assets/style.css with iOS-like styling, Dark Mode support, and print media queries
+- [X] T011 Create database storage procedure next_quote_number() for annual quote numbering
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -56,12 +56,12 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Verify navigation visible on all non-print pages, current Tab highlights correctly, Dark Mode switches automatically, Safe-Area适配 works on mobile
 
-- [ ] T012 [P] [US1] Implement partials/ui.php bottom navigation component (5 tabs: quotes, products, services, customers, settings)
-- [ ] T013 [US1] Add CSS styling for bottom navigation in assets/style.css (iOS style, 44px tap targets, Safe-Area)
-- [ ] T014 [US1] Add Dark Mode support in assets/style.css (prefers-color-scheme: dark, proper contrast)
-- [ ] T015 [US1] Implement navigation highlighting logic in partials/ui.php (detect current page, highlight active tab)
-- [ ] T016 [US1] Create quotes/index.php with navigation integration (US4 base page, but needed for nav testing)
-- [ ] T017 [US1] Hide navigation on print pages (quotes/print.php) - CSS @media print rule
+- [X] T012 [P] [US1] Implement partials/ui.php bottom navigation component (5 tabs: quotes, products, services, customers, settings)
+- [X] T013 [US1] Add CSS styling for bottom navigation in assets/style.css (iOS style, 44px tap targets, Safe-Area)
+- [X] T014 [US1] Add Dark Mode support in assets/style.css (prefers-color-scheme: dark, proper contrast)
+- [X] T015 [US1] Implement navigation highlighting logic in partials/ui.php (detect current page, highlight active tab)
+- [X] T016 [US1] Create quotes/index.php with navigation integration (US4 base page, but needed for nav testing)
+- [X] T017 [US1] Hide navigation on print pages (quotes/print.php) - CSS @media print rule
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -73,13 +73,13 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Create customer, edit customer, view customer list with pagination, verify XSS protection
 
-- [ ] T018 [P] [US2] Implement Customer model operations in helpers/functions.php (Customer CRUD functions)
-- [ ] T019 [US2] Create customers/index.php with list view, pagination, and search
-- [ ] T020 [US2] Create customers/new.php with form and validation (name, tax_id, email, phone, addresses)
-- [ ] T021 [US2] Create customers/edit.php?id=X with pre-filled form
-- [ ] T022 [US2] Create customers/view.php?id=X with detail view
-- [ ] T023 [US2] Add XSS protection using h() function for all customer data output
-- [ ] T024 [US2] Implement CSRF token validation for all customer POST forms
+- [X] T018 [P] [US2] Implement Customer model operations in helpers/functions.php (Customer CRUD functions)
+- [X] T019 [US2] Create customers/index.php with list view, pagination, and search
+- [X] T020 [US2] Create customers/new.php with form and validation (name, tax_id, email, phone, addresses)
+- [X] T021 [US2] Create customers/edit.php?id=X with pre-filled form
+- [X] T022 [US2] Create customers/view.php?id=X with detail view
+- [X] T023 [US2] Add XSS protection using h() function for all customer data output
+- [X] T024 [US2] Implement CSRF token validation for all customer POST forms
 
 **Checkpoint**: At this point, User Story 2 should be fully functional and testable independently
 
@@ -91,15 +91,15 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Create product, create service, view filtered lists by type, verify SKU uniqueness, test price formatting
 
-- [ ] T025 [P] [US3] Implement CatalogItem model operations in helpers/functions.php (product/service CRUD)
-- [ ] T026 [US3] Create products/index.php with type=product filter and list view
-- [ ] T027 [US3] Create products/new.php with default type=product, SKU validation, price in cents
-- [ ] T028 [US3] Create products/edit.php?id=X with pre-filled form
-- [ ] T029 [US3] Create services/index.php with type=service filter and list view
-- [ ] T030 [US3] Create services/new.php with default type=service (SKU, name, price, tax_rate)
-- [ ] T031 [US3] Create services/edit.php?id=X with pre-filled form
-- [ ] T032 [US3] Implement SKU uniqueness validation (same org_id constraint)
-- [ ] T033 [US3] Implement price formatting (cents to currency display, e.g., 1000 → ¥1000.00)
+- [X] T025 [P] [US3] Implement CatalogItem model operations in helpers/functions.php (product/service CRUD)
+- [X] T026 [US3] Create products/index.php with type=product filter and list view
+- [X] T027 [US3] Create products/new.php with default type=product, SKU validation, price in cents
+- [X] T028 [US3] Create products/edit.php?id=X with pre-filled form
+- [X] T029 [US3] Create services/index.php with type=service filter and list view
+- [X] T030 [US3] Create services/new.php with default type=service (SKU, name, price, tax_rate)
+- [X] T031 [US3] Create services/edit.php?id=X with pre-filled form
+- [X] T032 [US3] Implement SKU uniqueness validation (same org_id constraint)
+- [X] T033 [US3] Implement price formatting (cents to currency display, e.g., 1000 → ¥1000.00)
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently
 
@@ -111,17 +111,17 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Create quote with multiple items, verify number generation, test calculations, verify transaction rollback on error
 
-- [ ] T034 [P] [US4] Implement Quote model operations in helpers/functions.php (quote CRUD with transactions)
-- [ ] T035 [P] [US4] Implement QuoteItem model operations in helpers/functions.php (quote items CRUD)
-- [ ] T036 [US4] Create quotes/index.php with status filtering and pagination
-- [ ] T037 [US4] Create quotes/new.php with customer selection, dynamic item addition, calculation preview
-- [ ] T038 [US4] Implement quote creation transaction logic (atomic: main record + items + number generation)
-- [ ] T039 [US4] Create quotes/view.php?id=X with complete quote details (customer, items, amounts, status)
-- [ ] T040 [US4] Create quotes/edit.php?id=X allowing status changes (draft→sent, sent→accepted/rejected/expired)
-- [ ] T041 [US4] Implement automatic quote number generation via next_quote_number() storage procedure
-- [ ] T042 [US4] Implement amount calculations (subtotal, tax, total) with precision validation
-- [ ] T043 [US4] Implement SELECT...FOR UPDATE locking for concurrent quote number generation
-- [ ] T044 [US4] Add comprehensive error handling and rollback for failed quote creation
+- [X] T034 [P] [US4] Implement Quote model operations in helpers/functions.php (quote CRUD with transactions)
+- [X] T035 [P] [US4] Implement QuoteItem model operations in helpers/functions.php (quote items CRUD)
+- [X] T036 [US4] Create quotes/index.php with status filtering and pagination
+- [X] T037 [US4] Create quotes/new.php with customer selection, dynamic item addition, calculation preview
+- [X] T038 [US4] Implement quote creation transaction logic (atomic: main record + items + number generation)
+- [X] T039 [US4] Create quotes/view.php?id=X with complete quote details (customer, items, amounts, status)
+- [X] T040 [US4] Create quotes/edit.php?id=X allowing status changes (draft→sent, sent→accepted/rejected/expired)
+- [X] T041 [US4] Implement automatic quote number generation via next_quote_number() storage procedure
+- [X] T042 [US4] Implement amount calculations (subtotal, tax, total) with precision validation
+- [X] T043 [US4] Implement SELECT...FOR UPDATE locking for concurrent quote number generation
+- [X] T044 [US4] Add comprehensive error handling and rollback for failed quote creation
 
 **Checkpoint**: At this point, User Stories 1-4 should all work independently and together as complete system
 
@@ -133,11 +133,11 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Update settings, verify changes appear in printed quotes and new quote defaults
 
-- [ ] T045 [P] [US5] Implement Settings model operations in helpers/functions.php (settings CRUD)
-- [ ] T046 [US5] Create settings/index.php with form for all configuration options
-- [ ] T047 [US5] Implement settings save/update functionality with validation
-- [ ] T048 [US5] Apply settings to quote creation (default tax rate, numbering prefix)
-- [ ] T049 [US5] Apply settings to print output (company name, address, contact info, terms)
+- [X] T045 [P] [US5] Implement Settings model operations in helpers/functions.php (settings CRUD)
+- [X] T046 [US5] Create settings/index.php with form for all configuration options
+- [X] T047 [US5] Implement settings save/update functionality with validation
+- [X] T048 [US5] Apply settings to quote creation (default tax rate, numbering prefix)
+- [X] T049 [US5] Apply settings to print output (company name, address, contact info, terms)
 
 **Checkpoint**: At this point, User Stories 1-5 should all work independently
 
@@ -149,13 +149,13 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Print quote, verify A4 format, check header fixation, confirm navigation hidden, test with terms
 
-- [ ] T050 [US6] Create quotes/print.php?id=X with A4-optimized layout and company header
-- [ ] T051 [US6] Implement print-specific CSS (@media print) with table header fixation (thead table-header-group)
-- [ ] T052 [US6] Add automatic window.print() trigger on page load
-- [ ] T053 [US6] Implement print terms display from settings (footer section)
-- [ ] T054 [US6] Ensure navigation completely hidden on print pages
-- [ ] T055 [US6] Add break-inside: avoid CSS for table rows to prevent row splitting across pages
-- [ ] T056 [US6] Configure Noto Sans TC font for proper Chinese character display in print
+- [X] T050 [US6] Create quotes/print.php?id=X with A4-optimized layout and company header
+- [X] T051 [US6] Implement print-specific CSS (@media print) with table header fixation (thead table-header-group)
+- [X] T052 [US6] Add automatic window.print() trigger on page load
+- [X] T053 [US6] Implement print terms display from settings (footer section)
+- [X] T054 [US6] Ensure navigation completely hidden on print pages
+- [X] T055 [US6] Add break-inside: avoid CSS for table rows to prevent row splitting across pages
+- [X] T056 [US6] Configure Noto Sans TC font for proper Chinese character display in print
 
 **Checkpoint**: At this point, all 6 user stories should work independently and as integrated system
 
@@ -167,10 +167,10 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Independent Test**: Export customers, products/services, quotes in both CSV and JSON formats
 
-- [ ] T057 [P] Create exports/export-customers.php with CSV/JSON output
-- [ ] T058 [P] Create exports/export-products.php with CSV/JSON output (type=product)
-- [ ] T059 [P] Create exports/export-services.php with CSV/JSON output (type=service)
-- [ ] T060 [P] Create exports/export-quotes.php with CSV/JSON output (with date range filter)
+- [X] T057 [P] Create exports/export-customers.php with CSV/JSON output
+- [X] T058 [P] Create exports/export-products.php with CSV/JSON output (type=product)
+- [X] T059 [P] Create exports/export-services.php with CSV/JSON output (type=service)
+- [X] T060 [P] Create exports/export-quotes.php with CSV/JSON output (with date range filter)
 
 ---
 
@@ -178,13 +178,17 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Purpose**: Performance, security, documentation, and integration improvements
 
-- [ ] T061 [P] Performance optimization: Add database indexes per data-model.md specifications
-- [ ] T062 [P] Security hardening: Verify all XSS protection and CSRF validation across all forms
-- [ ] T063 [P] Error handling: Implement consistent error pages and logging without exposing sensitive data
-- [ ] T064 [P] Create README.md with setup, configuration, and usage instructions
-- [ ] T065 [P] Run quickstart.md validation to ensure deployment guide accuracy
-- [ ] T066 [P] Code review: Verify all files follow routing-as-filename principle and ≤300 lines
-- [ ] T067 [P] UI polish: Ensure consistent iOS styling, spacing, and Dark Mode across all pages
+- [X] T061 [P] Performance optimization: Add database indexes per data-model.md specifications
+- [X] T062 [P] Security hardening: Verify all XSS protection and CSRF validation across all forms
+- [X] T063 [P] Error handling: Implement consistent error pages and logging without exposing sensitive data
+- [X] T064 [P] Create README.md with setup, configuration, and usage instructions
+- [X] T065 [P] Run quickstart.md validation to ensure deployment guide accuracy
+  - ✅ 验证通过 - 文档与文件完全匹配，部署步骤清晰可行
+- [⚠️] T066 [P] Code review: Verify all files follow routing-as-filename principle and ≤300 lines
+  - ✅ 路由即文件名原则: 100% 符合
+  - ⚠️ 行数限制: 8个文件超过300行，主要为helpers/functions.php (2196行)
+  - 💡 建议: 拆分helpers/functions.php为多个模块文件
+- [X] T067 [P] UI polish: Ensure consistent iOS styling, spacing, and Dark Mode across all pages
 
 ---
 
@@ -194,70 +198,6 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-8)**: All depend on Foundational phase completion
-  - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2)
-- **Data Export (Phase 9)**: Depends on User Stories 2, 3, 4 completion
-- **Polish (Phase 10)**: Depends on all desired user stories being complete
-
-### User Story Dependencies
-
-- **User Story 1 (P1)**: Can start after Foundational - No dependencies on other stories
-- **User Story 2 (P1)**: Can start after Foundational - May integrate with US1 but independently testable
-- **User Story 3 (P1)**: Can start after Foundational - May integrate with US1 but independently testable
-- **User Story 4 (P1)**: Can start after Foundational - Depends on US2 and US3 (customers, catalog items) for data
-- **User Story 5 (P2)**: Can start after Foundational - No hard dependencies, but integrates with all stories
-- **User Story 6 (P2)**: Can start after Foundational - Depends on US4 (quotes) and US5 (settings)
-
-### Within Each User Story
-
-- Models before services
-- Services before endpoints
-- Core implementation before integration
-- Story complete before moving to next priority
-
-### Parallel Opportunities
-
-- All Setup tasks marked [P] can run in parallel
-- All Foundational tasks marked [P] can run in parallel (within Phase 2)
-- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)
-- Models within a story marked [P] can run in parallel
-- Different user stories can be worked on in parallel by different team members
-- Export tasks (Phase 9) can run in parallel
-
----
-
-## Parallel Example: User Story 4 (Quote Creation)
-
-```bash
-# Launch quote-related model implementations in parallel:
-Task: "Implement Quote model operations in helpers/functions.php"
-Task: "Implement QuoteItem model operations in helpers/functions.php"
-
-# Launch quote pages in parallel:
-Task: "Create quotes/index.php with status filtering"
-Task: "Create quotes/view.php?id=X with complete details"
-```
-
----
-
-## Implementation Strategy
-
-### MVP First (User Story 1 Only)
-
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
-3. Complete Phase 3: User Story 1 (iOS Navigation)
-4. **STOP and VALIDATE**: Test User Story 1 independently
-5. Deploy/demo if ready
-
-### Core MVP (User Stories 1-4)
-
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
-3. Complete Phase 3: User Story 1 (Navigation) → MVP Base
-4. Complete Phase 4: User Story 2 (Customers)
-5. Complete Phase 5: User Story 3 (Products/Services)
 6. Complete Phase 6: User Story 4 (Quotes) → Complete Business Logic
 7. **STOP and VALIDATE**: Test complete quote management workflow
 8. Deploy/demo CORE SYSTEM

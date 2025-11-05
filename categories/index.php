@@ -1,0 +1,236 @@
+<?php
+/**
+ * 分类管理页面
+ */
+
+define('QUOTABASE_SYSTEM', true);
+
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers/functions.php';
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../partials/ui.php';
+
+if (!is_logged_in()) {
+    header('Location: /login.php');
+    exit;
+}
+
+$allowed_types = [
+    'product' => '产品分类',
+    'service' => '服务分类'
+];
+
+$type = $_GET['type'] ?? 'product';
+if (!array_key_exists($type, $allowed_types)) {
+    $type = 'product';
+}
+
+$error = '';
+$success = $_GET['success'] ?? '';
+$edit_id = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
+$edit_category = $edit_id ? get_catalog_category($edit_id) : null;
+if ($edit_category && $edit_category['type'] !== $type) {
+    $edit_category = null;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $error = '无效的请求，请刷新页面后重试。';
+    } else {
+        $action = $_POST['action'] ?? '';
+        $form_type = $_POST['type'] ?? $type;
+        if (!array_key_exists($form_type, $allowed_types)) {
+            $form_type = 'product';
+        }
+
+        if ($action === 'create') {
+            $result = create_catalog_category([
+                'type' => $form_type,
+                'parent_id' => $_POST['parent_id'] ?? null,
+                'name' => $_POST['name'] ?? '',
+                'sort_order' => $_POST['sort_order'] ?? 0
+            ]);
+
+            if ($result['success']) {
+                header('Location: /categories/index.php?type=' . $form_type . '&success=' . urlencode($result['message']));
+                exit;
+            }
+            $error = $result['error'];
+
+        } elseif ($action === 'update') {
+            $category_id = intval($_POST['category_id'] ?? 0);
+            $category = get_catalog_category($category_id);
+
+            if (!$category) {
+                $error = '分类不存在或已被删除';
+            } else {
+                $result = update_catalog_category($category_id, [
+                    'name' => $_POST['name'] ?? '',
+                    'sort_order' => $_POST['sort_order'] ?? $category['sort_order']
+                ]);
+
+                if ($result['success']) {
+                    header('Location: /categories/index.php?type=' . $category['type'] . '&success=' . urlencode($result['message']));
+                    exit;
+                }
+                $error = $result['error'];
+                $edit_id = $category_id;
+                $edit_category = $category;
+                $type = $category['type'];
+            }
+
+        } elseif ($action === 'delete') {
+            $category_id = intval($_POST['category_id'] ?? 0);
+            $category = get_catalog_category($category_id);
+
+            if (!$category) {
+                $error = '分类不存在或已被删除';
+            } else {
+                $result = delete_catalog_category($category_id);
+                if ($result['success']) {
+                    header('Location: /categories/index.php?type=' . $category['type'] . '&success=' . urlencode($result['message']));
+                    exit;
+                }
+                $error = $result['error'];
+                $type = $category['type'];
+            }
+        }
+    }
+}
+
+$category_tree = get_catalog_categories_tree($type);
+$category_flat = get_catalog_category_flat_list($type);
+$default_parent_id = isset($_GET['parent']) ? intval($_GET['parent']) : null;
+
+html_start('分类管理');
+
+page_header('产品与服务', [
+    ['label' => '首页', 'url' => '/'],
+    ['label' => '产品与服务', 'url' => '/products/'],
+    ['label' => $allowed_types[$type], 'url' => '/categories/index.php?type=' . $type]
+]);
+
+function render_category_tree(array $nodes, string $type): void {
+    if (empty($nodes)) {
+        echo '<p class="text-tertiary" style="margin: 12px 0;">暂无分类</p>';
+        return;
+    }
+
+    echo '<ul class="category-tree">';
+    foreach ($nodes as $node) {
+        echo '<li>';
+        echo '<div class="category-node">';
+        echo '<div class="category-info">';
+        echo '<div class="category-name">' . h($node['name']) . '</div>';
+        echo '<div class="category-meta">第 ' . $node['level'] . ' 级 · 排序 ' . intval($node['sort_order']) . '</div>';
+        echo '</div>';
+        echo '<div class="category-actions">';
+        echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&edit=' . $node['id'] . '">编辑</a>';
+        if ($node['level'] < 3) {
+            echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&parent=' . $node['id'] . '#create">添加子分类</a>';
+        }
+        echo '<form method="POST" action="/categories/index.php?type=' . $type . '" onsubmit="return confirm(\'确认删除该分类及其子分类吗？相关产品将变为未分类。\');">';
+        echo csrf_input();
+        echo '<input type="hidden" name="action" value="delete">';
+        echo '<input type="hidden" name="type" value="' . h($type) . '">';
+        echo '<input type="hidden" name="category_id" value="' . $node['id'] . '">';
+        echo '<button type="submit" class="btn btn-sm btn-outline btn-danger">删除</button>';
+        echo '</form>';
+        echo '</div>';
+        echo '</div>';
+
+        if (!empty($node['children'])) {
+            echo '<div class="category-children">';
+            render_category_tree($node['children'], $type);
+            echo '</div>';
+        }
+
+        echo '</li>';
+    }
+    echo '</ul>';
+}
+
+?>
+
+<div class="main-content">
+    <?php if (!empty($error)): ?>
+        <div class="alert alert-danger">
+            <span class="alert-message"><?php echo h($error); ?></span>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($success)): ?>
+        <div class="alert alert-success">
+            <span class="alert-message"><?php echo h($success); ?></span>
+        </div>
+    <?php endif; ?>
+
+    <?php card_start('分类管理', [
+        ['label' => '产品分类', 'url' => '/categories/index.php?type=product', 'class' => $type === 'product' ? 'btn-primary' : 'btn-outline'],
+        ['label' => '服务分类', 'url' => '/categories/index.php?type=service', 'class' => $type === 'service' ? 'btn-primary' : 'btn-outline'],
+    ]); ?>
+
+    <div class="category-management-grid">
+        <div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">分类结构</h3>
+            <p style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px;">最多支持三级分类。删除分类会清除其子分类，并将相关产品/服务的分类置为空。</p>
+            <?php render_category_tree($category_tree, $type); ?>
+        </div>
+
+        <div id="create">
+            <div class="category-form-card">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
+                    <?php echo $edit_category ? '编辑分类' : '新增分类'; ?>
+                </h3>
+
+                <form method="POST" action="/categories/index.php?type=<?php echo h($type); ?>">
+                    <?php echo csrf_input(); ?>
+                    <input type="hidden" name="type" value="<?php echo h($type); ?>">
+                    <input type="hidden" name="action" value="<?php echo $edit_category ? 'update' : 'create'; ?>">
+                    <?php if ($edit_category): ?>
+                        <input type="hidden" name="category_id" value="<?php echo $edit_category['id']; ?>">
+                    <?php endif; ?>
+
+                    <?php if (!$edit_category): ?>
+                        <label class="form-label" for="parent_id">上级分类</label>
+                        <select name="parent_id" id="parent_id" class="form-select">
+                            <option value="">顶级分类</option>
+                            <?php foreach ($category_flat as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo ($default_parent_id && $default_parent_id == $cat['id']) ? 'selected' : ''; ?> <?php echo $cat['level'] >= 3 ? 'disabled' : ''; ?>>
+                                    <?php echo str_repeat('— ', max(0, $cat['level'] - 1)) . h($cat['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="form-help">最多支持三级分类，选择上级分类可创建子分类。</p>
+                    <?php else: ?>
+                        <label class="form-label">上级分类</label>
+                        <div class="readonly-field">
+                            <?php echo $edit_category['parent_id'] ? h(get_catalog_category_path($edit_category['parent_id'])) : '顶级分类'; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <label class="form-label" for="category_name">分类名称</label>
+                    <input type="text" id="category_name" name="name" class="form-input" value="<?php echo h($edit_category['name'] ?? ''); ?>" required maxlength="100" placeholder="请输入分类名称">
+
+                    <label class="form-label" for="category_sort">排序值</label>
+                    <input type="number" id="category_sort" name="sort_order" class="form-input" value="<?php echo h($edit_category['sort_order'] ?? 0); ?>" placeholder="0">
+                    <p class="form-help">数字越小越靠前，可用来控制同层级分类的显示顺序。</p>
+
+                    <div style="margin-top: 16px; display: flex; gap: 8px;">
+                        <button type="submit" class="btn btn-primary"><?php echo $edit_category ? '保存分类' : '新增分类'; ?></button>
+                        <?php if ($edit_category): ?>
+                            <a href="/categories/index.php?type=<?php echo h($type); ?>" class="btn btn-outline">取消编辑</a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <?php card_end(); ?>
+</div>
+
+<?php
+bottom_tab_navigation();
+html_end();
+?>
