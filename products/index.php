@@ -143,7 +143,6 @@ page_header('产品管理', [
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单位</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
-                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,10 +165,6 @@ page_header('产品管理', [
                                         <?php echo h($product['name']); ?>
                                     </a>
                                 </div>
-                                <div style="margin-top: 6px; font-size: 12px; color: var(--text-tertiary); display: flex; gap: 12px; flex-wrap: wrap;">
-                                    <span>SKU：<?php echo h($product['sku']); ?></span>
-                                    <span>创建于：<?php echo format_date($product['created_at']); ?></span>
-                                </div>
                             </td>
                             <td style="padding: 16px 12px;">
                                 <div style="font-size: 14px; color: var(--text-secondary);">
@@ -185,9 +180,6 @@ page_header('产品管理', [
                                 <div style="font-size: 14px; color: var(--text-secondary);">
                                     <?php echo number_format($product['tax_rate'], 2); ?>%
                                 </div>
-                            </td>
-                            <td style="padding: 16px 12px; text-align: right;">
-                                <a href="/products/edit.php?id=<?php echo h($product['id']); ?>" class="btn btn-secondary btn-compact">查看 / 编辑</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
