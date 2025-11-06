@@ -216,63 +216,60 @@ page_header('报价单详情', [
             <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">报价项目</h3>
 
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
-                        <tr>
-                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">SKU</th>
-                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">产品/服务</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">数量</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">小计</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税额</th>
-                            <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">总计</th>
-                        </tr>
-                    </thead>
+        <table class="quote-items-table" style="width: 100%; border-collapse: collapse; table-layout: auto;">
+            <thead style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
+                <tr>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary); width: 40%;">产品/服务</th>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">数量</th>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">折扣</th>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
+                    <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">含税总计</th>
+                </tr>
+            </thead>
                     <tbody>
-                        <?php foreach ($quote['items'] as $item): ?>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 16px 12px;">
-                                    <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: monospace;">
-                                        <?php echo h($item['sku']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px;">
-                                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
-                                        <?php echo h($item['item_name']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 14px; color: var(--text-secondary);">
-                                        <?php echo number_format($item['quantity'], 4); ?>
-                                        <?php echo h(UNITS[$item['unit']] ?? $item['unit']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
-                                        <?php echo format_currency_cents($item['unit_price_cents']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 14px; color: var(--text-secondary);">
-                                        <?php echo number_format($item['tax_rate'], 2); ?>%
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
-                                        <?php echo format_currency_cents($item['line_subtotal_cents']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 14px; color: var(--text-secondary);">
-                                        <?php echo format_currency_cents($item['line_tax_cents']); ?>
-                                    </div>
-                                </td>
-                                <td style="padding: 16px 12px; text-align: right;">
-                                    <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">
-                                        <?php echo format_currency_cents($item['line_total_cents']); ?>
-                                    </div>
-                                </td>
+                        <?php $total_discount_cents = 0; ?>
+                            <?php foreach ($quote['items'] as $item): ?>
+                                <?php
+                                $quantity_value = $item['qty'] ?? ($item['quantity'] ?? 0);
+                                $unit_label = $item['unit'] ?? '';
+                                $discount_cents = (int)($item['discount_cents'] ?? 0);
+                                $gross_cents = calculate_line_gross($quantity_value, $item['unit_price_cents']);
+                                $discount_percent = $item['discount_percent'] ?? calculate_discount_percent($discount_cents, $gross_cents);
+                                $category_label = $item['category_path'] ?? '';
+                                $display_name = $category_label ? ($category_label . ' · ' . $item['item_name']) : $item['item_name'];
+                                $total_discount_cents += $discount_cents;
+                                ?>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 15px; font-weight: 500; color: var(--text-primary); display: inline-block;"><?php echo h($display_name); ?></div>
+                                    </td>
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 14px; color: var(--text-secondary); display: inline-block;">
+                                            <?php echo h(format_quantity($quantity_value)); ?>
+                                            <?php echo h(UNITS[$unit_label] ?? $unit_label); ?>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
+                                            <?php echo format_currency_cents_compact($item['unit_price_cents']); ?>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 14px; color: var(--text-secondary);">
+                                            <?php echo $discount_cents > 0 ? format_currency_cents_compact($discount_cents) : '—'; ?>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 14px; color: var(--text-secondary);">
+                                            <?php echo number_format($item['tax_rate'], 2); ?>%
+                                        </div>
+                                    </td>
+                                    <td style="padding: 16px 12px; text-align: center;">
+                                        <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">
+                                            <?php echo format_currency_cents_compact($item['line_total_cents']); ?>
+                                        </div>
+                                    </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -284,22 +281,30 @@ page_header('报价单详情', [
         <div style="margin-bottom: 32px; display: flex; justify-content: flex-end;">
             <div style="width: 400px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
                 <div style="display: grid; gap: 12px;">
+                    <?php if ($total_discount_cents > 0): ?>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
+                            <span style="color: var(--text-secondary);">折扣：</span>
+                            <span style="font-weight: 600; color: var(--danger-color);">
+                                -<?php echo format_currency_cents_compact($total_discount_cents); ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
                         <span style="color: var(--text-secondary);">小计：</span>
                         <span style="font-weight: 600; color: var(--text-primary);">
-                            <?php echo format_currency_cents($quote['subtotal_cents']); ?>
+                            <?php echo format_currency_cents_compact($quote['subtotal_cents']); ?>
                         </span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
                         <span style="color: var(--text-secondary);">税额：</span>
                         <span style="font-weight: 600; color: var(--text-primary);">
-                            <?php echo format_currency_cents($quote['tax_cents']); ?>
+                            <?php echo format_currency_cents_compact($quote['tax_cents']); ?>
                         </span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 2px solid var(--border-color); font-size: 18px; font-weight: 700;">
                         <span style="color: var(--text-primary);">总计：</span>
                         <span style="color: var(--primary-color);">
-                            <?php echo format_currency_cents($quote['total_cents']); ?>
+                            <?php echo format_currency_cents_compact($quote['total_cents']); ?>
                         </span>
                     </div>
                 </div>

@@ -1,0 +1,2 @@
+ALTER TABLE quote_items
+    ADD COLUMN discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金額（分）';
