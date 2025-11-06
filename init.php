@@ -604,6 +604,10 @@ function is_system_initialized() {
 function initialize_system() {
     try {
         $db = getDB();
+
+        // 先確保使用者表及預設管理員存在（避免在交易中執行DDL）
+        ensure_default_admin_user($db->getConnection());
+
         $db->beginTransaction();
 
         // 1. 创建默认组织
@@ -647,8 +651,6 @@ function initialize_system() {
             );
             error_log("Created quote sequence for year=" . $current_year);
         }
-
-        ensure_default_admin_user($db->getConnection());
 
         $db->commit();
 
