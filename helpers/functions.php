@@ -1238,7 +1238,7 @@ function get_catalog_items($type = '', $page = 1, $limit = 20, $search = '', $ca
         SELECT id, type, sku, name, unit, currency, unit_price_cents, tax_rate, category_id, created_at
         FROM catalog_items
         WHERE {$where_clause}
-        ORDER BY type ASC, name ASC, id DESC
+        ORDER BY category_id ASC, name ASC, id DESC
         LIMIT ? OFFSET ?
     ";
     $params[] = $limit;

@@ -110,14 +110,15 @@ page_header('新建服务', [
                 ]);
                 ?>
 
-                <?php
-                // 单位选择
-                $selected_unit = $_POST['unit'] ?? 'pcs';
-                form_field('unit', '计量单位', 'select', UNITS, [
-                    'required' => true,
-                    'selected' => $selected_unit
-                ]);
-                ?>
+<?php
+// 服務單位選擇
+$selected_unit = $_POST['unit'] ?? 'time';
+form_field('unit', '計量單位', 'select', SERVICE_UNITS, [
+    'required' => true,
+    'selected' => $selected_unit,
+    'help' => '服務支援次、時、日、週、月、年'
+]);
+?>
 
                 <?php
                 // 货币选择
