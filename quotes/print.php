@@ -324,8 +324,8 @@ if ($error) {
 <body>
     <!-- 打印控制按钮 -->
     <div class="print-controls no-print">
-        <button onclick="window.print()">打印报价单</button>
-        <button onclick="window.close()" style="margin-left: 10px; background: #6c757d;">关闭</button>
+        <button type="button" onclick="window.print()">打印报价单</button>
+        <button type="button" onclick="closePrintWindow()" style="margin-left: 10px; background: #6c757d;">关闭</button>
     </div>
 
     <div class="a4-container">
@@ -472,6 +472,14 @@ if ($error) {
     </div>
 
     <script>
+        function closePrintWindow() {
+            if (window.opener && !window.opener.closed) {
+                window.close();
+            } else {
+                history.back();
+            }
+        }
+
         // 页面加载完成后自动打印
         window.addEventListener('load', function() {
             // 延迟500ms再打印，确保页面渲染完成
