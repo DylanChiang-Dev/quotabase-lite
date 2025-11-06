@@ -64,6 +64,58 @@ function verify_csrf_token($token) {
 }
 
 /**
+ * 检查用户是否已登录
+ *
+ * @return bool
+ */
+function is_logged_in() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+/**
+ * 检查会话是否过期
+ *
+ * @return bool
+ */
+function is_session_expired() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['login_time'])) {
+        return true;
+    }
+    $timeout = defined('SESSION_TIMEOUT') ? SESSION_TIMEOUT : 3600;
+    return (time() - $_SESSION['login_time']) > $timeout;
+}
+
+/**
+ * 获取当前用户ID
+ *
+ * @return int|null
+ */
+function get_current_user_id() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return $_SESSION['user_id'] ?? null;
+}
+
+/**
+ * 获取当前组织ID
+ *
+ * @return int
+ */
+function get_current_org_id() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return $_SESSION['org_id'] ?? (defined('DEFAULT_ORG_ID') ? DEFAULT_ORG_ID : 1);
+}
+
+/**
  * 生成随机密码
  *
  * @param int $length 密码长度，默认12
@@ -140,7 +192,7 @@ function validate_password_strength($password) {
  */
 function format_currency_cents($cents, $currency = 'NT$', $decimals = 2) {
     $amount = number_format($cents / 100, $decimals, '.', ',');
-    return $currency . ' ' . $amount;
+    return $currency . '&nbsp;' . $amount;
 }
 
 /**
@@ -160,14 +212,45 @@ function format_unit_price($cents, $unit = '元', $decimals = 2) {
 }
 
 /**
- * 计算行小计（数量 × 单价）
+ * 计算未折扣前的行金额（数量 × 单价）
  *
  * @param float $qty 数量（支持小数，最多4位）
  * @param int $unit_price_cents 单价（分）
+ * @return int 行原始金额（分）
+ */
+function calculate_line_gross($qty, $unit_price_cents) {
+    return (int)round($qty * $unit_price_cents);
+}
+
+/**
+ * 计算行小计（数量 × 单价 - 折扣）
+ *
+ * @param float $qty 数量（支持小数，最多4位）
+ * @param int $unit_price_cents 单价（分）
+ * @param int $discount_cents 折扣金额（分）
  * @return int 小计（分）
  */
-function calculate_line_subtotal($qty, $unit_price_cents) {
-    return (int)round($qty * $unit_price_cents);
+function calculate_line_subtotal($qty, $unit_price_cents, $discount_cents = 0) {
+    $gross = calculate_line_gross($qty, $unit_price_cents);
+    $discount_cents = max(0, (int)$discount_cents);
+    if ($discount_cents > $gross) {
+        $discount_cents = $gross;
+    }
+    return $gross - $discount_cents;
+}
+
+/**
+ * 计算折扣百分比
+ *
+ * @param int $discount_cents 折扣金額（分）
+ * @param int $gross_cents 行原始金額（分）
+ * @return float 折扣百分比，保留兩位
+ */
+function calculate_discount_percent($discount_cents, $gross_cents) {
+    if ($gross_cents <= 0) {
+        return 0.0;
+    }
+    return round(($discount_cents / $gross_cents) * 100, 2);
 }
 
 /**
@@ -190,6 +273,18 @@ function calculate_line_tax($subtotal_cents, $tax_rate) {
  */
 function calculate_line_total($subtotal_cents, $tax_cents) {
     return $subtotal_cents + $tax_cents;
+}
+
+/**
+ * 簡潔金額顯示（無小數）
+ *
+ * @param int $cents 金額（分）
+ * @param string $currency 货币符号
+ * @return string
+ */
+function format_currency_cents_compact($cents, $currency = 'NT$') {
+    $amount = number_format($cents / 100, 0, '.', ',');
+    return $currency . '&nbsp;' . $amount;
 }
 
 /**
@@ -231,6 +326,19 @@ function amount_to_cents($amount) {
     $amount = preg_replace('/[^\d.-]/', '', $amount);
     // 转换为分
     return (int)round(floatval($amount) * 100);
+}
+
+/**
+ * 格式化数量，避免多餘小數
+ *
+ * @param float $qty
+ * @return string
+ */
+function format_quantity($qty) {
+    if (fmod($qty, 1) === 0.0) {
+        return number_format($qty, 0);
+    }
+    return rtrim(rtrim(number_format($qty, 4, '.', ''), '0'), '.');
 }
 
 /**
@@ -761,13 +869,31 @@ define('TAX_RATES', [
 ]);
 
 // 单位选项
-define('UNITS', [
-    'pcs' => '次',
-    'hour' => '小时',
-    'day' => '天',
+define('PRODUCT_UNITS', [
+    'piece' => '個'
+]);
+
+define('SERVICE_UNITS', [
+    'time' => '次',
+    'hour' => '時',
+    'day' => '日',
+    'week' => '週',
     'month' => '月',
     'year' => '年'
 ]);
+
+define('UNITS', array_merge(
+    PRODUCT_UNITS,
+    SERVICE_UNITS,
+    [
+        'pcs' => '個',
+        'unit' => '個',
+        'times' => '次',
+        'hours' => '時',
+        'days' => '日',
+        'weeks' => '週',
+    ]
+));
 
 // 货币选项（预留多货币支持）
 define('CURRENCIES', [
@@ -1841,7 +1967,12 @@ function get_catalog_item_list($type = '') {
         $params[] = $type;
     }
 
-    $sql = "SELECT id, type, sku, name, unit_price_cents FROM catalog_items WHERE {$where_clause} ORDER BY type ASC, name ASC";
+    $sql = "
+        SELECT id, type, sku, name, unit, unit_price_cents, tax_rate
+        FROM catalog_items
+        WHERE {$where_clause}
+        ORDER BY type ASC, name ASC
+    ";
     return dbQuery($sql, $params);
 }
 
@@ -2002,22 +2133,63 @@ function get_quote_items($quote_id) {
     $sql = "
         SELECT
             qi.id,
-            qi.qty as quantity,
+            qi.catalog_item_id,
+            qi.description,
+            qi.qty,
+            qi.unit,
             qi.unit_price_cents,
-            qi.line_subtotal_cents,
+            qi.discount_cents,
             qi.tax_rate,
+            qi.line_subtotal_cents,
             qi.line_tax_cents,
             qi.line_total_cents,
             qi.line_order,
-            COALESCE(qi.description, catalog.name) AS item_name,
             catalog.sku,
-            COALESCE(qi.unit, catalog.unit) AS unit
+            catalog.name AS catalog_name,
+            catalog.unit AS catalog_unit,
+            catalog.type AS catalog_type,
+            catalog.category_id
         FROM quote_items qi
         LEFT JOIN catalog_items catalog ON qi.catalog_item_id = catalog.id
         WHERE qi.quote_id = ?
         ORDER BY qi.line_order ASC, qi.id ASC
     ";
-    return dbQuery($sql, [$quote_id]);
+
+    $items = dbQuery($sql, [$quote_id]);
+
+    $category_cache = [];
+
+    foreach ($items as &$item) {
+        $item['qty'] = floatval($item['qty']);
+        $item['quantity'] = $item['qty'];
+        $item['unit_price_cents'] = (int)$item['unit_price_cents'];
+        $item['discount_cents'] = (int)($item['discount_cents'] ?? 0);
+        $item['line_subtotal_cents'] = (int)$item['line_subtotal_cents'];
+        $item['line_tax_cents'] = (int)$item['line_tax_cents'];
+        $item['line_total_cents'] = (int)$item['line_total_cents'];
+        $item['category_id'] = isset($item['category_id']) ? (int)$item['category_id'] : null;
+        $gross_cents = calculate_line_gross($item['qty'], $item['unit_price_cents']);
+        $item['gross_cents'] = $gross_cents;
+        $item['discount_percent'] = calculate_discount_percent($item['discount_cents'], $gross_cents);
+        if (empty($item['description'])) {
+            $item['description'] = $item['catalog_name'] ?? '';
+        }
+        if (empty($item['unit'])) {
+            $item['unit'] = $item['catalog_unit'] ?? '';
+        }
+        $item['item_name'] = $item['description'];
+        unset($item['catalog_unit']);
+        if (!empty($item['category_id'])) {
+            $category_id = (int)$item['category_id'];
+            if (!array_key_exists($category_id, $category_cache)) {
+                $category_cache[$category_id] = get_catalog_category_path($category_id, ' / ');
+            }
+            $item['category_path'] = $category_cache[$category_id];
+        }
+    }
+    unset($item);
+
+    return $items;
 }
 
 /**
@@ -2092,7 +2264,7 @@ function create_quote($data, $items) {
 
             $line_order = 1;
             foreach ($items as $item) {
-                if (empty($item['catalog_item_id']) || empty($item['qty'])) {
+                if (empty($item['catalog_item_id'])) {
                     continue;
                 }
 
@@ -2102,17 +2274,42 @@ function create_quote($data, $items) {
                     throw new Exception('目录项不存在');
                 }
 
-                $description = $catalog_item['name'] ?? '未命名项目';
-                $unit = $catalog_item['unit'] ?? null;
+                $quantity = floatval($item['qty'] ?? ($item['quantity'] ?? 0));
+                if ($quantity <= 0) {
+                    throw new Exception('请填写有效的数量');
+                }
+
+                $description = trim($item['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名项目');
+                $unit = trim($item['unit'] ?? '') ?: ($catalog_item['unit'] ?? null);
 
                 // 计算行金额
-                $quantity = floatval($item['qty']);
-                $unit_price_cents = intval($catalog_item['unit_price_cents']);
-                $tax_rate = $catalog_item['tax_rate'] !== null && $catalog_item['tax_rate'] !== ''
-                    ? floatval($catalog_item['tax_rate'])
-                    : get_default_tax_rate();
+                $unit_price_cents = intval($item['unit_price_cents'] ?? $catalog_item['unit_price_cents']);
+                $tax_rate = isset($item['tax_rate']) && $item['tax_rate'] !== ''
+                    ? floatval($item['tax_rate'])
+                    : ($catalog_item['tax_rate'] !== null && $catalog_item['tax_rate'] !== ''
+                        ? floatval($catalog_item['tax_rate'])
+                        : get_default_tax_rate());
 
-                $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents);
+                if ($unit_price_cents < 0) {
+                    throw new Exception('单价必须为非负数');
+                }
+                if ($tax_rate < 0 || $tax_rate > 100) {
+                    throw new Exception('税率必须在 0-100 之间');
+                }
+
+                $discount_cents = 0;
+                if (isset($item['discount_cents'])) {
+                    $discount_cents = max(0, intval($item['discount_cents']));
+                } elseif (isset($item['discount'])) {
+                    $discount_cents = max(0, amount_to_cents($item['discount']));
+                }
+
+                $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
+                if ($discount_cents > $gross_cents) {
+                    throw new Exception('折扣金额不能超过行金额');
+                }
+
+                $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
                 $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
                 $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
 
@@ -2120,8 +2317,9 @@ function create_quote($data, $items) {
                 $item_sql = "
                     INSERT INTO quote_items (
                         quote_id, catalog_item_id, description, qty, unit,
-                        unit_price_cents, tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents, line_order
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        unit_price_cents, discount_cents, tax_rate,
+                        line_subtotal_cents, line_tax_cents, line_total_cents, line_order
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ";
 
                 dbExecute($item_sql, [
@@ -2131,6 +2329,7 @@ function create_quote($data, $items) {
                     $quantity,
                     $unit,
                     $unit_price_cents,
+                    $discount_cents,
                     $tax_rate,
                     $line_subtotal_cents,
                     $line_tax_cents,
@@ -2334,25 +2533,97 @@ function update_quote_item($id, $data) {
             return ['success' => false, 'error' => '项目不存在'];
         }
 
+        $quantity_raw = $data['quantity'] ?? ($data['qty'] ?? null);
+        if (!is_numeric($quantity_raw)) {
+            return ['success' => false, 'error' => '数量格式不正确'];
+        }
         // 重新计算金额
-        $quantity = floatval($data['quantity']);
-        $unit_price_cents = intval($data['unit_price_cents']);
-        $tax_rate = floatval($data['tax_rate']);
+        $quantity = floatval($quantity_raw);
+        if ($quantity <= 0) {
+            return ['success' => false, 'error' => '数量必须大于 0'];
+        }
 
-        $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents);
+        $unit_price_cents = null;
+        if (isset($data['unit_price_cents']) && $data['unit_price_cents'] !== '') {
+            if (!is_numeric($data['unit_price_cents'])) {
+                return ['success' => false, 'error' => '单价格式不正确'];
+            }
+            $unit_price_cents = intval($data['unit_price_cents']);
+        } elseif (isset($data['unit_price']) && $data['unit_price'] !== '') {
+            $normalized_price = preg_replace('/[^\d.-]/', '', (string)$data['unit_price']);
+            if ($normalized_price === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_price)) {
+                return ['success' => false, 'error' => '单价格式不正确'];
+            }
+            $unit_price_cents = amount_to_cents($normalized_price);
+        }
+
+        if ($unit_price_cents === null) {
+            $unit_price_cents = intval($current_item['unit_price_cents']);
+        }
+
+        if ($unit_price_cents < 0) {
+            return ['success' => false, 'error' => '单价必须为非负数'];
+        }
+
+        $tax_rate_raw = $data['tax_rate'] ?? null;
+        if (!is_numeric($tax_rate_raw)) {
+            return ['success' => false, 'error' => '税率格式不正确'];
+        }
+        $tax_rate = floatval($tax_rate_raw);
+        if ($tax_rate < 0 || $tax_rate > 100) {
+            return ['success' => false, 'error' => '税率必须在 0-100 之间'];
+        }
+
+        $discount_cents = 0;
+        if (isset($data['discount_cents']) && $data['discount_cents'] !== '') {
+            if (!is_numeric($data['discount_cents'])) {
+                return ['success' => false, 'error' => '折扣金额格式不正确'];
+            }
+            $discount_cents = intval($data['discount_cents']);
+        } elseif (isset($data['discount']) && $data['discount'] !== '') {
+            $normalized_discount = preg_replace('/[^\d.-]/', '', (string)$data['discount']);
+            if ($normalized_discount === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_discount)) {
+                return ['success' => false, 'error' => '折扣金额格式不正确'];
+            }
+            $discount_cents = amount_to_cents($normalized_discount);
+        }
+
+        if ($discount_cents < 0) {
+            $discount_cents = 0;
+        }
+
+        $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
+        if ($discount_cents > $gross_cents) {
+            return ['success' => false, 'error' => '折扣金额不能超过该行金额'];
+        }
+
+        $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
         $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
         $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
+
+        $description = trim($data['description'] ?? $current_item['description']);
+        if ($description !== '' && !validate_string_length($description, 500)) {
+            return ['success' => false, 'error' => '项目描述长度超过限制'];
+        }
+
+        $unit = trim($data['unit'] ?? ($current_item['unit'] ?? ''));
+        if ($unit !== '' && !validate_string_length($unit, 20)) {
+            return ['success' => false, 'error' => '单位长度超过限制'];
+        }
 
         // 更新项目
         $sql = "
             UPDATE quote_items
-            SET qty = ?, unit_price_cents = ?, tax_rate = ?,
+            SET description = ?, unit = ?, qty = ?, unit_price_cents = ?, discount_cents = ?, tax_rate = ?,
                 line_subtotal_cents = ?, line_tax_cents = ?, line_total_cents = ?
             WHERE id = ?
         ";
         dbExecute($sql, [
+            $description,
+            $unit,
             $quantity,
             $unit_price_cents,
+            $discount_cents,
             $tax_rate,
             $line_subtotal_cents,
             $line_tax_cents,
@@ -2470,13 +2741,36 @@ function add_quote_item($quote_id, $item_data) {
         }
 
         // 计算金额
-        $unit_price_cents = intval($catalog_item['unit_price_cents']);
-        $tax_rate = floatval($catalog_item['tax_rate']);
+        $unit_price_cents = $item_data['unit_price_cents'] ?? $catalog_item['unit_price_cents'];
+        if (!is_numeric($unit_price_cents)) {
+            $unit_price_cents = $catalog_item['unit_price_cents'];
+        }
+        $unit_price_cents = intval($unit_price_cents);
+        $tax_rate = isset($item_data['tax_rate']) ? floatval($item_data['tax_rate']) : floatval($catalog_item['tax_rate']);
+        $discount_cents = 0;
+        if (isset($item_data['discount_cents']) && $item_data['discount_cents'] !== '') {
+            if (is_numeric($item_data['discount_cents'])) {
+                $discount_cents = intval($item_data['discount_cents']);
+            }
+        } elseif (isset($item_data['discount']) && $item_data['discount'] !== '') {
+            $normalized_discount = preg_replace('/[^\d.-]/', '', (string)$item_data['discount']);
+            if ($normalized_discount !== '' && preg_match('/^-?\d+(\.\d+)?$/', $normalized_discount)) {
+                $discount_cents = amount_to_cents($normalized_discount);
+            }
+        }
+        if ($discount_cents < 0) {
+            $discount_cents = 0;
+        }
 
-        $description = $catalog_item['name'] ?? '未命名项目';
-        $unit = $catalog_item['unit'] ?? null;
+        $description = trim($item_data['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名项目');
+        $unit = trim($item_data['unit'] ?? '') ?: ($catalog_item['unit'] ?? null);
 
-        $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents);
+        $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
+        if ($discount_cents > $gross_cents) {
+            return ['success' => false, 'error' => '折扣金额不能超过行小计'];
+        }
+
+        $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
         $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
         $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
 
@@ -2486,8 +2780,9 @@ function add_quote_item($quote_id, $item_data) {
         $sql = "
             INSERT INTO quote_items (
                 quote_id, catalog_item_id, description, qty, unit,
-                unit_price_cents, tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents, line_order
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                unit_price_cents, discount_cents, tax_rate,
+                line_subtotal_cents, line_tax_cents, line_total_cents, line_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
         dbExecute($sql, [
             $quote_id,
@@ -2496,6 +2791,7 @@ function add_quote_item($quote_id, $item_data) {
             $quantity,
             $unit,
             $unit_price_cents,
+            $discount_cents,
             $tax_rate,
             $line_subtotal_cents,
             $line_tax_cents,
@@ -2521,6 +2817,265 @@ function add_quote_item($quote_id, $item_data) {
             'error' => '添加项目失败'
         ];
     }
+}
+
+/**
+ * 以一組明細取代現有報價項目（草稿編輯用）
+ *
+ * @param int $quote_id
+ * @param array $items
+ * @return array
+ */
+function replace_quote_items($quote_id, $items) {
+    $pdo = getDB()->getConnection();
+    $pdo->beginTransaction();
+
+    try {
+        if (empty($items) || !is_array($items)) {
+            throw new Exception('请至少添加一条报价项目');
+        }
+
+        $line_order = 1;
+        $total_subtotal = 0;
+        $total_tax = 0;
+        $total_amount = 0;
+
+        dbExecute("DELETE FROM quote_items WHERE quote_id = ?", [$quote_id]);
+
+        foreach ($items as $item) {
+            $quantity = floatval($item['qty'] ?? 0);
+            if ($quantity <= 0) {
+                throw new Exception('数量必须大于0');
+            }
+
+            $catalog_item_id = intval($item['catalog_item_id'] ?? 0);
+            $catalog_item = get_catalog_item($catalog_item_id);
+            if (!$catalog_item) {
+                throw new Exception('所选產品/服务不存在');
+            }
+
+            $unit_price_cents = isset($item['unit_price_cents']) && $item['unit_price_cents'] !== ''
+                ? intval($item['unit_price_cents'])
+                : intval($catalog_item['unit_price_cents']);
+            if ($unit_price_cents < 0) {
+                throw new Exception('单价必须为非负数');
+            }
+
+            $tax_rate = isset($item['tax_rate']) && $item['tax_rate'] !== ''
+                ? floatval($item['tax_rate'])
+                : floatval($catalog_item['tax_rate']);
+            if ($tax_rate < 0 || $tax_rate > 100) {
+                throw new Exception('税率必须在 0-100 之间');
+            }
+
+            $description = trim($item['description'] ?? '');
+            if ($description === '') {
+                $description = $catalog_item['name'] ?? '未命名项目';
+            }
+
+            $unit = trim($item['unit'] ?? '');
+            if ($unit === '') {
+                $unit = $catalog_item['unit'] ?? '';
+            }
+
+            $discount_cents = max(0, intval($item['discount_cents'] ?? 0));
+            $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
+            if ($discount_cents > $gross_cents) {
+                throw new Exception('折扣金额不能超过行金额');
+            }
+
+            $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
+            $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
+            $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
+
+            dbExecute(
+                "INSERT INTO quote_items (
+                    quote_id, catalog_item_id, description, qty, unit,
+                    unit_price_cents, discount_cents, tax_rate,
+                    line_subtotal_cents, line_tax_cents, line_total_cents, line_order
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    $quote_id,
+                    $catalog_item_id,
+                    $description,
+                    $quantity,
+                    $unit,
+                    $unit_price_cents,
+                    $discount_cents,
+                    $tax_rate,
+                    $line_subtotal_cents,
+                    $line_tax_cents,
+                    $line_total_cents,
+                    $line_order
+                ]
+            );
+
+            $total_subtotal += $line_subtotal_cents;
+            $total_tax += $line_tax_cents;
+            $total_amount += $line_total_cents;
+
+            $line_order++;
+        }
+
+        if ($line_order === 1) {
+            throw new Exception('请至少添加一条报价项目');
+        }
+
+        dbExecute(
+            "UPDATE quotes
+             SET subtotal_cents = ?, tax_cents = ?, total_cents = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?",
+            [$total_subtotal, $total_tax, $total_amount, $quote_id]
+        );
+
+        $pdo->commit();
+        return ['success' => true];
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        error_log("Replace quote items error: " . $e->getMessage());
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+/**
+ * 处理报价单编辑提交（草稿专用）
+ *
+ * @param array $quote 当前报价单资料（需包含id与status）
+ * @param array $post_data 表单提交数据
+ * @return array ['success' => bool, 'error' => string]
+ */
+function process_quote_edit($quote, $post_data) {
+    if (empty($quote) || !isset($quote['id'])) {
+        return ['success' => false, 'error' => '报价单不存在'];
+    }
+
+    if (($quote['status'] ?? '') !== 'draft') {
+        return ['success' => false, 'error' => '仅草稿状态可编辑明细'];
+    }
+
+    $items_input = $post_data['items'] ?? [];
+    if (!is_array($items_input)) {
+        return ['success' => false, 'error' => '提交的明细格式不正确'];
+    }
+
+    $normalized_items = [];
+
+    foreach ($items_input as $index => $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        $catalog_item_id = intval($item['catalog_item_id'] ?? 0);
+        $qty_raw = $item['qty'] ?? ($item['quantity'] ?? null);
+        $qty = is_numeric($qty_raw) ? floatval($qty_raw) : null;
+        $description = trim($item['description'] ?? '');
+        $unit = trim($item['unit'] ?? '');
+
+        // 判断是否为空行（完全未填写且无目录项）
+        $has_any_value = $catalog_item_id > 0
+            || ($qty !== null && $qty > 0)
+            || $description !== ''
+            || $unit !== '';
+        if (!$has_any_value) {
+            continue;
+        }
+
+        if ($catalog_item_id <= 0) {
+            return ['success' => false, 'error' => sprintf('第 %d 行未选择产品或服务', $index + 1)];
+        }
+
+        if ($qty === null || $qty <= 0) {
+            return ['success' => false, 'error' => sprintf('第 %d 行数量必须大于 0', $index + 1)];
+        }
+
+        if ($description !== '' && !validate_string_length($description, 500)) {
+            return ['success' => false, 'error' => sprintf('第 %d 行描述长度超过限制', $index + 1)];
+        }
+
+        if ($unit !== '' && !validate_string_length($unit, 20)) {
+            return ['success' => false, 'error' => sprintf('第 %d 行单位长度超过限制', $index + 1)];
+        }
+
+        // 单价（优先接收以分为单位的数值，若无则尝试由元转换）
+        $unit_price_cents = null;
+        if (isset($item['unit_price_cents']) && $item['unit_price_cents'] !== '') {
+            if (!is_numeric($item['unit_price_cents'])) {
+                return ['success' => false, 'error' => sprintf('第 %d 行单价格式不正确', $index + 1)];
+            }
+            $unit_price_cents = intval($item['unit_price_cents']);
+        } elseif (isset($item['unit_price']) && $item['unit_price'] !== '') {
+            $normalized_price = preg_replace('/[^\d.-]/', '', (string)$item['unit_price']);
+            if ($normalized_price === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_price)) {
+                return ['success' => false, 'error' => sprintf('第 %d 行单价格式不正确', $index + 1)];
+            }
+            $unit_price_cents = amount_to_cents($normalized_price);
+        }
+
+        if ($unit_price_cents !== null && $unit_price_cents < 0) {
+            return ['success' => false, 'error' => sprintf('第 %d 行单价必须为非负数', $index + 1)];
+        }
+
+        // 折扣金额
+        $discount_cents = 0;
+        if (isset($item['discount_cents']) && $item['discount_cents'] !== '') {
+            if (!is_numeric($item['discount_cents'])) {
+                return ['success' => false, 'error' => sprintf('第 %d 行折扣金额格式不正确', $index + 1)];
+            }
+            $discount_cents = intval($item['discount_cents']);
+        } elseif (isset($item['discount']) && $item['discount'] !== '') {
+            $normalized_discount = preg_replace('/[^\d.-]/', '', (string)$item['discount']);
+            if ($normalized_discount === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_discount)) {
+                return ['success' => false, 'error' => sprintf('第 %d 行折扣金额格式不正确', $index + 1)];
+            }
+            $discount_cents = amount_to_cents($normalized_discount);
+        }
+
+        if ($discount_cents < 0) {
+            $discount_cents = 0;
+        }
+
+        // 税率
+        $tax_rate_set = false;
+        $tax_rate_value = null;
+        if (isset($item['tax_rate']) && $item['tax_rate'] !== '') {
+            $tax_rate_value = floatval($item['tax_rate']);
+            if ($tax_rate_value < 0 || $tax_rate_value > 100) {
+                return ['success' => false, 'error' => sprintf('第 %d 行税率必须在 0-100 之间', $index + 1)];
+            }
+            $tax_rate_set = true;
+        }
+
+        $normalized = [
+            'catalog_item_id' => $catalog_item_id,
+            'qty' => $qty,
+            'discount_cents' => $discount_cents,
+        ];
+
+        if ($unit_price_cents !== null) {
+            $normalized['unit_price_cents'] = $unit_price_cents;
+        }
+
+        if ($tax_rate_set) {
+            $normalized['tax_rate'] = $tax_rate_value;
+        }
+
+        if ($description !== '') {
+            $normalized['description'] = $description;
+        }
+
+        if ($unit !== '') {
+            $normalized['unit'] = $unit;
+        }
+
+        $normalized_items[] = $normalized;
+    }
+
+    if (empty($normalized_items)) {
+        return ['success' => false, 'error' => '请至少保留一条有效的报价项目'];
+    }
+
+    return replace_quote_items($quote['id'], $normalized_items);
 }
 
 /**
@@ -2752,6 +3307,100 @@ function get_default_tax_rate() {
 function get_print_terms() {
     $settings = get_settings();
     return $settings['print_terms'] ?? '';
+}
+
+/**
+ * 判斷系統是否尚未初始化
+ *
+ * @return bool
+ */
+function requires_initial_setup() {
+    static $cached = null;
+
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    if (php_sapi_name() === 'cli') {
+        $cached = false;
+        return $cached;
+    }
+
+    if (defined('SKIP_INIT_REDIRECT') && SKIP_INIT_REDIRECT) {
+        $cached = false;
+        return $cached;
+    }
+
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url($requestUri, PHP_URL_PATH) ?: '';
+
+    if (strpos($path, 'init.php') !== false) {
+        $cached = false;
+        return $cached;
+    }
+
+    global $pdo;
+    if (!$pdo instanceof PDO) {
+        $cached = true;
+        return $cached;
+    }
+
+    $requiredTables = ['organizations', 'settings', 'quote_sequences'];
+
+    try {
+        $placeholders = implode(',', array_fill(0, count($requiredTables), '?'));
+        $stmt = $pdo->prepare(
+            "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ($placeholders)"
+        );
+        $stmt->execute($requiredTables);
+        $existing = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $missing = array_diff($requiredTables, $existing);
+        if (!empty($missing)) {
+            $cached = true;
+            return $cached;
+        }
+    } catch (Throwable $e) {
+        $cached = true;
+        return $cached;
+    }
+
+    try {
+        $orgCount = (int)$pdo->query("SELECT COUNT(*) FROM organizations")->fetchColumn();
+        $settingsCount = (int)$pdo->query("SELECT COUNT(*) FROM settings")->fetchColumn();
+        $sequenceCount = (int)$pdo->query("SELECT COUNT(*) FROM quote_sequences")->fetchColumn();
+
+        $cached = ($orgCount === 0 || $settingsCount === 0 || $sequenceCount === 0);
+        return $cached;
+    } catch (Throwable $e) {
+        $cached = true;
+        return $cached;
+    }
+}
+
+/**
+ * 若系統尚未初始化則導向初始化精靈
+ *
+ * @return void
+ */
+function redirect_to_init_if_needed() {
+    if (php_sapi_name() === 'cli') {
+        return;
+    }
+
+    if (defined('SKIP_INIT_REDIRECT') && SKIP_INIT_REDIRECT) {
+        return;
+    }
+
+    if (headers_sent()) {
+        return;
+    }
+
+    if (!requires_initial_setup()) {
+        return;
+    }
+
+    header('Location: /init.php');
+    exit;
 }
 
 // 文件末尾不需要关闭PHP标签，避免非预期输出
