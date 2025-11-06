@@ -63,7 +63,7 @@ Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系
      php init.php init      # 导入默认数据
      ```
    - 若仍需手动导入完整 Schema，可使用 `mysql -u root -p quotabase_lite < schema.sql`（该操作将重建数据库结构）。
-   - 初次启动会建立默认管理员帐号：`admin` / `admin123`，请尽快在「设置 → 账号与安全」页面更改密码。
+   - 初次启动会建立默认管理员帐号：`admin` / `Admin@123`（可通过环境变量 `DEFAULT_ADMIN_PASSWORD` 自定义），请尽快在「设置 → 账号与安全」页面更改密码。
 
 4. **设置权限**
    ```bash

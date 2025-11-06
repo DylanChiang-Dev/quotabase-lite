@@ -1129,33 +1129,38 @@ function create_users_table(PDO $pdo) {
 function ensure_default_admin_user(PDO $pdo) {
     create_users_table($pdo);
 
+    $defaultPassword = getenv('DEFAULT_ADMIN_PASSWORD') ?: 'Admin@123';
+    $passwordHash = password_hash($defaultPassword, PASSWORD_DEFAULT);
+
     try {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
         $stmt->execute(['admin']);
         $existing = $stmt->fetch();
-        if ($existing) {
-            return;
-        }
 
-        $insert = $pdo->prepare("
-            INSERT INTO users (org_id, username, password_hash, email, role, status)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
-        $insert->execute([
-            1,
-            'admin',
-            default_admin_password_hash(),
-            null,
-            'admin',
-            'active'
-        ]);
+        if ($existing) {
+            $update = $pdo->prepare("
+                UPDATE users
+                SET password_hash = ?, role = 'admin', status = 'active', updated_at = NOW()
+                WHERE id = ?
+            ");
+            $update->execute([$passwordHash, $existing['id']]);
+        } else {
+            $insert = $pdo->prepare("
+                INSERT INTO users (org_id, username, password_hash, email, role, status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
+            $insert->execute([
+                1,
+                'admin',
+                $passwordHash,
+                null,
+                'admin',
+                'active'
+            ]);
+        }
     } catch (Throwable $e) {
         error_log('Ensure default admin failed: ' . $e->getMessage());
     }
-}
-
-function default_admin_password_hash() {
-    return '$2y$10$O6KFFJvolG/GpNZgbf28OeCL4ZzOogzPOIu.TQ3BM4tiTnGooy2KW'; // 密碼：admin123
 }
 
 /**
