@@ -450,10 +450,9 @@ function config_setup_write_config($targetPath, $samplePath, array $formData) {
 }
 
 function config_setup_replace_define($content, $name, $value, $raw = false) {
-    $pattern = "/define\\('" . preg_quote($name, '/') . "',\\s*[^)]*\\);/";
-    $replacement = $raw
-        ? "define('{$name}', {$value});"
-        : "define('{$name}', {$value});";
+    $literal = $raw ? $value : $value;
+    $pattern = "~define\\('" . preg_quote($name, '~') . "',\\s*.*?\\);~s";
+    $replacement = "define('{$name}', {$literal});";
 
     $updated = preg_replace($pattern, $replacement, $content, 1, $count);
     if ($count === 0) {
@@ -490,7 +489,7 @@ define('CSRF_TOKEN_NAME', 'csrf_token');
 define('ENCRYPTION_KEY', 'secure_key');
 
 define('DEFAULT_TIMEZONE', 'Asia/Taipei');
-define('DISPLAY_TIMEZONE', DEFAULT_TIMEZONE);
+define('DISPLAY_TIMEZONE', 'Asia/Taipei');
 
 define('APP_NAME', 'Quotabase-Lite');
 define('APP_VERSION', '2.0.0');
