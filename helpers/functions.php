@@ -2001,13 +2001,21 @@ function get_quote($id) {
 function get_quote_items($quote_id) {
     $sql = "
         SELECT
-            qi.id, qi.qty as quantity, qi.unit_price_cents,
-            qi.line_subtotal_cents, qi.tax_rate, qi.line_tax_cents, qi.line_total_cents,
-            catalog.sku, catalog.name as item_name, catalog.unit
+            qi.id,
+            qi.qty as quantity,
+            qi.unit_price_cents,
+            qi.line_subtotal_cents,
+            qi.tax_rate,
+            qi.line_tax_cents,
+            qi.line_total_cents,
+            qi.line_order,
+            COALESCE(qi.description, catalog.name) AS item_name,
+            catalog.sku,
+            COALESCE(qi.unit, catalog.unit) AS unit
         FROM quote_items qi
         LEFT JOIN catalog_items catalog ON qi.catalog_item_id = catalog.id
         WHERE qi.quote_id = ?
-        ORDER BY qi.id ASC
+        ORDER BY qi.line_order ASC, qi.id ASC
     ";
     return dbQuery($sql, [$quote_id]);
 }
@@ -2082,6 +2090,7 @@ function create_quote($data, $items) {
             $total_tax = 0;
             $total_amount = 0;
 
+            $line_order = 1;
             foreach ($items as $item) {
                 if (empty($item['catalog_item_id']) || empty($item['qty'])) {
                     continue;
@@ -2092,6 +2101,9 @@ function create_quote($data, $items) {
                 if (!$catalog_item) {
                     throw new Exception('目录项不存在');
                 }
+
+                $description = $catalog_item['name'] ?? '未命名项目';
+                $unit = $catalog_item['unit'] ?? null;
 
                 // 计算行金额
                 $quantity = floatval($item['qty']);
@@ -2107,25 +2119,29 @@ function create_quote($data, $items) {
                 // 插入明细
                 $item_sql = "
                     INSERT INTO quote_items (
-                        quote_id, catalog_item_id, qty, unit_price_cents,
-                        tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        quote_id, catalog_item_id, description, qty, unit,
+                        unit_price_cents, tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents, line_order
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ";
 
                 dbExecute($item_sql, [
                     $quote_id,
                     $item['catalog_item_id'],
+                    $description,
                     $quantity,
+                    $unit,
                     $unit_price_cents,
                     $tax_rate,
                     $line_subtotal_cents,
                     $line_tax_cents,
-                    $line_total_cents
+                    $line_total_cents,
+                    $line_order
                 ]);
 
                 $total_subtotal += $line_subtotal_cents;
                 $total_tax += $line_tax_cents;
                 $total_amount += $line_total_cents;
+                $line_order++;
             }
 
             // 4. 更新报价单总额
@@ -2424,6 +2440,14 @@ function recalculate_quote_total($quote_id) {
     ]);
 }
 
+function get_next_quote_item_order($quote_id) {
+    $row = dbQueryOne(
+        "SELECT MAX(line_order) as max_order FROM quote_items WHERE quote_id = ?",
+        [$quote_id]
+    );
+    return (int)($row['max_order'] ?? 0) + 1;
+}
+
 /**
  * 添加报价项目
  *
@@ -2434,7 +2458,8 @@ function recalculate_quote_total($quote_id) {
 function add_quote_item($quote_id, $item_data) {
     try {
         // 验证数据
-        if (empty($item_data['catalog_item_id']) || empty($item_data['quantity'])) {
+        $quantity = floatval($item_data['qty'] ?? ($item_data['quantity'] ?? 0));
+        if (empty($item_data['catalog_item_id']) || $quantity <= 0) {
             return ['success' => false, 'error' => '缺少必要参数'];
         }
 
@@ -2445,30 +2470,37 @@ function add_quote_item($quote_id, $item_data) {
         }
 
         // 计算金额
-        $quantity = floatval($item_data['quantity']);
         $unit_price_cents = intval($catalog_item['unit_price_cents']);
         $tax_rate = floatval($catalog_item['tax_rate']);
+
+        $description = $catalog_item['name'] ?? '未命名项目';
+        $unit = $catalog_item['unit'] ?? null;
 
         $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents);
         $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
         $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
 
+        $line_order = get_next_quote_item_order($quote_id);
+
         // 插入项目
         $sql = "
             INSERT INTO quote_items (
-                quote_id, catalog_item_id, qty, unit_price_cents,
-                tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                quote_id, catalog_item_id, description, qty, unit,
+                unit_price_cents, tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents, line_order
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
         dbExecute($sql, [
             $quote_id,
             $item_data['catalog_item_id'],
+            $description,
             $quantity,
+            $unit,
             $unit_price_cents,
             $tax_rate,
             $line_subtotal_cents,
             $line_tax_cents,
-            $line_total_cents
+            $line_total_cents,
+            $line_order
         ]);
 
         $item_id = dbLastInsertId();
