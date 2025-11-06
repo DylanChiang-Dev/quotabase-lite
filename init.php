@@ -648,6 +648,8 @@ function initialize_system() {
             error_log("Created quote sequence for year=" . $current_year);
         }
 
+        ensure_default_admin_user($db->getConnection());
+
         $db->commit();
 
         return [
@@ -743,6 +745,7 @@ function get_schema_status() {
         'quote_items' => 'quote_items（報價項目）',
         'quote_sequences' => 'quote_sequences（年度序號）',
         'settings' => 'settings（系統設定）',
+        'users' => 'users（使用者）',
     ];
 
     foreach ($requiredTables as $table => $label) {
@@ -960,6 +963,25 @@ function install_database_schema() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
                 UNIQUE KEY uq_settings_org_id (org_id)
             ) ENGINE=InnoDB COMMENT='系统设置表'",
+
+            "CREATE TABLE IF NOT EXISTS users (
+                id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
+                username VARCHAR(100) NOT NULL COMMENT '登入帳號（唯一）',
+                password_hash VARCHAR(255) NOT NULL COMMENT '密碼雜湊',
+                email VARCHAR(255) NULL COMMENT '電子郵件',
+                role ENUM('admin', 'staff') NOT NULL DEFAULT 'admin' COMMENT '角色',
+                status ENUM('active', 'suspended') NOT NULL DEFAULT 'active' COMMENT '狀態',
+                last_login_at DATETIME NULL COMMENT '最後登入時間',
+                last_login_ip VARCHAR(45) NULL COMMENT '最後登入IP',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+                UNIQUE KEY uq_users_username (username),
+                UNIQUE KEY uq_users_email (email),
+                INDEX idx_users_org (org_id),
+                INDEX idx_users_status (status),
+                INDEX idx_users_role (role)
+            ) ENGINE=InnoDB COMMENT='系統使用者'",
         ];
 
         foreach ($tableStatements as $sql) {
@@ -975,6 +997,7 @@ function install_database_schema() {
 
         // 更新既有欄位
         ensure_schema_upgrades($pdo);
+        ensure_default_admin_user($pdo);
 
         // 重新建立儲存程序
         $pdo->exec("DROP PROCEDURE IF EXISTS next_quote_number");
@@ -1054,6 +1077,10 @@ function install_database_schema() {
  * @return void
  */
 function ensure_schema_upgrades(PDO $pdo) {
+    if (!table_exists($pdo, 'users')) {
+        create_users_table($pdo);
+    }
+
     if (table_exists($pdo, 'quote_items') && !column_exists($pdo, 'quote_items', 'discount_cents')) {
         $pdo->exec("ALTER TABLE quote_items
             ADD COLUMN discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金额（分）' AFTER unit_price_cents");
@@ -1070,6 +1097,63 @@ function ensure_schema_upgrades(PDO $pdo) {
             ADD CONSTRAINT fk_quotes_customer
             FOREIGN KEY (customer_id) REFERENCES customers(id)");
     }
+}
+
+function create_users_table(PDO $pdo) {
+    $sql = "
+        CREATE TABLE IF NOT EXISTS users (
+            id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
+            username VARCHAR(100) NOT NULL COMMENT '登入帳號（唯一）',
+            password_hash VARCHAR(255) NOT NULL COMMENT '密碼雜湊',
+            email VARCHAR(255) NULL COMMENT '電子郵件',
+            role ENUM('admin', 'staff') NOT NULL DEFAULT 'admin' COMMENT '角色',
+            status ENUM('active', 'suspended') NOT NULL DEFAULT 'active' COMMENT '狀態',
+            last_login_at DATETIME NULL COMMENT '最後登入時間',
+            last_login_ip VARCHAR(45) NULL COMMENT '最後登入IP',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+            UNIQUE KEY uq_users_username (username),
+            UNIQUE KEY uq_users_email (email),
+            INDEX idx_users_org (org_id),
+            INDEX idx_users_status (status),
+            INDEX idx_users_role (role)
+        ) ENGINE=InnoDB COMMENT='系統使用者'
+    ";
+
+    $pdo->exec($sql);
+}
+
+function ensure_default_admin_user(PDO $pdo) {
+    create_users_table($pdo);
+
+    try {
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+        $stmt->execute(['admin']);
+        $existing = $stmt->fetch();
+        if ($existing) {
+            return;
+        }
+
+        $insert = $pdo->prepare("
+            INSERT INTO users (org_id, username, password_hash, email, role, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $insert->execute([
+            1,
+            'admin',
+            default_admin_password_hash(),
+            null,
+            'admin',
+            'active'
+        ]);
+    } catch (Throwable $e) {
+        error_log('Ensure default admin failed: ' . $e->getMessage());
+    }
+}
+
+function default_admin_password_hash() {
+    return '$2y$10$O6KFFJvolG/GpNZgbf28OeCL4ZzOogzPOIu.TQ3BM4tiTnGooy2KW'; // 密碼：admin123
 }
 
 /**
@@ -1102,6 +1186,14 @@ function get_system_status() {
         $status['settings'] = $settings_count['count'];
     } catch (Exception $e) {
         $status['settings'] = 'ERROR';
+    }
+
+    // 檢查使用者
+    try {
+        $users_count = dbQueryOne("SELECT COUNT(*) as count FROM users");
+        $status['users'] = $users_count['count'];
+    } catch (Exception $e) {
+        $status['users'] = 'ERROR';
     }
 
     // 检查报价序号数据
@@ -1176,6 +1268,7 @@ if (php_sapi_name() === 'cli') {
             echo "  数据库: " . $status['database'] . "\n";
             echo "  组织数量: " . $status['organizations'] . "\n";
             echo "  设置数量: " . $status['settings'] . "\n";
+            echo "  使用者数量: " . $status['users'] . "\n";
             echo "  序号数量: " . $status['sequences'] . "\n";
             echo "  存储过程: " . $status['stored_procedure'] . "\n";
             echo "  資料表狀態: " . ($status['schema_ready'] ? '完整' : '需要處理') . "\n";

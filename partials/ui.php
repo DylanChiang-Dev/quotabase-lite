@@ -350,6 +350,9 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
             if ($required) {
                 echo ' required';
             }
+            if (!empty($attributes['readonly'])) {
+                echo ' readonly';
+            }
             echo '>';
             break;
     }

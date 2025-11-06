@@ -97,6 +97,18 @@ page_header('系统设置', [
         </div>
     <?php endif; ?>
 
+    <?php card_start('账号与安全'); ?>
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">
+            建议定期更新管理员密码，并为团队成员建立独立账号以便追踪操作记录。
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/settings/account.php" class="btn btn-primary">修改密码 / 帐号信息</a>
+            <?php if (($_SESSION['user_role'] ?? 'staff') === 'admin'): ?>
+                <a href="/settings/users.php" class="btn btn-secondary">使用者管理</a>
+            <?php endif; ?>
+        </div>
+    <?php card_end(); ?>
+
     <?php card_start('系统设置'); ?>
 
     <form method="POST" action="/settings/index.php">

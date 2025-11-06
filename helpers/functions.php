@@ -3310,6 +3310,90 @@ function get_print_terms() {
 }
 
 /**
+ * ========================================
+ * 使用者管理 (User Management)
+ * ========================================
+ */
+
+function get_user_by_username($username) {
+    return dbQueryOne("SELECT * FROM users WHERE username = ? LIMIT 1", [$username]);
+}
+
+function get_user_by_id($userId) {
+    return dbQueryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [$userId]);
+}
+
+function update_user_login_activity($userId, $ip = null) {
+    dbExecute(
+        "UPDATE users SET last_login_at = NOW(), last_login_ip = ? WHERE id = ?",
+        [$ip, $userId]
+    );
+}
+
+function update_user_password($userId, $newPassword) {
+    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+    return dbExecute(
+        "UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?",
+        [$hash, $userId]
+    ) > 0;
+}
+
+function create_user($data) {
+    $hash = password_hash($data['password'], PASSWORD_DEFAULT);
+    return dbExecute(
+        "INSERT INTO users (org_id, username, password_hash, email, role, status) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+            $data['org_id'] ?? get_current_org_id(),
+            $data['username'],
+            $hash,
+            $data['email'] ?? null,
+            $data['role'] ?? 'staff',
+            $data['status'] ?? 'active'
+        ]
+    );
+}
+
+function update_user_profile($userId, array $fields) {
+    $set = [];
+    $params = [];
+
+    if (array_key_exists('email', $fields)) {
+        $set[] = 'email = ?';
+        $params[] = $fields['email'];
+    }
+
+    if (array_key_exists('role', $fields)) {
+        $set[] = 'role = ?';
+        $params[] = $fields['role'];
+    }
+
+    if (array_key_exists('status', $fields)) {
+        $set[] = 'status = ?';
+        $params[] = $fields['status'];
+    }
+
+    if (empty($set)) {
+        return false;
+    }
+
+    $set[] = 'updated_at = NOW()';
+    $params[] = $userId;
+
+    return dbExecute(
+        'UPDATE users SET ' . implode(', ', $set) . ' WHERE id = ?',
+        $params
+    ) > 0;
+}
+
+function get_all_users() {
+    return dbQuery("SELECT id, org_id, username, email, role, status, last_login_at, last_login_ip, created_at FROM users ORDER BY created_at ASC");
+}
+
+function set_user_status($userId, $status) {
+    return update_user_profile($userId, ['status' => $status]);
+}
+
+/**
  * 判斷系統是否尚未初始化
  *
  * @return bool
@@ -3346,6 +3430,7 @@ function requires_initial_setup() {
     }
 
     $requiredTables = ['organizations', 'settings', 'quote_sequences'];
+    $requiredTables[] = 'users';
 
     try {
         $placeholders = implode(',', array_fill(0, count($requiredTables), '?'));
@@ -3368,8 +3453,9 @@ function requires_initial_setup() {
         $orgCount = (int)$pdo->query("SELECT COUNT(*) FROM organizations")->fetchColumn();
         $settingsCount = (int)$pdo->query("SELECT COUNT(*) FROM settings")->fetchColumn();
         $sequenceCount = (int)$pdo->query("SELECT COUNT(*) FROM quote_sequences")->fetchColumn();
+        $userCount = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 
-        $cached = ($orgCount === 0 || $settingsCount === 0 || $sequenceCount === 0);
+        $cached = ($orgCount === 0 || $settingsCount === 0 || $sequenceCount === 0 || $userCount === 0);
         return $cached;
     } catch (Throwable $e) {
         $cached = true;

@@ -134,6 +134,7 @@ CREATE TABLE quote_items (
     qty DECIMAL(18,4) NOT NULL COMMENT '数量（精确到0.0001）',
     unit VARCHAR(20) NULL COMMENT '单位',
     unit_price_cents BIGINT UNSIGNED NOT NULL COMMENT '单价（分）',
+    discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金额（分）',
     tax_rate DECIMAL(5,2) NOT NULL COMMENT '税率（%）',
     line_subtotal_cents BIGINT UNSIGNED NOT NULL COMMENT '行小计（分）',
     line_tax_cents BIGINT UNSIGNED NOT NULL COMMENT '行税额（分）',
@@ -179,6 +180,30 @@ CREATE TABLE settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     UNIQUE KEY uq_settings_org_id (org_id)
 ) ENGINE=InnoDB COMMENT='系统设置表';
+
+-- ========================================
+-- 8. Users (使用者)
+-- 存储系统使用者及登入資訊
+-- ========================================
+
+CREATE TABLE users (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
+    username VARCHAR(100) NOT NULL COMMENT '登入帳號（唯一）',
+    password_hash VARCHAR(255) NOT NULL COMMENT '密碼雜湊',
+    email VARCHAR(255) NULL COMMENT '電子郵件',
+    role ENUM('admin', 'staff') NOT NULL DEFAULT 'admin' COMMENT '角色',
+    status ENUM('active', 'suspended') NOT NULL DEFAULT 'active' COMMENT '狀態',
+    last_login_at DATETIME NULL COMMENT '最後登入時間',
+    last_login_ip VARCHAR(45) NULL COMMENT '最後登入IP',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    UNIQUE KEY uq_users_username (username),
+    UNIQUE KEY uq_users_email (email),
+    INDEX idx_users_org (org_id),
+    INDEX idx_users_status (status),
+    INDEX idx_users_role (role)
+) ENGINE=InnoDB COMMENT='系統使用者';
 
 -- ========================================
 -- 外键约束 (Foreign Key Constraints)
@@ -270,6 +295,18 @@ INSERT INTO settings (
 INSERT INTO quote_sequences (org_id, prefix, year, current_number) VALUES
 (1, 'Q', YEAR(NOW()), 0);
 
+-- 插入預設管理員帳號（預設密碼：admin123）
+INSERT INTO users (
+    org_id, username, password_hash, email, role, status
+) VALUES (
+    1,
+    'admin',
+    '$2y$10$O6KFFJvolG/GpNZgbf28OeCL4ZzOogzPOIu.TQ3BM4tiTnGooy2KW',
+    NULL,
+    'admin',
+    'active'
+);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ========================================
@@ -282,6 +319,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Quote Items: 2 个索引 (quote_id, quote_id+line_order)
 -- Quote Sequences: 1 个索引 (org_id+year UNIQUE)
 -- Settings: 1 个索引 (org_id UNIQUE)
+-- Users: 4 个索引 (username UNIQUE, email UNIQUE, org_id, status)
 
 -- ========================================
 -- 数据类型说明 (Data Type Justification)

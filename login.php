@@ -43,27 +43,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = '密码长度至少6位。';
         } else {
             try {
-                // 验证登录（这里使用简单的用户验证，生产环境应使用更安全的密码哈希）
-                // TODO: 在实际实现中，应该使用password_hash()和password_verify()
-                if ($username === 'admin' && $password === 'admin123') {
-                    // 登录成功，设置会话
-                    session_regenerate_id(true); // 防止会话固定攻击
+                $user = get_user_by_username($username);
 
-                    $_SESSION['user_id'] = 1;
-                    $_SESSION['user_name'] = $username;
-                    $_SESSION['org_id'] = DEFAULT_ORG_ID;
+                if (!$user) {
+                    $error = '用户名或密码错误。';
+                    error_log("Failed login attempt (not found): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
+                } elseif ($user['status'] !== 'active') {
+                    $error = '账号已被停用，请联系管理员。';
+                    error_log("Blocked login attempt (suspended): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
+                } elseif (!password_verify($password, $user['password_hash'])) {
+                    $error = '用户名或密码错误。';
+                    error_log("Failed login attempt (bad password): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
+                } else {
+                    session_regenerate_id(true);
+
+                    $_SESSION['user_id'] = (int)$user['id'];
+                    $_SESSION['user_name'] = $user['username'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['org_id'] = (int)($user['org_id'] ?? DEFAULT_ORG_ID);
                     $_SESSION['login_time'] = time();
                     $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'] ?? '';
 
-                    // 记录登录日志
+                    update_user_login_activity($user['id'], $_SESSION['ip_address']);
+
                     error_log("User logged in: " . $username . " from " . $_SESSION['ip_address']);
 
-                    // 重定向到首页
                     header('Location: /');
                     exit;
-                } else {
-                    $error = '用户名或密码错误。';
-                    error_log("Failed login attempt: " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
                 }
             } catch (Exception $e) {
                 error_log("Login error: " . $e->getMessage());
