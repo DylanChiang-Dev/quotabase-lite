@@ -46,7 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'company_name' => trim($_POST['company_name'] ?? ''),
             'company_address' => trim($_POST['company_address'] ?? ''),
             'print_terms' => trim($_POST['print_terms'] ?? ''),
-            'company_contact' => trim($_POST['company_contact'] ?? '')
+            'company_contact' => trim($_POST['company_contact'] ?? ''),
+            'company_tax_id' => trim($_POST['company_tax_id'] ?? '')
         ];
 
         // 更新设置
@@ -112,43 +113,31 @@ page_header('系统设置', [
                 公司信息
             </h3>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
                 <?php
                 form_field('company_name', '公司名称', 'text', [], [
                     'required' => true,
                     'placeholder' => '请输入公司名称',
                     'value' => $settings['company_name'] ?? ''
                 ]);
-                ?>
 
-                <?php
-                form_field('company_address', '公司地址', 'textarea', [], [
+                form_field('company_contact', '联系电话', 'text', [], [
+                    'placeholder' => '例：(02)1234-5678',
+                    'value' => $settings['company_contact'] ?? '',
+                    'help' => '建议填写主要联络电话（50字内）'
+                ]);
+
+                form_field('company_address', '公司地址', 'text', [], [
                     'placeholder' => '请输入公司地址',
-                    'rows' => 3,
                     'value' => $settings['company_address'] ?? ''
                 ]);
-                ?>
 
-                <?php
-                form_field('company_contact', '联系方式 / 统一编号', 'text', [], [
-                    'placeholder' => '例：电话：(02)1234-5678；Email：info@example.com',
-                    'value' => $settings['company_contact'] ?? '',
-                    'help' => '可填写电话、邮箱或统一编号等资讯（255字内）'
+                form_field('company_tax_id', '统一编号', 'text', [], [
+                    'placeholder' => '例：12345678',
+                    'value' => $settings['company_tax_id'] ?? '',
+                    'help' => '最多50字，若无可留空'
                 ]);
                 ?>
-            </div>
-        </div>
-
-        <!-- 报价设置 -->
-        <div style="margin-bottom: 32px;">
-            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color: var(--primary-color);">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                报价设置
-            </h3>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
             </div>
         </div>
 
@@ -199,9 +188,9 @@ page_header('系统设置', [
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">显示时区：</span>
+                    <span style="color: var(--text-secondary);">统一编号：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo h($settings['timezone'] ?? (defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei')); ?>
+                        <?php echo !empty($settings['company_tax_id']) ? h($settings['company_tax_id']) : '未设置'; ?>
                     </span>
                 </div>
             </div>

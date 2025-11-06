@@ -3093,6 +3093,7 @@ function get_settings() {
             'company_name' => '',
             'company_address' => '',
             'company_contact' => '',
+            'company_tax_id' => '',
             'quote_prefix' => 'Q',
             'default_tax_rate' => 0.00,
             'print_terms' => '',
@@ -3135,8 +3136,12 @@ function update_settings($data) {
             $errors[] = '公司地址长度不能超过2000个字符';
         }
 
-        if (!empty($data['company_contact']) && !validate_string_length($data['company_contact'], 255)) {
-            $errors[] = '公司联系方式长度不能超过255个字符';
+        if (!empty($data['company_contact']) && !validate_string_length($data['company_contact'], 50)) {
+            $errors[] = '联系电话长度不能超过50个字符';
+        }
+
+        if (!empty($data['company_tax_id']) && !validate_string_length($data['company_tax_id'], 50)) {
+            $errors[] = '统一编号长度不能超过50个字符';
         }
 
         if (!empty($data['print_terms']) && !validate_string_length($data['print_terms'], 5000)) {
@@ -3153,6 +3158,7 @@ function update_settings($data) {
             'company_name' => trim($data['company_name'] ?? ''),
             'company_address' => trim($data['company_address'] ?? ''),
             'company_contact' => trim($data['company_contact'] ?? ''),
+            'company_tax_id' => trim($data['company_tax_id'] ?? ''),
             'print_terms' => trim($data['print_terms'] ?? ''),
             'default_tax_rate' => 0.00,
             'quote_prefix' => 'Q',
@@ -3179,7 +3185,19 @@ function update_settings($data) {
             dbExecute($sql, $values);
         }
 
-        dbExecute("UPDATE quote_sequences SET prefix = 'Q' WHERE org_id = ?", [$org_id]);
+        $current_year = date('Y');
+        $sequence_exists = dbQueryOne("SELECT id FROM quote_sequences WHERE org_id = ? AND year = ? LIMIT 1", [$org_id, $current_year]);
+        if ($sequence_exists) {
+            dbExecute(
+                "UPDATE quote_sequences SET prefix = 'Q' WHERE org_id = ? AND year = ?",
+                [$org_id, $current_year]
+            );
+        } else {
+            dbExecute(
+                "INSERT INTO quote_sequences (org_id, prefix, year, current_number) VALUES (?, 'Q', ?, 0)",
+                [$org_id, $current_year]
+            );
+        }
 
         return [
             'success' => true,
@@ -3205,7 +3223,8 @@ function get_company_info() {
     return [
         'name' => $settings['company_name'] ?? '',
         'address' => $settings['company_address'] ?? '',
-        'contact' => $settings['company_contact'] ?? ''
+        'contact' => $settings['company_contact'] ?? '',
+        'tax_id' => $settings['company_tax_id'] ?? ''
     ];
 }
 

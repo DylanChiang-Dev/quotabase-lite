@@ -172,6 +172,7 @@ CREATE TABLE settings (
     company_name VARCHAR(255) NULL COMMENT '公司名称',
     company_address TEXT NULL COMMENT '公司地址',
     company_contact VARCHAR(255) NULL COMMENT '公司联系方式',
+    company_tax_id VARCHAR(50) NULL COMMENT '公司统一编号',
     quote_prefix VARCHAR(10) NOT NULL DEFAULT 'Q' COMMENT '报价单编号前缀',
     default_tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '默认税率（%）',
     print_terms TEXT NULL COMMENT '打印条款文字',
@@ -279,15 +280,17 @@ INSERT INTO organizations (id, name) VALUES (1, '默认组织');
 
 -- 插入默认设置
 INSERT INTO settings (
-    org_id, company_name, company_address, company_contact,
-    quote_prefix, default_tax_rate, timezone
+    org_id, company_name, company_address, company_contact, company_tax_id,
+    quote_prefix, default_tax_rate, print_terms, timezone
 ) VALUES (
     1,
     '您的公司名称',
     '公司地址',
     '联系电话',
+    '',
     'Q',
     5.00,
+    '',
     'Asia/Taipei'
 );
 

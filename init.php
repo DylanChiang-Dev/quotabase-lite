@@ -1099,6 +1099,11 @@ function ensure_schema_upgrades(PDO $pdo) {
             ADD CONSTRAINT fk_quotes_customer
             FOREIGN KEY (customer_id) REFERENCES customers(id)");
     }
+
+    if (table_exists($pdo, 'settings') && !column_exists($pdo, 'settings', 'company_tax_id')) {
+        $pdo->exec("ALTER TABLE settings
+            ADD COLUMN company_tax_id VARCHAR(50) NULL COMMENT '公司统一编号' AFTER company_contact");
+    }
 }
 
 function create_users_table(PDO $pdo) {
