@@ -13,6 +13,9 @@ define('QUOTABASE_SYSTEM', true);
 // 加载配置
 require_once __DIR__ . '/config.php';
 
+// 系統尚未初始化則自動導向初始化精靈
+redirect_to_init_if_needed();
+
 // 检查是否已登录
 if (!is_logged_in()) {
     // 未登录，重定向到登录页
