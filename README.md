@@ -42,19 +42,26 @@ Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系
    cd quotabase-lite
    ```
 
-2. **配置数据库**
+2. **创建数据库**
    ```bash
    mysql -u root -p
    CREATE DATABASE quotabase_lite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    EXIT;
-   mysql -u root -p quotabase_lite < schema.sql
    ```
+   > 数据库只需创建为空的 `quotabase_lite`，数据表稍后会通过初始化精灵自动生成。
 
-3. **配置应用**
+3. **配置并初始化应用**
    ```bash
    cp config.php.sample config.php
-   # 编辑 config.php 配置数据库连接等信息
+   # 编辑 config.php 配置数据库连接、加密密钥等信息
    ```
+   - 完成配置后，通过浏览器打开 `https://你的域名/init.php`，按照三个步骤建立数据表并导入默认数据。
+   - 若偏好使用命令行，可执行：
+     ```bash
+     php init.php install   # 建立 / 更新数据表
+     php init.php init      # 导入默认数据
+     ```
+   - 若仍需手动导入完整 Schema，可使用 `mysql -u root -p quotabase_lite < schema.sql`（该操作将重建数据库结构）。
 
 4. **设置权限**
    ```bash
@@ -77,8 +84,10 @@ Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系
 
 3. 初始化数据库（第一次执行）
    ```bash
+   docker compose exec app php init.php install
    docker compose exec app php init.php init
    ```
+   > 亦可直接访问 `http://localhost:8080/init.php`，使用前端初始化精灵完成同样流程。
 
 4. 访问应用
    - 应用：http://localhost:8080
@@ -90,6 +99,25 @@ Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系
    ```
 
 开发过程中代码会透过 volume 映射到容器内，修改后直接刷新浏览器即可；如需查看记录，可执行 `docker compose logs -f app`。
+
+## 🔄 升级指南
+
+### 新增报价折扣栏位（v2.1.0+）
+
+已上线环境需先执行数据库 ALTER：
+
+```bash
+# 本地环境
+mysql -u <db_user> -p<db_password> quotabase_lite < database/migrations/20251106_quote_items_discount.sql
+
+# Docker 环境（先 docker cp 迁移文件至 /tmp 或其它可访问目录）
+docker compose cp database/migrations/20251106_quote_items_discount.sql db:/tmp/quote_discount.sql
+docker compose exec db mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /tmp/quote_discount.sql
+```
+
+执行完成后即可在报价编辑页使用折扣功能。
+
+> 自 v2.1.0 起，也可以在服务器上执行 `php init.php install` 或通过初始化精灵补齐 `discount_cents` 字段，适合无法离线执行 SQL 时使用。
 
 ## 📖 使用指南
 
