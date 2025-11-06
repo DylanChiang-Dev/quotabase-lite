@@ -432,8 +432,9 @@ function config_setup_write_config($targetPath, $samplePath, array $formData) {
     $content = config_setup_replace_define($content, 'DB_NAME', var_export($formData['db_name'], true));
     $content = config_setup_replace_define($content, 'DB_USER', var_export($formData['db_user'], true));
     $content = config_setup_replace_define($content, 'DB_PASS', var_export($formData['db_pass'], true));
-    $content = config_setup_replace_define($content, 'DEFAULT_TIMEZONE', var_export($formData['timezone'] ?: 'Asia/Taipei', true));
-    $content = config_setup_replace_define($content, 'DISPLAY_TIMEZONE', 'DEFAULT_TIMEZONE', true);
+    $timezoneLiteral = var_export($formData['timezone'] ?: 'Asia/Taipei', true);
+    $content = config_setup_replace_define($content, 'DEFAULT_TIMEZONE', $timezoneLiteral, true);
+    $content = config_setup_replace_define($content, 'DISPLAY_TIMEZONE', $timezoneLiteral, true);
     $content = config_setup_replace_define($content, 'ENCRYPTION_KEY', var_export($formData['encryption_key'], true));
 
     if ($content === null) {
