@@ -143,7 +143,7 @@ page_header('产品管理', [
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单位</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
-                        <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">操作</th>
+                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,16 +186,8 @@ page_header('产品管理', [
                                     <?php echo number_format($product['tax_rate'], 2); ?>%
                                 </div>
                             </td>
-                            <td style="padding: 16px 12px; text-align: center;">
-                                <div style="display: flex; gap: 8px; justify-content: center;">
-                                    <a
-                                        href="/products/edit.php?id=<?php echo $product['id']; ?>"
-                                        class="btn btn-sm btn-outline"
-                                        title="编辑"
-                                    >
-                                        编辑
-                                    </a>
-                                </div>
+                            <td style="padding: 16px 12px; text-align: right;">
+                                <a href="/products/edit.php?id=<?php echo h($product['id']); ?>" class="btn btn-secondary btn-compact">查看 / 编辑</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
