@@ -172,7 +172,7 @@ page_header('使用者管理', [
             <div style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
                 <?php
                 form_field('password', '初始密碼', 'password', [], [
-                    'placeholder' => '至少8碼，含大小寫、數字、符號',
+                    'placeholder' => '至少8碼，包含字母與數字',
                     'required' => true
                 ]);
                 form_field('confirm_password', '確認密碼', 'password', [], [

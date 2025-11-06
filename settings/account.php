@@ -33,12 +33,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = '無效的請求，請重新嘗試。';
     } else {
+        $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
 
         $changes = [];
+
+        if ($username === '') {
+            $error = '登入帳號不可為空。';
+        } elseif (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
+            $error = '帳號需為3-50字的英數字或底線組合。';
+        } elseif ($username !== $user['username']) {
+            $existing = get_user_by_username($username);
+            if ($existing && (int)$existing['id'] !== (int)$user['id']) {
+                $error = '帳號已被使用，請選擇其他名稱。';
+            } else {
+                $changes['username'] = $username;
+            }
+        }
 
         if ($email !== ($user['email'] ?? '')) {
             if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -67,6 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$error && !empty($changes)) {
             update_user_profile($userId, $changes);
+            if (isset($changes['username'])) {
+                $_SESSION['user_name'] = $changes['username'];
+            }
         }
 
         if (!$error && $changePassword) {
@@ -115,7 +132,8 @@ page_header('帳號與安全', [
                 <?php
                 form_field('username', '登入帳號', 'text', [], [
                     'value' => $user['username'],
-                    'readonly' => true
+                    'required' => true,
+                    'placeholder' => '3-50 字，僅限英數字與底線'
                 ]);
                 ?>
             </div>
@@ -133,7 +151,7 @@ page_header('帳號與安全', [
             <div style="margin-bottom: 24px;">
                 <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">更新密碼</h3>
                 <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
-                    若需更改密碼，請輸入目前密碼與新的密碼。密碼需至少8碼，包含大小寫、數字與特殊符號。
+                    若需更改密碼，請輸入目前密碼與新的密碼。密碼需至少8碼，包含字母與數字。
                 </p>
 
                 <div style="display: grid; gap: 20px;">

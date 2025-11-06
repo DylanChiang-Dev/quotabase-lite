@@ -149,20 +149,12 @@ function validate_password_strength($password) {
         $errors[] = '密码长度至少8位';
     }
 
-    if (!preg_match('/[a-z]/', $password)) {
-        $errors[] = '密码必须包含小写字母';
-    }
-
-    if (!preg_match('/[A-Z]/', $password)) {
-        $errors[] = '密码必须包含大写字母';
+    if (!preg_match('/[A-Za-z]/', $password)) {
+        $errors[] = '密码必须包含字母';
     }
 
     if (!preg_match('/[0-9]/', $password)) {
         $errors[] = '密码必须包含数字';
-    }
-
-    if (!preg_match('/[^a-zA-Z0-9]/', $password)) {
-        $errors[] = '密码必须包含特殊字符';
     }
 
     return [
@@ -3356,6 +3348,11 @@ function create_user($data) {
 function update_user_profile($userId, array $fields) {
     $set = [];
     $params = [];
+
+    if (array_key_exists('username', $fields)) {
+        $set[] = 'username = ?';
+        $params[] = $fields['username'];
+    }
 
     if (array_key_exists('email', $fields)) {
         $set[] = 'email = ?';

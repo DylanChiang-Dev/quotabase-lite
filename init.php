@@ -1129,7 +1129,7 @@ function create_users_table(PDO $pdo) {
 function ensure_default_admin_user(PDO $pdo) {
     create_users_table($pdo);
 
-    $defaultPassword = getenv('DEFAULT_ADMIN_PASSWORD') ?: 'Admin@123';
+    $defaultPassword = getenv('DEFAULT_ADMIN_PASSWORD') ?: 'Admin1234';
     $passwordHash = password_hash($defaultPassword, PASSWORD_DEFAULT);
 
     try {
