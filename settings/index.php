@@ -45,19 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = [
             'company_name' => trim($_POST['company_name'] ?? ''),
             'company_address' => trim($_POST['company_address'] ?? ''),
-            'quote_prefix' => strtoupper(trim($_POST['quote_prefix'] ?? 'Q')),
             'print_terms' => trim($_POST['print_terms'] ?? ''),
-            'company_contact' => trim($_POST['company_contact'] ?? ''),
-            'timezone' => trim($_POST['timezone'] ?? '')
+            'company_contact' => trim($_POST['company_contact'] ?? '')
         ];
-
-        if ($data['quote_prefix'] === '') {
-            $data['quote_prefix'] = 'Q';
-        }
-
-        if ($data['timezone'] === '') {
-            $data['timezone'] = defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei';
-        }
 
         // 更新设置
         $result = update_settings($data);
@@ -159,22 +149,6 @@ page_header('系统设置', [
             </h3>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                <?php
-                form_field('quote_prefix', '报价单编号前缀', 'text', [], [
-                    'required' => true,
-                    'placeholder' => 'Q',
-                    'value' => $settings['quote_prefix'] ?? 'Q',
-                    'help' => '用于生成报价单编号的前缀，如 Q-2025001'
-                ]);
-                ?>
-
-                <?php
-                form_field('timezone', '显示时区', 'text', [], [
-                    'placeholder' => '例如：Asia/Taipei',
-                    'value' => $settings['timezone'] ?? (defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei'),
-                    'help' => '输入有效的 PHP 时区标识，例如 Asia/Taipei'
-                ]);
-                ?>
             </div>
         </div>
 
@@ -209,7 +183,7 @@ page_header('系统设置', [
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-secondary);">编号前缀：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo h($settings['quote_prefix'] ?? 'Q'); ?>-<span style="color: var(--text-tertiary);">[自动编号]</span>
+                        Q-<span style="color: var(--text-tertiary);">[自动编号]</span>
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
@@ -235,7 +209,7 @@ page_header('系统设置', [
             <div style="margin-top: 16px; padding: 12px; background: var(--bg-primary); border-radius: var(--border-radius-sm); border-left: 4px solid var(--primary-color);">
                 <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
                     <strong>预览示例：</strong><br>
-                    报价单号：<?php echo h($settings['quote_prefix'] ?? 'Q'); ?>-2025001<br>
+                    报价单号：Q-2025001<br>
                     客户信息将在此处显示<br>
                     报价项目明细...<br>
                     <?php if (!empty($settings['print_terms'])): ?>

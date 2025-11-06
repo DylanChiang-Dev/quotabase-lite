@@ -3125,22 +3125,10 @@ function update_settings($data) {
     try {
         $org_id = get_current_org_id();
 
-        if (array_key_exists('quote_prefix', $data)) {
-            $data['quote_prefix'] = strtoupper(trim($data['quote_prefix']));
-            if ($data['quote_prefix'] === '') {
-                $data['quote_prefix'] = 'Q';
-            }
-        }
-
-        // 验证输入
         $errors = [];
 
         if (!empty($data['company_name']) && !validate_string_length($data['company_name'], 255)) {
             $errors[] = '公司名称长度不正确';
-        }
-
-        if (!empty($data['quote_prefix']) && !preg_match('/^[A-Z]{1,10}$/', $data['quote_prefix'])) {
-            $errors[] = '编号前缀必须为1-10个大写字母';
         }
 
         if (!empty($data['company_address']) && !validate_string_length($data['company_address'], 2000)) {
@@ -3155,86 +3143,43 @@ function update_settings($data) {
             $errors[] = '打印条款长度不能超过5000个字符';
         }
 
-        if (!empty($data['timezone'])) {
-            if (!validate_string_length($data['timezone'], 50)) {
-                $errors[] = '时区长度不能超过50个字符';
-            } elseif (!in_array($data['timezone'], timezone_identifiers_list())) {
-                $errors[] = '请输入有效的时区标识符';
-            }
-        }
-
         if (!empty($errors)) {
             return ['success' => false, 'error' => implode('；', $errors)];
         }
 
-        // 构建更新SQL
-        $update_fields = [];
-        $params = [];
+        $defaultTimezone = defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei';
 
-        $allowed_fields = [
-            'company_name',
-            'company_address',
-            'quote_prefix',
-            'print_terms',
-            'company_contact',
-            'timezone'
+        $fields = [
+            'company_name' => trim($data['company_name'] ?? ''),
+            'company_address' => trim($data['company_address'] ?? ''),
+            'company_contact' => trim($data['company_contact'] ?? ''),
+            'print_terms' => trim($data['print_terms'] ?? ''),
+            'default_tax_rate' => 0.00,
+            'quote_prefix' => 'Q',
+            'timezone' => $defaultTimezone
         ];
 
-        foreach ($allowed_fields as $field) {
-            if (array_key_exists($field, $data)) {
-                $update_fields[] = "$field = ?";
-                if ($field === 'timezone') {
-                    $params[] = $data[$field] ?: (defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei');
-                } elseif ($field === 'quote_prefix') {
-                    $params[] = $data[$field] ?: 'Q';
-                } else {
-                    $params[] = trim($data[$field]);
-                }
-            }
-        }
-
-        if (empty($update_fields)) {
-            return ['success' => false, 'error' => '没有要更新的字段'];
-        }
-
-        // 检查设置是否存在
         $exists = dbQueryOne("SELECT id FROM settings WHERE org_id = ?", [$org_id]);
 
         if ($exists) {
-            // 更新现有设置
-            $sql = "UPDATE settings SET " . implode(', ', $update_fields) . " WHERE org_id = ?";
+            $setParts = [];
+            $params = [];
+            foreach ($fields as $column => $value) {
+                $setParts[] = "{$column} = ?";
+                $params[] = $value;
+            }
             $params[] = $org_id;
+            $sql = "UPDATE settings SET " . implode(', ', $setParts) . " WHERE org_id = ?";
             dbExecute($sql, $params);
         } else {
-            // 创建新设置
-            $insert_fields = array_merge(['org_id'], array_keys(array_intersect_key($data, array_flip($allowed_fields))));
-            $insert_values = array_merge([$org_id], array_map(function($key) use ($data) {
-                if ($key === 'default_tax_rate') {
-                    return floatval($data[$key]);
-                }
-                if ($key === 'timezone') {
-                    return $data[$key] ?: (defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei');
-                }
-                if ($key === 'quote_prefix') {
-                    return $data[$key] ?: 'Q';
-                }
-                return trim($data[$key]);
-            }, array_keys(array_intersect_key($data, array_flip($allowed_fields)))));
-
+            $insert_fields = array_merge(['org_id'], array_keys($fields));
             $placeholders = str_repeat('?,', count($insert_fields) - 1) . '?';
+            $values = array_merge([$org_id], array_values($fields));
             $sql = "INSERT INTO settings (" . implode(', ', $insert_fields) . ") VALUES ($placeholders)";
-            dbExecute($sql, $insert_values);
+            dbExecute($sql, $values);
         }
 
-        // 同步年度编号前缀
-        $prefix_for_sync = 'Q';
-        if (array_key_exists('quote_prefix', $data) && $data['quote_prefix'] !== '') {
-            $prefix_for_sync = $data['quote_prefix'];
-        } else {
-            $existing_settings = get_settings();
-            $prefix_for_sync = !empty($existing_settings['quote_prefix']) ? $existing_settings['quote_prefix'] : 'Q';
-        }
-        dbExecute("UPDATE quote_sequences SET prefix = ? WHERE org_id = ?", [$prefix_for_sync, $org_id]);
+        dbExecute("UPDATE quote_sequences SET prefix = 'Q' WHERE org_id = ?", [$org_id]);
 
         return [
             'success' => true,
