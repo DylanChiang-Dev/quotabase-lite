@@ -46,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'company_name' => trim($_POST['company_name'] ?? ''),
             'company_address' => trim($_POST['company_address'] ?? ''),
             'quote_prefix' => strtoupper(trim($_POST['quote_prefix'] ?? 'Q')),
-            'default_tax_rate' => floatval($_POST['default_tax_rate'] ?? 0),
             'print_terms' => trim($_POST['print_terms'] ?? ''),
             'company_contact' => trim($_POST['company_contact'] ?? ''),
             'timezone' => trim($_POST['timezone'] ?? '')
@@ -170,16 +169,6 @@ page_header('系统设置', [
                 ?>
 
                 <?php
-                // 默认税率选择
-                $selected_tax = $settings['default_tax_rate'] ?? 0;
-                form_field('default_tax_rate', '默认税率', 'select', TAX_RATES, [
-                    'required' => true,
-                    'selected' => (string)$selected_tax,
-                    'help' => '新创建的产品/服务将使用此默认税率'
-                ]);
-                ?>
-
-                <?php
                 form_field('timezone', '显示时区', 'text', [], [
                     'placeholder' => '例如：Asia/Taipei',
                     'value' => $settings['timezone'] ?? (defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei'),
@@ -221,12 +210,6 @@ page_header('系统设置', [
                     <span style="color: var(--text-secondary);">编号前缀：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
                         <?php echo h($settings['quote_prefix'] ?? 'Q'); ?>-<span style="color: var(--text-tertiary);">[自动编号]</span>
-                    </span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">默认税率：</span>
-                    <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo number_format($settings['default_tax_rate'] ?? 0, 2); ?>%
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">

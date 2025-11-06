@@ -3151,10 +3151,6 @@ function update_settings($data) {
             $errors[] = '公司联系方式长度不能超过255个字符';
         }
 
-        if (!empty($data['default_tax_rate']) && ($data['default_tax_rate'] < 0 || $data['default_tax_rate'] > 100)) {
-            $errors[] = '默认税率必须在0-100之间';
-        }
-
         if (!empty($data['print_terms']) && !validate_string_length($data['print_terms'], 5000)) {
             $errors[] = '打印条款长度不能超过5000个字符';
         }
@@ -3179,7 +3175,6 @@ function update_settings($data) {
             'company_name',
             'company_address',
             'quote_prefix',
-            'default_tax_rate',
             'print_terms',
             'company_contact',
             'timezone'
@@ -3188,9 +3183,7 @@ function update_settings($data) {
         foreach ($allowed_fields as $field) {
             if (array_key_exists($field, $data)) {
                 $update_fields[] = "$field = ?";
-                if ($field === 'default_tax_rate') {
-                    $params[] = floatval($data[$field]);
-                } elseif ($field === 'timezone') {
+                if ($field === 'timezone') {
                     $params[] = $data[$field] ?: (defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei');
                 } elseif ($field === 'quote_prefix') {
                     $params[] = $data[$field] ?: 'Q';
