@@ -2001,7 +2001,7 @@ function get_quote($id) {
 function get_quote_items($quote_id) {
     $sql = "
         SELECT
-            qi.id, qi.quantity, qi.unit_price_cents,
+            qi.id, qi.qty as quantity, qi.unit_price_cents,
             qi.line_subtotal_cents, qi.tax_rate, qi.line_tax_cents, qi.line_total_cents,
             catalog.sku, catalog.name as item_name, catalog.unit
         FROM quote_items qi
@@ -2083,7 +2083,7 @@ function create_quote($data, $items) {
             $total_amount = 0;
 
             foreach ($items as $item) {
-                if (empty($item['catalog_item_id']) || empty($item['quantity'])) {
+                if (empty($item['catalog_item_id']) || empty($item['qty'])) {
                     continue;
                 }
 
@@ -2094,7 +2094,7 @@ function create_quote($data, $items) {
                 }
 
                 // 计算行金额
-                $quantity = floatval($item['quantity']);
+                $quantity = floatval($item['qty']);
                 $unit_price_cents = intval($catalog_item['unit_price_cents']);
                 $tax_rate = $catalog_item['tax_rate'] !== null && $catalog_item['tax_rate'] !== ''
                     ? floatval($catalog_item['tax_rate'])
@@ -2107,7 +2107,7 @@ function create_quote($data, $items) {
                 // 插入明细
                 $item_sql = "
                     INSERT INTO quote_items (
-                        quote_id, catalog_item_id, quantity, unit_price_cents,
+                        quote_id, catalog_item_id, qty, unit_price_cents,
                         tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ";
@@ -2330,7 +2330,7 @@ function update_quote_item($id, $data) {
         // 更新项目
         $sql = "
             UPDATE quote_items
-            SET quantity = ?, unit_price_cents = ?, tax_rate = ?,
+            SET qty = ?, unit_price_cents = ?, tax_rate = ?,
                 line_subtotal_cents = ?, line_tax_cents = ?, line_total_cents = ?
             WHERE id = ?
         ";
@@ -2456,7 +2456,7 @@ function add_quote_item($quote_id, $item_data) {
         // 插入项目
         $sql = "
             INSERT INTO quote_items (
-                quote_id, catalog_item_id, quantity, unit_price_cents,
+                quote_id, catalog_item_id, qty, unit_price_cents,
                 tax_rate, line_subtotal_cents, line_tax_cents, line_total_cents
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ";

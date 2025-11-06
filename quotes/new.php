@@ -60,12 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         for ($i = 0; $i < $item_count; $i++) {
             $catalog_item_id = intval($_POST['items'][$i]['catalog_item_id'] ?? 0);
-            $quantity = floatval($_POST['items'][$i]['quantity'] ?? 0);
+            $quantity = floatval($_POST['items'][$i]['qty'] ?? ($_POST['items'][$i]['quantity'] ?? 0));
 
             if ($catalog_item_id > 0 && $quantity > 0) {
                 $items[] = [
                     'catalog_item_id' => $catalog_item_id,
-                    'quantity' => $quantity
+                    'qty' => $quantity
                 ];
             }
         }
@@ -245,7 +245,7 @@ function addItem() {
         </div>
         <div>
             <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">数量 *</label>
-            <input type="number" name="items[${itemCount}][quantity]" value="1" min="0.0001" step="0.0001" onchange="updateItemPrice(${itemCount})" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);">
+            <input type="number" name="items[${itemCount}][qty]" value="1" min="0.0001" step="0.0001" onchange="updateItemPrice(${itemCount})" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);">
         </div>
         <div>
             <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">单价</label>
@@ -277,7 +277,7 @@ function removeItem(button) {
 
 function updateItemPrice(index) {
     const select = document.querySelector(`select[name="items[${index}][catalog_item_id]"]`);
-    const quantityInput = document.querySelector(`input[name="items[${index}][quantity]"]`);
+    const quantityInput = document.querySelector(`input[name="items[${index}][qty]"]`);
     const priceDiv = document.getElementById(`price-${index}`);
     const subtotalDiv = document.getElementById(`subtotal-${index}`);
 
@@ -303,7 +303,7 @@ function recalculateTotal() {
 
     document.querySelectorAll('.quote-item').forEach((itemDiv) => {
         const select = itemDiv.querySelector('select');
-        const quantityInput = itemDiv.querySelector('input[type="number"]');
+        const quantityInput = itemDiv.querySelector('input[name^="items"][name$="[qty]"]');
 
         if (select && quantityInput) {
             const selectedOption = select.options[select.selectedIndex];
