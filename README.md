@@ -51,12 +51,13 @@ Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系
    > 数据库只需创建为空的 `quotabase_lite`，数据表稍后会通过初始化精灵自动生成。
 
 3. **配置并初始化应用**
-   ```bash
-   cp config.php.sample config.php
-   # 编辑 config.php 配置数据库连接、加密密钥等信息
-   ```
-   - 完成配置后，通过浏览器打开 `https://你的域名/init.php`，按照三个步骤建立数据表并导入默认数据。
-   - 若偏好使用命令行，可执行：
+   - 直接访问 `https://你的域名/init.php`，系统会先引导你输入数据库连接信息并自动生成 `config.php`，随后进入初始化精灵完成建表与导入预设资料。
+   - 若服务器无法写入 `config.php`，可退回手动方式：
+     ```bash
+     cp config.php.sample config.php
+     # 编辑 config.php 配置数据库连接、加密密钥等信息
+     ```
+   - 偏好命令行时可执行：
      ```bash
      php init.php install   # 建立 / 更新数据表
      php init.php init      # 导入默认数据

@@ -18,57 +18,545 @@ if (!defined('SKIP_INIT_REDIRECT')) {
 $configPath = __DIR__ . '/config.php';
 
 if (!file_exists($configPath)) {
-    header('Content-Type: text/html; charset=utf-8');
+    handle_config_file_setup($configPath);
+    exit;
+}
+
+/**
+ * ========================================
+ * 設定檔建立精靈 (Config Setup Wizard)
+ * ========================================
+ */
+
+function handle_config_file_setup($configPath) {
+    if (!headers_sent()) {
+        header('Content-Type: text/html; charset=utf-8');
+    }
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $samplePath = __DIR__ . '/config.php.sample';
+    $defaults = [
+        'db_host' => getenv('DB_HOST') ?: '127.0.0.1',
+        'db_name' => getenv('DB_NAME') ?: 'quotabase_lite',
+        'db_user' => getenv('DB_USER') ?: 'root',
+        'db_pass' => '',
+        'timezone' => getenv('DEFAULT_TIMEZONE') ?: 'Asia/Taipei',
+        'encryption_key' => '',
+    ];
+
+    $formData = $defaults;
+    $formData['encryption_key'] = generate_setup_encryption_key();
+
+    $errors = [];
+    $generalError = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
+        if ($action === 'create_config') {
+            if (!config_setup_verify_csrf_token($_POST['csrf_token'] ?? '')) {
+                $generalError = '驗證失敗，請重新提交表單。';
+            } else {
+                $formData['db_host'] = trim($_POST['db_host'] ?? '');
+                $formData['db_name'] = trim($_POST['db_name'] ?? '');
+                $formData['db_user'] = trim($_POST['db_user'] ?? '');
+                $formData['db_pass'] = $_POST['db_pass'] ?? '';
+                $formData['timezone'] = trim($_POST['timezone'] ?? '') ?: 'Asia/Taipei';
+                $formData['encryption_key'] = trim($_POST['encryption_key'] ?? '');
+
+                if ($formData['db_host'] === '') {
+                    $errors['db_host'] = '請輸入資料庫主機。';
+                }
+                if ($formData['db_name'] === '') {
+                    $errors['db_name'] = '請輸入資料庫名稱。';
+                }
+                if ($formData['db_user'] === '') {
+                    $errors['db_user'] = '請輸入資料庫使用者。';
+                }
+
+                if ($formData['encryption_key'] === '') {
+                    $formData['encryption_key'] = generate_setup_encryption_key();
+                } elseif (!preg_match('/^[a-f0-9]{32,}$/i', $formData['encryption_key'])) {
+                    $errors['encryption_key'] = '加密金鑰必須為至少32位的十六進位字串（例如 64 個字符）。';
+                }
+
+                if (empty($errors)) {
+                    [$connectionOk, $connectionError] = config_setup_test_connection($formData);
+                    if (!$connectionOk) {
+                        $generalError = '資料庫連線失敗：' . $connectionError;
+                    } else {
+                        [$writeOk, $writeError] = config_setup_write_config($configPath, $samplePath, $formData);
+                        if ($writeOk) {
+                            $message = '設定檔建立完成，請繼續執行初始化流程。';
+                            header('Location: /init.php?message=' . urlencode($message) . '&type=success');
+                            exit;
+                        }
+                        $generalError = $writeError ?: '無法寫入設定檔，請確認目錄權限。';
+                    }
+                }
+            }
+        }
+    }
+
+    $csrfToken = config_setup_generate_csrf_token();
+    $hasSample = is_readable($samplePath);
+
     ?>
     <!DOCTYPE html>
     <html lang="zh-TW">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>系統初始化 - 缺少設定檔</title>
+        <title>初始設定 - 建立 config.php</title>
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
                 background: #f5f5f5;
-                margin: 0;
                 padding: 40px 20px;
             }
+
             .container {
-                max-width: 600px;
+                max-width: 720px;
                 margin: 0 auto;
-                background: #fff;
-                border-radius: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                padding: 30px;
             }
+
+            .card {
+                background: white;
+                border-radius: 18px;
+                padding: 36px;
+                box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+                margin-bottom: 24px;
+            }
+
             h1 {
-                font-size: 24px;
-                margin-bottom: 16px;
-                color: #333;
-            }
-            p {
-                color: #555;
-                line-height: 1.6;
+                font-size: 30px;
+                color: #111827;
                 margin-bottom: 12px;
             }
-            code {
-                background: #f0f0f0;
-                padding: 4px 6px;
-                border-radius: 4px;
+
+            .subtitle {
+                color: #6b7280;
+                margin-bottom: 28px;
+                line-height: 1.7;
+            }
+
+            .form-group {
+                margin-bottom: 22px;
+            }
+
+            label {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 8px;
+                font-size: 15px;
+            }
+
+            label span {
+                font-weight: 400;
+                font-size: 13px;
+                color: #9ca3af;
+                margin-left: 12px;
+            }
+
+            input[type="text"],
+            input[type="password"] {
+                width: 100%;
+                padding: 14px 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                font-size: 15px;
+                background: #f9fafb;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            input[type="text"]:focus,
+            input[type="password"]:focus {
+                outline: none;
+                border-color: #6366f1;
+                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+                background: #ffffff;
+            }
+
+            .error-message {
+                color: #b91c1c;
+                font-size: 13px;
+                margin-top: 6px;
+            }
+
+            .alert {
+                padding: 16px 18px;
+                border-radius: 12px;
                 font-size: 14px;
+                margin-bottom: 24px;
+                line-height: 1.6;
+            }
+
+            .alert-danger {
+                background: #fee2e2;
+                border: 1px solid #fecaca;
+                color: #b91c1c;
+            }
+
+            .alert-warning {
+                background: #fef3c7;
+                border: 1px solid #fde68a;
+                color: #92400e;
+            }
+
+            .btn-row {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-top: 28px;
+            }
+
+            button {
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                padding: 12px 20px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+                color: white;
+                box-shadow: 0 12px 30px rgba(79, 70, 229, 0.25);
+            }
+
+            .btn-secondary {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            button:disabled {
+                background: #d1d5db;
+                color: #7b8190;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
+
+            button:hover:not(:disabled) {
+                transform: translateY(-1px);
+                box-shadow: 0 16px 36px rgba(79, 70, 229, 0.35);
+            }
+
+            code {
+                background: #eef2ff;
+                color: #4338ca;
+                padding: 2px 6px;
+                border-radius: 6px;
+                font-size: 13px;
+            }
+
+            .note {
+                font-size: 13px;
+                color: #6b7280;
+                margin-top: 8px;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>缺少設定檔</h1>
-            <p>找不到 <code>config.php</code> 檔案。請先將 <code>config.php.sample</code> 複製為 <code>config.php</code>，並填入資料庫連線等必要資訊。</p>
-            <p>完成設定後重新整理本頁，即可繼續進行初始化流程。</p>
+            <div class="card">
+                <h1>歡迎使用 Quotabase-Lite</h1>
+                <p class="subtitle">
+                    只需輸入一次資料庫連線資訊，即可建立 <code>config.php</code> 設定檔。系統會測試連線、寫入設定並自動帶你進入初始化精靈。
+                </p>
+
+                <?php if ($generalError): ?>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($generalError, ENT_QUOTES, 'UTF-8'); ?></div>
+                <?php endif; ?>
+
+                <?php if (!$hasSample): ?>
+                    <div class="alert alert-warning">
+                        找不到 <code>config.php.sample</code>，系統會改用預設模板生成設定檔。建議確認檔案是否完整存在。
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="action" value="create_config">
+
+                    <div class="form-group">
+                        <label for="db_host">資料庫主機 <span>例如 127.0.0.1 或 localhost</span></label>
+                        <input type="text" id="db_host" name="db_host" value="<?php echo htmlspecialchars($formData['db_host'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                        <?php if (isset($errors['db_host'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['db_host'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="db_name">資料庫名稱 <span>需先在 MySQL 建立</span></label>
+                        <input type="text" id="db_name" name="db_name" value="<?php echo htmlspecialchars($formData['db_name'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                        <?php if (isset($errors['db_name'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['db_name'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="db_user">資料庫使用者</label>
+                        <input type="text" id="db_user" name="db_user" value="<?php echo htmlspecialchars($formData['db_user'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                        <?php if (isset($errors['db_user'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['db_user'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="db_pass">資料庫密碼</label>
+                        <input type="password" id="db_pass" name="db_pass" value="<?php echo htmlspecialchars($formData['db_pass'], ENT_QUOTES, 'UTF-8'); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timezone">預設時區 <span>留空則預設為 Asia/Taipei</span></label>
+                        <input type="text" id="timezone" name="timezone" value="<?php echo htmlspecialchars($formData['timezone'], ENT_QUOTES, 'UTF-8'); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="encryption_key">加密金鑰 <span>至少32位十六進位字串</span></label>
+                        <div style="display:flex; gap:12px;">
+                            <input type="text" id="encryption_key" name="encryption_key" value="<?php echo htmlspecialchars($formData['encryption_key'], ENT_QUOTES, 'UTF-8'); ?>" style="flex:1;">
+                            <button type="button" class="btn-secondary" id="generateKeyBtn">重新產生</button>
+                        </div>
+                        <?php if (isset($errors['encryption_key'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['encryption_key'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                        <div class="note">若無特別需求，可直接使用系統產生的隨機金鑰。</div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn-primary">建立設定檔並繼續</button>
+                    </div>
+                </form>
+
+                <div class="note" style="margin-top: 24px;">
+                    提示：如果提交後顯示無法寫入，請檢查網站根目錄（<?php echo htmlspecialchars(dirname($configPath), ENT_QUOTES, 'UTF-8'); ?>）的寫入權限。
+                </div>
+            </div>
         </div>
+
+        <script>
+            (function() {
+                const generateKeyBtn = document.getElementById('generateKeyBtn');
+                const keyField = document.getElementById('encryption_key');
+
+                function generateKey() {
+                    if (window.crypto && window.crypto.getRandomValues) {
+                        const bytes = new Uint8Array(32);
+                        window.crypto.getRandomValues(bytes);
+                        let key = '';
+                        bytes.forEach(function(byte) {
+                            key += ('0' + byte.toString(16)).slice(-2);
+                        });
+                        keyField.value = key;
+                    } else {
+                        alert('瀏覽器不支援自動產生金鑰，請手動輸入。');
+                    }
+                }
+
+                if (generateKeyBtn) {
+                    generateKeyBtn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        generateKey();
+                    });
+                }
+            })();
+        </script>
     </body>
     </html>
     <?php
-    exit;
+}
+
+function config_setup_generate_csrf_token() {
+    if (!isset($_SESSION['config_setup_csrf'])) {
+        $_SESSION['config_setup_csrf'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['config_setup_csrf'];
+}
+
+function config_setup_verify_csrf_token($token) {
+    return isset($_SESSION['config_setup_csrf']) && hash_equals($_SESSION['config_setup_csrf'], $token ?? '');
+}
+
+function generate_setup_encryption_key() {
+    return bin2hex(random_bytes(32));
+}
+
+function config_setup_test_connection(array $formData) {
+    $dsn = sprintf(
+        'mysql:host=%s;dbname=%s;charset=utf8mb4',
+        $formData['db_host'],
+        $formData['db_name']
+    );
+
+    try {
+        $pdo = new PDO($dsn, $formData['db_user'], $formData['db_pass'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 5,
+        ]);
+        $pdo->query('SELECT 1');
+        return [true, null];
+    } catch (PDOException $e) {
+        return [false, $e->getMessage()];
+    }
+}
+
+function config_setup_write_config($targetPath, $samplePath, array $formData) {
+    if (file_exists($targetPath)) {
+        return [true, null];
+    }
+
+    if (is_readable($samplePath)) {
+        $content = file_get_contents($samplePath);
+        if ($content === false) {
+            return [false, '無法讀取 config.php.sample。'];
+        }
+    } else {
+        $content = config_setup_default_template();
+    }
+
+    $content = config_setup_replace_define($content, 'DB_HOST', var_export($formData['db_host'], true));
+    $content = config_setup_replace_define($content, 'DB_NAME', var_export($formData['db_name'], true));
+    $content = config_setup_replace_define($content, 'DB_USER', var_export($formData['db_user'], true));
+    $content = config_setup_replace_define($content, 'DB_PASS', var_export($formData['db_pass'], true));
+    $content = config_setup_replace_define($content, 'DEFAULT_TIMEZONE', var_export($formData['timezone'] ?: 'Asia/Taipei', true));
+    $content = config_setup_replace_define($content, 'DISPLAY_TIMEZONE', 'DEFAULT_TIMEZONE', true);
+    $content = config_setup_replace_define($content, 'ENCRYPTION_KEY', var_export($formData['encryption_key'], true));
+
+    if ($content === null) {
+        return [false, '產生設定檔內容時發生錯誤。'];
+    }
+
+    if (@file_put_contents($targetPath, $content) === false) {
+        return [false, '無法寫入設定檔，請確認資料夾具備寫入權限。'];
+    }
+
+    @chmod($targetPath, 0640);
+    return [true, null];
+}
+
+function config_setup_replace_define($content, $name, $value, $raw = false) {
+    $pattern = "/define\\('" . preg_quote($name, '/') . "',\\s*[^)]*\\);/";
+    $replacement = $raw
+        ? "define('{$name}', {$value});"
+        : "define('{$name}', {$value});";
+
+    $updated = preg_replace($pattern, $replacement, $content, 1, $count);
+    if ($count === 0) {
+        $injection = $replacement . "\n";
+        $updated = preg_replace("/(<\\?php\\s+)/", '$1' . $injection, $content, 1, $count);
+        if ($count === 0) {
+            $updated = $injection . $content;
+        }
+    }
+
+    return $updated;
+}
+
+function config_setup_default_template() {
+    return <<<'PHP'
+<?php
+/**
+ * 自動產生的設定檔
+ * 若需調整，請手動編輯此檔案。
+ */
+
+if (!defined('QUOTABASE_SYSTEM')) {
+    define('QUOTABASE_SYSTEM', true);
+}
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'quotabase_lite');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_CHARSET', 'utf8mb4');
+
+define('SESSION_TIMEOUT', 3600);
+define('CSRF_TOKEN_NAME', 'csrf_token');
+define('ENCRYPTION_KEY', 'secure_key');
+
+define('DEFAULT_TIMEZONE', 'Asia/Taipei');
+define('DISPLAY_TIMEZONE', DEFAULT_TIMEZONE);
+
+define('APP_NAME', 'Quotabase-Lite');
+define('APP_VERSION', '2.0.0');
+define('DEFAULT_ORG_ID', 1);
+define('DEFAULT_PAGE_SIZE', 20);
+
+$serverName = $_SERVER['SERVER_NAME'] ?? '';
+$isCli = php_sapi_name() === 'cli';
+
+if (!$isCli && $serverName !== 'localhost' && !isset($_GET['debug'])) {
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', __DIR__ . '/logs/error.log');
+} else {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+}
+
+$logDir = __DIR__ . '/logs';
+if (!is_dir($logDir)) {
+    @mkdir($logDir, 0755, true);
+}
+
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
+    session_start();
+}
+
+require_once __DIR__ . '/helpers/functions.php';
+
+try {
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+} catch (PDOException $e) {
+    if ($_SERVER['SERVER_NAME'] !== 'localhost') {
+        error_log("Database connection failed: " . $e->getMessage());
+        die("系統維護中，請稍後再試。");
+    } else {
+        die("資料庫連線失敗: " . $e->getMessage());
+    }
+}
+
+function get_org_settings($org_id = DEFAULT_ORG_ID) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM settings WHERE org_id = ?");
+        $stmt->execute([$org_id]);
+        return $stmt->fetch() ?: [];
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+$org_settings = get_org_settings();
+
+if (!defined('SKIP_INIT_REDIRECT')) {
+    redirect_to_init_if_needed();
+}
+PHP;
 }
 
 // 加载依赖
