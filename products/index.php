@@ -138,13 +138,11 @@ page_header('产品管理', [
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
                     <tr>
-                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">SKU</th>
+                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary); width: 26%;">分类</th>
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">产品名称</th>
-                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">分类</th>
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单位</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
                         <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
-                        <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">创建日期</th>
                         <th style="padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-secondary);">操作</th>
                     </tr>
                 </thead>
@@ -152,31 +150,25 @@ page_header('产品管理', [
                     <?php foreach ($products as $product): ?>
                         <tr style="border-bottom: 1px solid var(--border-color); hover: var(--bg-secondary);">
                             <td style="padding: 16px 12px;">
-                                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: monospace;">
-                                    <?php echo h($product['sku']); ?>
-                                </div>
-                            </td>
-                            <td style="padding: 16px 12px;">
-                                <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
-                                    <?php echo h($product['name']); ?>
-                                </div>
-                            </td>
-                            <td style="padding: 16px 12px;">
                                 <?php
                                 $path = '';
                                 if (!empty($product['category_id'])) {
                                     $path = $category_paths[$product['category_id']] ?? get_catalog_category_path($product['category_id']);
                                 }
-                                $category_title = $path ?: '未分类';
                                 ?>
-                                <div style="font-size: 13px; color: var(--text-tertiary);" title="<?php echo h($category_title); ?>">
-                                    <?php
-                                    if ($path) {
-                                        echo h($path);
-                                    } else {
-                                        echo '<span style="color: var(--text-secondary);">未分类</span>';
-                                    }
-                                    ?>
+                                <div style="font-size: 13px; color: var(--text-tertiary);" title="<?php echo h($path ?: '未分类'); ?>">
+                                    <?php echo $path ? h($path) : '<span style="color: var(--text-secondary);">未分类</span>'; ?>
+                                </div>
+                            </td>
+                            <td style="padding: 16px 12px;">
+                                <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                                    <a href="/products/edit.php?id=<?php echo h($product['id']); ?>" style="color: inherit; text-decoration: none;">
+                                        <?php echo h($product['name']); ?>
+                                    </a>
+                                </div>
+                                <div style="margin-top: 6px; font-size: 12px; color: var(--text-tertiary); display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <span>SKU：<?php echo h($product['sku']); ?></span>
+                                    <span>创建于：<?php echo format_date($product['created_at']); ?></span>
                                 </div>
                             </td>
                             <td style="padding: 16px 12px;">
@@ -192,11 +184,6 @@ page_header('产品管理', [
                             <td style="padding: 16px 12px; text-align: right;">
                                 <div style="font-size: 14px; color: var(--text-secondary);">
                                     <?php echo number_format($product['tax_rate'], 2); ?>%
-                                </div>
-                            </td>
-                            <td style="padding: 16px 12px; text-align: center;">
-                                <div style="font-size: 13px; color: var(--text-tertiary);">
-                                    <?php echo format_date($product['created_at']); ?>
                                 </div>
                             </td>
                             <td style="padding: 16px 12px; text-align: center;">
