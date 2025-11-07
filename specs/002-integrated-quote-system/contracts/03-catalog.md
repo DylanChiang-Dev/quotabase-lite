@@ -7,7 +7,7 @@
 ## GET /products/index.php
 ## GET /services/index.php
 
-获取产品或服务列表，支持按类型筛选。
+獲取產品或服務列表，支援按型別篩選。
 
 ### Query Parameters
 
@@ -53,15 +53,15 @@
 
 ### Validation Rules
 
-- type: 必填枚举值，'product' 或 'service'
-- active: 可选布尔值，null 返回所有记录，true 只返回启用记录，false 只返回禁用记录
+- type: 必填列舉值，'product' 或 'service'
+- active: 可選布林值，null 返回所有記錄，true 只返回啟用記錄，false 只返回停用記錄
 
 ---
 
 ## POST /products/new.php
 ## POST /services/new.php
 
-创建新产品或服务。
+建立新產品或服務。
 
 ### Request
 
@@ -84,7 +84,7 @@
 ```json
 {
   "success": true,
-  "message": "{product|service} 创建成功",
+  "message": "{product|service} 建立成功",
   "data": {
     "id": "integer (1-9223372036854775807)",
     "type": "string (enum: 'product' | 'service')",
@@ -106,33 +106,33 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "sku": ["SKU 已存在，请使用其他 SKU"],
-    "unit_price_cents": ["单价必须大于等于 0"],
-    "tax_rate": ["税率必须在 0.00-100.00 之间"]
+    "sku": ["SKU 已存在，請使用其他 SKU"],
+    "unit_price_cents": ["單價必須大於等於 0"],
+    "tax_rate": ["稅率必須在 0.00-100.00 之間"]
   }
 }
 ```
 
 ### Validation Rules
 
-- type: 必填枚举值，'product' 或 'service'
-- sku: 必填，1-100 个字符，同一 org_id 下必须唯一
-- name: 必填，1-255 个字符，不能为空白
-- unit: 可选，0-20 个字符，默认 'pcs'
-- currency: 可选，默认为 'TWD'，仅支持 TWD
-- unit_price_cents: 必填，正整数或 0（单位：分）
-- tax_rate: 可选，0.00-100.00 之间的小数，默认 0.00
-- active: 可选布尔值，默认 true
-- csrf_token: 必填，64 位十六进制字符串
+- type: 必填列舉值，'product' 或 'service'
+- sku: 必填，1-100 個字元，同一 org_id 下必須唯一
+- name: 必填，1-255 個字元，不能為空白
+- unit: 可選，0-20 個字元，預設 'pcs'
+- currency: 可選，預設為 'TWD'，僅支援 TWD
+- unit_price_cents: 必填，正整數或 0（單位：分）
+- tax_rate: 可選，0.00-100.00 之間的小數，預設 0.00
+- active: 可選布林值，預設 true
+- csrf_token: 必填，64 位十六進位制字串
 
 ---
 
 ## GET /products/edit.php?id={id}
 ## GET /services/edit.php?id={id}
 
-获取产品或服务编辑表单数据。
+獲取產品或服務編輯表單資料。
 
 ### Path Parameters
 
@@ -176,7 +176,7 @@
 ## POST /products/edit.php?id={id}
 ## POST /services/edit.php?id={id}
 
-更新产品或服务信息。
+更新產品或服務資訊。
 
 ### Path Parameters
 
@@ -206,7 +206,7 @@
 ```json
 {
   "success": true,
-  "message": "{product|service} 信息更新成功"
+  "message": "{product|service} 資訊更新成功"
 }
 ```
 
@@ -216,9 +216,9 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "sku": ["SKU 已存在，请使用其他 SKU"]
+    "sku": ["SKU 已存在，請使用其他 SKU"]
   }
 }
 ```
@@ -237,7 +237,7 @@
 
 ## GET /api/catalog/search.php
 
-搜索目录项（供报价单选择使用）。
+搜尋目錄項（供報價單選擇使用）。
 
 ### Query Parameters
 

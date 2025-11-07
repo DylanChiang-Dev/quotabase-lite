@@ -65,7 +65,7 @@
 - [x] Clear user value statement
 - [x] Independent testability confirmed
 - [x] 4 acceptance scenarios defined
-- [x] Print formatting and条款 loading covered
+- [x] Print formatting and條款 loading covered
 
 ## Functional Requirements Validation
 

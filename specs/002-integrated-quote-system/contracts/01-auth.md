@@ -6,7 +6,7 @@
 
 ## POST /login.php
 
-登录系统，获取会话令牌。
+登入系統，獲取會話令牌。
 
 ### Request
 
@@ -23,7 +23,7 @@
 ```json
 {
   "success": true,
-  "message": "登录成功",
+  "message": "登入成功",
   "redirect": "/quotes/"
 }
 ```
@@ -34,21 +34,21 @@
 {
   "success": false,
   "error": "INVALID_CREDENTIALS",
-  "message": "用户名或密码错误"
+  "message": "使用者名稱或密碼錯誤"
 }
 ```
 
 ### Validation Rules
 
-- username: 必填，1-50 个字符
-- password: 必填，6-100 个字符，区分大小写
-- csrf_token: 必填，从表单生成的 CSRF 令牌
+- username: 必填，1-50 個字元
+- password: 必填，6-100 個字元，區分大小寫
+- csrf_token: 必填，從表單生成的 CSRF 令牌
 
 ---
 
 ## POST /logout.php
 
-登出系统，销毁会话。
+登出系統，銷燬會話。
 
 ### Request
 
@@ -70,4 +70,4 @@
 
 ### Validation Rules
 
-- csrf_token: 必填，从表单生成的 CSRF 令牌
+- csrf_token: 必填，從表單生成的 CSRF 令牌

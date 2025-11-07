@@ -1,5 +1,5 @@
 ---
-title: "Product/Service TXT Import — 手動測試腳本"
+title: "Product/Service TXT Import — 手動測試指令碼"
 ---
 
 ## 測試前置
@@ -10,9 +10,9 @@ title: "Product/Service TXT Import — 手動測試腳本"
 3. 在本機建立 `imports/` 資料夾，用於存放測試 TXT。
 
 ## 案例一：批次成功（1000 筆）
-1. 以指令產出 1000 筆資料（可用腳本或試算表），欄位順序符合 `type, sku, name, unit, currency, unit_price, tax_rate, category_path, active`。
+1. 以指令產出 1000 筆資料（可用指令碼或試算表），欄位順序符合 `type, sku, name, unit, currency, unit_price, tax_rate, category_path, active`。
 2. 確認檔案編碼為 UTF-8，大小 < 1MB。
-3. 進入 `/products/`，點擊「TXT 批次匯入」，上傳該檔案。
+3. 進入 `/products/`，點選「TXT 批次匯入」，上傳該檔案。
 4. 預期結果：
    - 面板結果區顯示新增 1000 筆、錯誤 0 筆。
    - 下載完整報表檔案，檢查 `處理紀錄` 段落包含所有 SKU。
@@ -41,10 +41,10 @@ title: "Product/Service TXT Import — 手動測試腳本"
    - 「跳過記錄」區出現該 SKU，並標示「SKU 已存在，依策略跳過」。
 
 ## 案例五：服務匯入與單位驗證
-1. 在 `/services/` 面板匯入包含 `service` 類型、單位為 `time/hour/day` 的資料。
+1. 在 `/services/` 面板匯入包含 `service` 型別、單位為 `time/hour/day` 的資料。
 2. 開啟 `/quotes/edit.php` 選擇新服務，確認單位隱藏欄位正確且 UI 顯示「次/時/日」。
 
-## 案例六：權限與檔案檢查
+## 案例六：許可權與檔案檢查
 1. 嘗試未登入直接呼叫 `/api/catalog/import-txt.php`，預期回傳 `401 UNAUTHORIZED`。
 2. 上傳 1.5MB 檔案，預期收到錯誤 `檔案不可超過 1MB`。
 3. 上傳非 `.txt` 檔案，預期錯誤 `僅支援 .txt 純文字檔`。

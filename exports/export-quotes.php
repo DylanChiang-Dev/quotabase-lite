@@ -1,45 +1,45 @@
 <?php
 /**
- * 报价单数据导出
+ * 報價單資料匯出
  * Export Quotes
  *
  * @version v2.0.0
- * @description 导出报价单数据为CSV或JSON格式，支持日期范围筛选
- * @遵循宪法原则I: 安全优先开发 - 权限检查
+ * @description 匯出報價單資料為CSV或JSON格式，支援日期範圍篩選
+ * @遵循憲法原則I: 安全優先開發 - 許可權檢查
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     http_response_code(401);
-    echo json_encode(['error' => '未授权访问']);
+    echo json_encode(['error' => '未授權訪問']);
     exit;
 }
 
-// 获取导出格式
+// 獲取匯出格式
 $format = $_GET['format'] ?? 'csv';
 $format = strtolower($format);
 
 if (!in_array($format, ['csv', 'json'])) {
     http_response_code(400);
-    echo json_encode(['error' => '不支持的导出格式']);
+    echo json_encode(['error' => '不支援的匯出格式']);
     exit;
 }
 
-// 获取日期范围筛选
+// 獲取日期範圍篩選
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 $status = $_GET['status'] ?? '';
 
 try {
-    // 构建查询条件
+    // 構建查詢條件
     $org_id = get_current_org_id();
     $where_conditions = ['q.org_id = ?'];
     $params = [$org_id];
@@ -61,7 +61,7 @@ try {
 
     $where_clause = implode(' AND ', $where_conditions);
 
-    // 获取报价单数据
+    // 獲取報價單資料
     $sql = "
         SELECT
             q.id, q.quote_number, q.status, q.issue_date, q.valid_until,
@@ -77,9 +77,9 @@ try {
     $quotes = dbQuery($sql, $params);
     $exportedAt = gmdate('c');
 
-    // 设置响应头
+    // 設定響應頭
     if ($format === 'csv') {
-        // CSV导出
+        // CSV匯出
         $filename = 'quotes_' . date('Y-m-d');
         if (!empty($date_from) || !empty($date_to)) {
             $filename .= '_' . ($date_from ?: 'all') . '_to_' . ($date_to ?: 'all');
@@ -89,30 +89,30 @@ try {
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        // 输出BOM头，确保Excel正确识别UTF-8
+        // 輸出BOM頭，確保Excel正確識別UTF-8
         echo "\xEF\xBB\xBF";
 
-        // 打开输出流
+        // 開啟輸出流
         $output = fopen('php://output', 'w');
 
-        // 写入表头
+        // 寫入表頭
         fputcsv($output, [
-            '编号',
-            '报价单号',
-            '状态',
-            '客户名称',
-            '客户税号',
-            '开票日期',
+            '編號',
+            '報價單號',
+            '狀態',
+            '客戶名稱',
+            '客戶稅號',
+            '開票日期',
             '有效期至',
-            '小计(分)',
-            '税额(分)',
-            '总计(分)',
-            '币种',
-            '创建时间',
-            '更新时间'
+            '小計(分)',
+            '稅額(分)',
+            '總計(分)',
+            '幣種',
+            '建立時間',
+            '更新時間'
         ]);
 
-        // 写入数据
+        // 寫入資料
         foreach ($quotes as $quote) {
             fputcsv($output, [
                 $quote['id'],
@@ -134,7 +134,7 @@ try {
         fclose($output);
 
     } else {
-        // JSON导出
+        // JSON匯出
         $filename = 'quotes_' . date('Y-m-d');
         if (!empty($date_from) || !empty($date_to)) {
             $filename .= '_' . ($date_from ?: 'all') . '_to_' . ($date_to ?: 'all');
@@ -182,7 +182,7 @@ try {
     echo json_encode([
         'success' => false,
         'error' => 'EXPORT_FAILED',
-        'message' => '导出失败: ' . $e->getMessage()
+        'message' => '匯出失敗: ' . $e->getMessage()
     ]);
 }
 ?>

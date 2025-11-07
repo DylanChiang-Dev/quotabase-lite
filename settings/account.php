@@ -105,8 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 html_start('帳號與安全');
 
 page_header('帳號與安全', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '系统设置', 'url' => '/settings/'],
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '系統設定', 'url' => '/settings/'],
     ['label' => '帳號與安全', 'url' => '/settings/account.php']
 ]);
 ?>
@@ -173,7 +173,7 @@ page_header('帳號與安全', [
 
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
                 <a href="/settings/" class="btn btn-secondary">返回設定</a>
-                <button type="submit" class="btn btn-primary">保存變更</button>
+                <button type="submit" class="btn btn-primary">儲存變更</button>
             </div>
         </form>
     <?php card_end(); ?>

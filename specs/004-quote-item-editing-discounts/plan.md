@@ -25,7 +25,7 @@
 ---
 
 ## Constitution Check
-- 提案維持現有架構（單 repo / 單應用），無新增專案或重度框架 → **通過**
+- 提案維持現有架構（單 repo / 單應用），無新增專案或重度框架 → **透過**
 
 ---
 
@@ -62,7 +62,7 @@ README.md / docs             # 若需註記 DB 變更
 2. 確認 `quote_items` 表目前欄位（缺少折扣欄位、description/unit 已有）
 
 ### Phase 1 – Schema 更新
-1. 提供 SQL 腳本 `database/migrations/20251106_quote_items_discount.sql`
+1. 提供 SQL 指令碼 `database/migrations/20251106_quote_items_discount.sql`
    ```sql
    ALTER TABLE quote_items
        ADD COLUMN discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金額（分）';
@@ -78,7 +78,7 @@ README.md / docs             # 若需註記 DB 變更
    - `create_quote` / `add_quote_item` / `update_quote_item`：
      - 接受折扣輸入、驗證折扣 <= 行原勢
      - 計算折後小計/稅額/總額
-     - 保存 `discount_cents`
+     - 儲存 `discount_cents`
    - `recalculate_quote_total` 使用折扣後資料重算
    - 新增協助函式 `process_quote_edit`（或等效）處理編輯頁表單
 2. 建立表單產生資料 helper（必要時）以統一輸入驗證
@@ -102,7 +102,7 @@ README.md / docs             # 若需註記 DB 變更
 2. `quotes/print.php`
    - 同步顯示折扣資訊，保持排版
 
-### Phase 5 – 測試 & 文件
+### Phase 5 – 測試 & 檔案
 1. 手動測試流程：
    - 新建草稿 → 編輯行（含折扣）→ 儲存 → 檢視 & 列印
    - 折扣 > 行金額 → 應出錯
@@ -112,4 +112,4 @@ README.md / docs             # 若需註記 DB 變更
 ---
 
 ## Complexity Tracking
-無違反憲章項目，系統複雜度未大幅提升，保持單專案架構。
+無違反憲章專案，系統複雜度未大幅提升，保持單專案架構。

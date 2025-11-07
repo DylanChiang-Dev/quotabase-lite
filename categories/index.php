@@ -1,6 +1,6 @@
 <?php
 /**
- * 分类管理页面
+ * 分類管理頁面
  */
 
 define('QUOTABASE_SYSTEM', true);
@@ -16,8 +16,8 @@ if (!is_logged_in()) {
 }
 
 $allowed_types = [
-    'product' => '产品分类',
-    'service' => '服务分类'
+    'product' => '產品分類',
+    'service' => '服務分類'
 ];
 
 $type = $_GET['type'] ?? 'product';
@@ -35,7 +35,7 @@ if ($edit_category && $edit_category['type'] !== $type) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请刷新页面后重试。';
+        $error = '無效的請求，請重新整理頁面後重試。';
     } else {
         $action = $_POST['action'] ?? '';
         $form_type = $_POST['type'] ?? $type;
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $category = get_catalog_category($category_id);
 
             if (!$category) {
-                $error = '分类不存在或已被删除';
+                $error = '分類不存在或已被刪除';
             } else {
                 $result = update_catalog_category($category_id, [
                     'name' => $_POST['name'] ?? '',
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $category = get_catalog_category($category_id);
 
             if (!$category) {
-                $error = '分类不存在或已被删除';
+                $error = '分類不存在或已被刪除';
             } else {
                 $result = delete_catalog_category($category_id);
                 if ($result['success']) {
@@ -102,17 +102,17 @@ $category_tree = get_catalog_categories_tree($type);
 $category_flat = get_catalog_category_flat_list($type);
 $default_parent_id = isset($_GET['parent']) ? intval($_GET['parent']) : null;
 
-html_start('分类管理');
+html_start('分類管理');
 
-page_header('产品与服务', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '产品与服务', 'url' => '/products/'],
+page_header('產品與服務', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '產品與服務', 'url' => '/products/'],
     ['label' => $allowed_types[$type], 'url' => '/categories/index.php?type=' . $type]
 ]);
 
 function render_category_tree(array $nodes, string $type): void {
     if (empty($nodes)) {
-        echo '<p class="text-tertiary" style="margin: 12px 0;">暂无分类</p>';
+        echo '<p class="text-tertiary" style="margin: 12px 0;">暫無分類</p>';
         return;
     }
 
@@ -122,19 +122,19 @@ function render_category_tree(array $nodes, string $type): void {
         echo '<div class="category-node">';
         echo '<div class="category-info">';
         echo '<div class="category-name">' . h($node['name']) . '</div>';
-        echo '<div class="category-meta">第 ' . $node['level'] . ' 级 · 排序 ' . intval($node['sort_order']) . '</div>';
+        echo '<div class="category-meta">第 ' . $node['level'] . ' 級 · 排序 ' . intval($node['sort_order']) . '</div>';
         echo '</div>';
         echo '<div class="category-actions">';
-        echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&edit=' . $node['id'] . '">编辑</a>';
+        echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&edit=' . $node['id'] . '">編輯</a>';
         if ($node['level'] < 3) {
-            echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&parent=' . $node['id'] . '#create">添加子分类</a>';
+            echo '<a class="btn btn-sm btn-outline" href="/categories/index.php?type=' . $type . '&parent=' . $node['id'] . '#create">新增子分類</a>';
         }
-        echo '<form method="POST" action="/categories/index.php?type=' . $type . '" onsubmit="return confirm(\'确认删除该分类及其子分类吗？相关产品将变为未分类。\');">';
+        echo '<form method="POST" action="/categories/index.php?type=' . $type . '" onsubmit="return confirm(\'確認刪除該分類及其子分類嗎？相關產品將變為未分類。\');">';
         echo csrf_input();
         echo '<input type="hidden" name="action" value="delete">';
         echo '<input type="hidden" name="type" value="' . h($type) . '">';
         echo '<input type="hidden" name="category_id" value="' . $node['id'] . '">';
-        echo '<button type="submit" class="btn btn-sm btn-outline btn-danger">删除</button>';
+        echo '<button type="submit" class="btn btn-sm btn-outline btn-danger">刪除</button>';
         echo '</form>';
         echo '</div>';
         echo '</div>';
@@ -165,22 +165,22 @@ function render_category_tree(array $nodes, string $type): void {
         </div>
     <?php endif; ?>
 
-    <?php card_start('分类管理', [
-        ['label' => '产品分类', 'url' => '/categories/index.php?type=product', 'class' => $type === 'product' ? 'btn-primary' : 'btn-outline'],
-        ['label' => '服务分类', 'url' => '/categories/index.php?type=service', 'class' => $type === 'service' ? 'btn-primary' : 'btn-outline'],
+    <?php card_start('分類管理', [
+        ['label' => '產品分類', 'url' => '/categories/index.php?type=product', 'class' => $type === 'product' ? 'btn-primary' : 'btn-outline'],
+        ['label' => '服務分類', 'url' => '/categories/index.php?type=service', 'class' => $type === 'service' ? 'btn-primary' : 'btn-outline'],
     ]); ?>
 
     <div class="category-management-grid">
         <div>
-            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">分类结构</h3>
-            <p style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px;">最多支持三级分类。删除分类会清除其子分类，并将相关产品/服务的分类置为空。</p>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">分類結構</h3>
+            <p style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px;">最多支援三級分類。刪除分類會清除其子分類，並將相關產品/服務的分類置為空。</p>
             <?php render_category_tree($category_tree, $type); ?>
         </div>
 
         <div id="create">
             <div class="category-form-card">
                 <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">
-                    <?php echo $edit_category ? '编辑分类' : '新增分类'; ?>
+                    <?php echo $edit_category ? '編輯分類' : '新增分類'; ?>
                 </h3>
 
                 <form method="POST" action="/categories/index.php?type=<?php echo h($type); ?>">
@@ -192,34 +192,34 @@ function render_category_tree(array $nodes, string $type): void {
                     <?php endif; ?>
 
                     <?php if (!$edit_category): ?>
-                        <label class="form-label" for="parent_id">上级分类</label>
+                        <label class="form-label" for="parent_id">上級分類</label>
                         <select name="parent_id" id="parent_id" class="form-select">
-                            <option value="">顶级分类</option>
+                            <option value="">頂級分類</option>
                             <?php foreach ($category_flat as $cat): ?>
                                 <option value="<?php echo $cat['id']; ?>" <?php echo ($default_parent_id && $default_parent_id == $cat['id']) ? 'selected' : ''; ?> <?php echo $cat['level'] >= 3 ? 'disabled' : ''; ?>>
                                     <?php echo str_repeat('— ', max(0, $cat['level'] - 1)) . h($cat['name']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="form-help">最多支持三级分类，选择上级分类可创建子分类。</p>
+                        <p class="form-help">最多支援三級分類，選擇上級分類可建立子分類。</p>
                     <?php else: ?>
-                        <label class="form-label">上级分类</label>
+                        <label class="form-label">上級分類</label>
                         <div class="readonly-field">
-                            <?php echo $edit_category['parent_id'] ? h(get_catalog_category_path($edit_category['parent_id'])) : '顶级分类'; ?>
+                            <?php echo $edit_category['parent_id'] ? h(get_catalog_category_path($edit_category['parent_id'])) : '頂級分類'; ?>
                         </div>
                     <?php endif; ?>
 
-                    <label class="form-label" for="category_name">分类名称</label>
-                    <input type="text" id="category_name" name="name" class="form-input" value="<?php echo h($edit_category['name'] ?? ''); ?>" required maxlength="100" placeholder="请输入分类名称">
+                    <label class="form-label" for="category_name">分類名稱</label>
+                    <input type="text" id="category_name" name="name" class="form-input" value="<?php echo h($edit_category['name'] ?? ''); ?>" required maxlength="100" placeholder="請輸入分類名稱">
 
                     <label class="form-label" for="category_sort">排序值</label>
                     <input type="number" id="category_sort" name="sort_order" class="form-input" value="<?php echo h($edit_category['sort_order'] ?? 0); ?>" placeholder="0">
-                    <p class="form-help">数字越小越靠前，可用来控制同层级分类的显示顺序。</p>
+                    <p class="form-help">數字越小越靠前，可用來控制同層級分類的顯示順序。</p>
 
                     <div style="margin-top: 16px; display: flex; gap: 8px;">
-                        <button type="submit" class="btn btn-primary"><?php echo $edit_category ? '保存分类' : '新增分类'; ?></button>
+                        <button type="submit" class="btn btn-primary"><?php echo $edit_category ? '儲存分類' : '新增分類'; ?></button>
                         <?php if ($edit_category): ?>
-                            <a href="/categories/index.php?type=<?php echo h($type); ?>" class="btn btn-outline">取消编辑</a>
+                            <a href="/categories/index.php?type=<?php echo h($type); ?>" class="btn btn-outline">取消編輯</a>
                         <?php endif; ?>
                     </div>
                 </form>

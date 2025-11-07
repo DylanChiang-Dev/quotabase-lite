@@ -1,23 +1,23 @@
 <?php
 /**
- * 系统设置页面
+ * 系統設定頁面
  * Settings Page
  *
  * @version v2.0.0
- * @description 系统设置管理页面
- * @遵循宪法原则I: 安全优先开发 - XSS防护、CSRF验证
+ * @description 系統設定管理頁面
+ * @遵循憲法原則I: 安全優先開發 - XSS防護、CSRF驗證
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
@@ -27,21 +27,21 @@ $error = '';
 $success = '';
 $settings = null;
 
-// 获取当前设置
+// 獲取當前設定
 try {
     $settings = get_settings();
 } catch (Exception $e) {
     error_log("Get settings error: " . $e->getMessage());
-    $error = '加载设置失败';
+    $error = '載入設定失敗';
 }
 
-// 处理表单提交
+// 處理表單提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 验证CSRF令牌
+    // 驗證CSRF令牌
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请重新提交。';
+        $error = '無效的請求，請重新提交。';
     } else {
-        // 准备数据
+        // 準備資料
         $data = [
             'company_name' => trim($_POST['company_name'] ?? ''),
             'company_address' => trim($_POST['company_address'] ?? ''),
@@ -50,12 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'company_tax_id' => trim($_POST['company_tax_id'] ?? '')
         ];
 
-        // 更新设置
+        // 更新設定
         $result = update_settings($data);
 
         if ($result['success']) {
             $success = $result['message'];
-            // 重新加载设置
+            // 重新載入設定
             $settings = get_settings();
         } else {
             $error = $result['error'];
@@ -63,13 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 页面开始
-html_start('系统设置');
+// 頁面開始
+html_start('系統設定');
 
-// 输出头部
-page_header('系统设置', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '系统设置', 'url' => '/settings/']
+// 輸出頭部
+page_header('系統設定', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '系統設定', 'url' => '/settings/']
 ]);
 
 ?>
@@ -87,122 +87,122 @@ page_header('系统设置', [
         </div>
     <?php endif; ?>
 
-    <?php card_start('账号与安全'); ?>
+    <?php card_start('賬號與安全'); ?>
         <p style="margin-bottom: 16px; color: var(--text-secondary);">
-            建议定期更新管理员密码，并为团队成员建立独立账号以便追踪操作记录。
+            建議定期更新管理員密碼，併為團隊成員建立獨立賬號以便追蹤操作記錄。
         </p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="/settings/account.php" class="btn btn-primary">修改密码 / 帐号信息</a>
+            <a href="/settings/account.php" class="btn btn-primary">修改密碼 / 帳號資訊</a>
             <?php if (($_SESSION['user_role'] ?? 'staff') === 'admin'): ?>
                 <a href="/settings/users.php" class="btn btn-secondary">使用者管理</a>
             <?php endif; ?>
         </div>
     <?php card_end(); ?>
 
-    <?php card_start('系统设置'); ?>
+    <?php card_start('系統設定'); ?>
 
     <form method="POST" action="/settings/index.php">
         <?php echo csrf_input(); ?>
 
-        <!-- 公司信息 -->
+        <!-- 公司資訊 -->
         <div style="margin-bottom: 32px;">
             <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color: var(--primary-color);">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                公司信息
+                公司資訊
             </h3>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
                 <?php
-                form_field('company_name', '公司名称', 'text', [], [
+                form_field('company_name', '公司名稱', 'text', [], [
                     'required' => true,
-                    'placeholder' => '请输入公司名称',
+                    'placeholder' => '請輸入公司名稱',
                     'value' => $settings['company_name'] ?? ''
                 ]);
 
-                form_field('company_contact', '联系电话', 'text', [], [
+                form_field('company_contact', '聯絡電話', 'text', [], [
                     'placeholder' => '例：(02)1234-5678',
                     'value' => $settings['company_contact'] ?? '',
-                    'help' => '建议填写主要联络电话（50字内）'
+                    'help' => '建議填寫主要聯絡電話（50字內）'
                 ]);
 
                 form_field('company_address', '公司地址', 'text', [], [
-                    'placeholder' => '请输入公司地址',
+                    'placeholder' => '請輸入公司地址',
                     'value' => $settings['company_address'] ?? ''
                 ]);
 
-                form_field('company_tax_id', '统一编号', 'text', [], [
+                form_field('company_tax_id', '統一編號', 'text', [], [
                     'placeholder' => '例：12345678',
                     'value' => $settings['company_tax_id'] ?? '',
-                    'help' => '最多50字，若无可留空'
+                    'help' => '最多50字，若無可留空'
                 ]);
                 ?>
             </div>
         </div>
 
-        <!-- 打印设置 -->
+        <!-- 列印設定 -->
         <div style="margin-bottom: 32px;">
             <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color: var(--primary-color);">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                打印设置
+                列印設定
             </h3>
 
             <?php
-            form_field('print_terms', '打印条款', 'textarea', [], [
-                'placeholder' => '请输入打印条款，如付款方式、交付时间等',
+            form_field('print_terms', '列印條款', 'textarea', [], [
+                'placeholder' => '請輸入列印條款，如付款方式、交付時間等',
                 'rows' => 5,
                 'value' => $settings['print_terms'] ?? '',
-                'help' => '条款将显示在报价单打印版本的底部'
+                'help' => '條款將顯示在報價單列印版本的底部'
             ]);
             ?>
         </div>
 
-        <!-- 预览区域 -->
+        <!-- 預覽區域 -->
             <div style="margin-bottom: 32px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
-                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">设置预览</h4>
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">設定預覽</h4>
 
                 <div style="display: grid; gap: 12px; font-size: 14px;">
                     <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">公司名称：</span>
-                    <span style="font-weight: 600; color: var(--text-primary);"><?php echo h($settings['company_name'] ?? '未设置'); ?></span>
+                    <span style="color: var(--text-secondary);">公司名稱：</span>
+                    <span style="font-weight: 600; color: var(--text-primary);"><?php echo h($settings['company_name'] ?? '未設定'); ?></span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">编号前缀：</span>
+                    <span style="color: var(--text-secondary);">編號字首：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        Q-<span style="color: var(--text-tertiary);">[自动编号]</span>
+                        Q-<span style="color: var(--text-tertiary);">[自動編號]</span>
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">打印条款：</span>
+                    <span style="color: var(--text-secondary);">列印條款：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo !empty($settings['print_terms']) ? '已设置' : '未设置'; ?>
+                        <?php echo !empty($settings['print_terms']) ? '已設定' : '未設定'; ?>
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">联系方式：</span>
+                    <span style="color: var(--text-secondary);">聯絡方式：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo !empty($settings['company_contact']) ? h($settings['company_contact']) : '未设置'; ?>
+                        <?php echo !empty($settings['company_contact']) ? h($settings['company_contact']) : '未設定'; ?>
                     </span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-secondary);">统一编号：</span>
+                    <span style="color: var(--text-secondary);">統一編號：</span>
                     <span style="font-weight: 600; color: var(--text-primary);">
-                        <?php echo !empty($settings['company_tax_id']) ? h($settings['company_tax_id']) : '未设置'; ?>
+                        <?php echo !empty($settings['company_tax_id']) ? h($settings['company_tax_id']) : '未設定'; ?>
                     </span>
                 </div>
             </div>
 
             <div style="margin-top: 16px; padding: 12px; background: var(--bg-primary); border-radius: var(--border-radius-sm); border-left: 4px solid var(--primary-color);">
                 <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                    <strong>预览示例：</strong><br>
-                    报价单号：Q-2025001<br>
-                    客户信息将在此处显示<br>
-                    报价项目明细...<br>
+                    <strong>預覽示例：</strong><br>
+                    報價單號：Q-2025001<br>
+                    客戶資訊將在此處顯示<br>
+                    報價專案明細...<br>
                     <?php if (!empty($settings['print_terms'])): ?>
-                        <br><strong>条款：</strong><br>
+                        <br><strong>條款：</strong><br>
                         <?php echo nl2br(h($settings['print_terms'])); ?>
                     <?php endif; ?>
                 </div>
@@ -210,8 +210,8 @@ page_header('系统设置', [
         </div>
 
         <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end;">
-            <a href="/" class="btn btn-secondary">返回首页</a>
-            <button type="submit" class="btn btn-primary">保存设置</button>
+            <a href="/" class="btn btn-secondary">返回首頁</a>
+            <button type="submit" class="btn btn-primary">儲存設定</button>
         </div>
     </form>
 
@@ -219,9 +219,9 @@ page_header('系统设置', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>

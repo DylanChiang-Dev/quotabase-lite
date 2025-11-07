@@ -1,41 +1,41 @@
 <?php
 /**
  * Database Connection Module
- * 数据库连接模块
+ * 資料庫連線模組
  *
  * @version v2.0.0
- * @description 独立的数据库连接模块，提供PDO连接和错误处理
- * @遵循宪法原则IV: 极简架构
+ * @description 獨立的資料庫連線模組，提供PDO連線和錯誤處理
+ * @遵循憲法原則IV: 極簡架構
  */
 
-// 防止直接访问
+// 防止直接訪問
 if (!defined('QUOTABASE_SYSTEM')) {
-    // 如果系统未定义，则尝试加载配置
+    // 如果系統未定義，則嘗試載入配置
     if (file_exists(__DIR__ . '/config.php')) {
         require_once __DIR__ . '/config.php';
     } elseif (file_exists(__DIR__ . '/config.php.sample')) {
-        die('请先复制 config.php.sample 为 config.php 并配置数据库连接信息。');
+        die('請先複製 config.php.sample 為 config.php 並配置資料庫連線資訊。');
     } else {
-        die('配置文件不存在。');
+        die('配置檔案不存在。');
     }
 }
 
 /**
- * 数据库连接类
+ * 資料庫連線類
  */
 class Database {
     private static $instance = null;
     private $pdo;
 
     /**
-     * 私有构造函数，实现单例模式
+     * 私有建構函式，實現單例模式
      */
     private function __construct() {
         $this->connect();
     }
 
     /**
-     * 获取数据库实例（单例模式）
+     * 獲取資料庫例項（單例模式）
      *
      * @return Database
      */
@@ -47,27 +47,27 @@ class Database {
     }
 
     /**
-     * 建立数据库连接
+     * 建立資料庫連線
      *
-     * @throws PDOException 连接失败时抛出异常
+     * @throws PDOException 連線失敗時丟擲異常
      */
     private function connect() {
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
 
         $options = [
-            // 异常模式：出错时抛出异常而不是静默失败
+            // 異常模式：出錯時丟擲異常而不是靜默失敗
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
 
-            // 默认获取模式：返回关联数组
+            // 預設獲取模式：返回關聯陣列
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 
-            // 禁用模拟预处理：使用真实的PDO预处理语句
+            // 停用模擬預處理：使用真實的PDO預處理語句
             PDO::ATTR_EMULATE_PREPARES   => false,
 
-            // 启用字符编码设置
+            // 啟用字元編碼設定
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET,
 
-            // 设置超时时间（秒）
+            // 設定超時時間（秒）
             PDO::ATTR_TIMEOUT            => 30,
         ];
 
@@ -77,28 +77,28 @@ class Database {
         try {
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 
-            // 记录连接成功信息（仅开发环境）
+            // 記錄連線成功資訊（僅開發環境）
             if ($isCli || $serverName === 'localhost' || isset($_GET['debug'])) {
                 error_log("[DEBUG] Database connected successfully at " . date('Y-m-d H:i:s'));
             }
 
         } catch (PDOException $e) {
-            // 记录错误日志
+            // 記錄錯誤日誌
             $error_msg = "Database connection failed: " . $e->getMessage();
             error_log($error_msg);
 
-            // 生产环境：显示友好错误信息
+            // 生產環境：顯示友好錯誤資訊
             if (!$isCli && $serverName !== 'localhost' && !isset($_GET['debug'])) {
-                die('系统维护中，请稍后再试。');
+                die('系統維護中，請稍後再試。');
             } else {
-                // 开发环境：显示详细错误
-                die('数据库连接失败: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8'));
+                // 開發環境：顯示詳細錯誤
+                die('資料庫連線失敗: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8'));
             }
         }
     }
 
     /**
-     * 获取PDO实例
+     * 獲取PDO例項
      *
      * @return PDO
      */
@@ -107,12 +107,12 @@ class Database {
     }
 
     /**
-     * 执行查询并返回结果
+     * 執行查詢並返回結果
      *
-     * @param string $sql SQL语句
-     * @param array $params 参数数组
-     * @return array 查询结果
-     * @throws PDOException 查询失败时抛出异常
+     * @param string $sql SQL語句
+     * @param array $params 引數陣列
+     * @return array 查詢結果
+     * @throws PDOException 查詢失敗時丟擲異常
      */
     public function query($sql, $params = []) {
         try {
@@ -126,12 +126,12 @@ class Database {
     }
 
     /**
-     * 执行查询并返回单行结果
+     * 執行查詢並返回單行結果
      *
-     * @param string $sql SQL语句
-     * @param array $params 参数数组
-     * @return array|null 单行结果或null
-     * @throws PDOException 查询失败时抛出异常
+     * @param string $sql SQL語句
+     * @param array $params 引數陣列
+     * @return array|null 單行結果或null
+     * @throws PDOException 查詢失敗時丟擲異常
      */
     public function queryOne($sql, $params = []) {
         try {
@@ -145,12 +145,12 @@ class Database {
     }
 
     /**
-     * 执行插入/更新/删除操作
+     * 執行插入/更新/刪除操作
      *
-     * @param string $sql SQL语句
-     * @param array $params 参数数组
-     * @return int 影响的行数
-     * @throws PDOException 执行失败时抛出异常
+     * @param string $sql SQL語句
+     * @param array $params 引數陣列
+     * @return int 影響的行數
+     * @throws PDOException 執行失敗時丟擲異常
      */
     public function execute($sql, $params = []) {
         try {
@@ -164,16 +164,16 @@ class Database {
     }
 
     /**
-     * 获取最后插入的ID
+     * 獲取最後插入的ID
      *
-     * @return string 最后插入的ID
+     * @return string 最後插入的ID
      */
     public function lastInsertId() {
         return $this->pdo->lastInsertId();
     }
 
     /**
-     * 开始事务
+     * 開始事務
      *
      * @return bool
      */
@@ -182,7 +182,7 @@ class Database {
     }
 
     /**
-     * 提交事务
+     * 提交事務
      *
      * @return bool
      */
@@ -191,7 +191,7 @@ class Database {
     }
 
     /**
-     * 回滚事务
+     * 回滾事務
      *
      * @return bool
      */
@@ -200,7 +200,7 @@ class Database {
     }
 
     /**
-     * 检查是否在事务中
+     * 檢查是否在事務中
      *
      * @return bool
      */
@@ -209,12 +209,12 @@ class Database {
     }
 
     /**
-     * 调用存储过程
+     * 呼叫儲存過程
      *
-     * @param string $procedure 存储过程名
-     * @param array $params 参数数组（按引用传递）
-     * @return mixed 存储过程的返回值
-     * @throws PDOException 调用失败时抛出异常
+     * @param string $procedure 儲存過程名
+     * @param array $params 引數陣列（按引用傳遞）
+     * @return mixed 儲存過程的返回值
+     * @throws PDOException 呼叫失敗時丟擲異常
      */
     public function callProcedure($procedure, &$params = []) {
         try {
@@ -224,12 +224,12 @@ class Database {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
 
-            // 获取输出参数值
+            // 獲取輸出引數值
             $result = [];
             $outParams = [];
             foreach ($params as $key => &$param) {
                 if (is_string($param) && strlen($param) === 64 && ctype_xdigit($param)) {
-                    // 检测到可能是输出参数（64位十六进制字符串）
+                    // 檢測到可能是輸出引數（64位十六進位制字串）
                     $outParams[] = $param;
                 }
             }
@@ -255,7 +255,7 @@ class Database {
 }
 
 /**
- * 便捷函数：获取数据库实例
+ * 便捷函式：獲取資料庫例項
  *
  * @return Database
  */
@@ -264,7 +264,7 @@ function getDB() {
 }
 
 /**
- * 便捷函数：执行SQL查询
+ * 便捷函式：執行SQL查詢
  *
  * @param string $sql
  * @param array $params
@@ -275,7 +275,7 @@ function dbQuery($sql, $params = []) {
 }
 
 /**
- * 便捷函数：执行SQL查询（返回单行）
+ * 便捷函式：執行SQL查詢（返回單行）
  *
  * @param string $sql
  * @param array $params
@@ -286,7 +286,7 @@ function dbQueryOne($sql, $params = []) {
 }
 
 /**
- * 便捷函数：执行SQL语句
+ * 便捷函式：執行SQL語句
  *
  * @param string $sql
  * @param array $params
@@ -297,7 +297,7 @@ function dbExecute($sql, $params = []) {
 }
 
 /**
- * 便捷函数：调用存储过程
+ * 便捷函式：呼叫儲存過程
  *
  * @param string $procedure
  * @param array $params
@@ -308,7 +308,7 @@ function dbCallProcedure($procedure, &$params = []) {
 }
 
 /**
- * 便捷函数：获取最后插入的ID
+ * 便捷函式：獲取最後插入的ID
  *
  * @return string
  */
@@ -317,15 +317,15 @@ function dbLastInsertId() {
 }
 
 // ========================================
-// 安全验证
+// 安全驗證
 // ========================================
 
-// 检查是否已加载配置
+// 檢查是否已載入配置
 if (!defined('DB_HOST')) {
     if ($_SERVER['SERVER_NAME'] === 'localhost' || isset($_GET['debug'])) {
-        die('错误：数据库配置未定义。请检查 config.php 文件。');
+        die('錯誤：資料庫配置未定義。請檢查 config.php 檔案。');
     } else {
-        die('系统配置错误。');
+        die('系統配置錯誤。');
     }
 }
 
@@ -334,22 +334,22 @@ if (!defined('DB_HOST')) {
 // ========================================
 
 /*
-// 1. 获取数据库实例
+// 1. 獲取資料庫例項
 $db = getDB();
 
-// 2. 执行查询
+// 2. 執行查詢
 $customers = $db->query("SELECT * FROM customers WHERE active = ?", [1]);
 
-// 3. 查询单行
+// 3. 查詢單行
 $customer = $db->queryOne("SELECT * FROM customers WHERE id = ?", [123]);
 
-// 4. 执行插入
+// 4. 執行插入
 $db->execute(
     "INSERT INTO customers (name, email, org_id) VALUES (?, ?, ?)",
-    ['张三', 'zhangsan@example.com', 1]
+    ['張三', 'zhangsan@example.com', 1]
 );
 
-// 5. 使用事务
+// 5. 使用事務
 $db->beginTransaction();
 try {
     $db->execute("INSERT INTO quotes (number, customer_id, ...) VALUES (?, ?, ...)", [...]);
@@ -360,10 +360,10 @@ try {
     throw $e;
 }
 
-// 6. 调用存储过程
-$params = [1, '']; // org_id=1, 输出参数
+// 6. 呼叫儲存過程
+$params = [1, '']; // org_id=1, 輸出引數
 dbCallProcedure('next_quote_number', $params);
-$quoteNumber = $params[1]; // 获取生成的编号
+$quoteNumber = $params[1]; // 獲取生成的編號
 */
 
 ?>

@@ -1,36 +1,36 @@
 <?php
 /**
- * 客户列表页面
+ * 客戶列表頁面
  * Customer List Page
  *
  * @version v2.0.0
- * @description 客户管理列表页面，支持分页和搜索
- * @遵循宪法原则V: iOS风格用户体验
- * @遵循宪法原则I: XSS防护
+ * @description 客戶管理列表頁面，支援分頁和搜尋
+ * @遵循憲法原則V: iOS風格使用者體驗
+ * @遵循憲法原則I: XSS防護
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
 }
 
-// 获取请求参数
+// 獲取請求引數
 $page = max(1, intval($_GET['page'] ?? 1));
 $limit = DEFAULT_PAGE_SIZE;
 $search = trim($_GET['search'] ?? '');
 
 try {
-    // 获取客户列表
+    // 獲取客戶列表
     $result = get_customers($page, $limit, $search);
     $customers = $result['data'];
     $total = $result['total'];
@@ -41,16 +41,16 @@ try {
     $customers = [];
     $total = 0;
     $total_pages = 0;
-    $error = '加载客户列表失败';
+    $error = '載入客戶列表失敗';
 }
 
-// 页面开始
-html_start('客户列表');
+// 頁面開始
+html_start('客戶列表');
 
-// 输出头部
-page_header('客户管理', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '客户管理', 'url' => '/customers/']
+// 輸出頭部
+page_header('客戶管理', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '客戶管理', 'url' => '/customers/']
 ]);
 
 ?>
@@ -70,21 +70,21 @@ page_header('客户管理', [
 
     <?php
     // 卡片容器
-    card_start('客户列表', [
-        ['label' => '新建客户', 'url' => '/customers/new.php', 'class' => 'btn-primary']
+    card_start('客戶列表', [
+        ['label' => '新建客戶', 'url' => '/customers/new.php', 'class' => 'btn-primary']
     ]);
     ?>
 
-    <!-- 搜索表单 -->
+    <!-- 搜尋表單 -->
     <div class="list-toolbar">
         <form method="GET" class="list-search">
             <input
                 type="text"
                 name="search"
-                placeholder="客户名称、税务登记号或邮箱"
+                placeholder="客戶名稱、稅務登記號或郵箱"
                 value="<?php echo h($search); ?>"
             >
-            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+            <button type="submit" class="btn btn-secondary btn-compact">搜尋</button>
             <?php if (!empty($search)): ?>
                 <a href="/customers/" class="btn btn-outline btn-compact">清除</a>
             <?php endif; ?>
@@ -92,9 +92,9 @@ page_header('客户管理', [
     </div>
 
     <?php if (empty($customers)): ?>
-        <?php empty_state('暂无客户数据', '新建客户', '/customers/new.php'); ?>
+        <?php empty_state('暫無客戶資料', '新建客戶', '/customers/new.php'); ?>
     <?php else: ?>
-        <!-- 客户列表 -->
+        <!-- 客戶列表 -->
         <div class="customer-list" style="display: grid; gap: 12px;">
             <?php foreach ($customers as $customer): ?>
                 <div class="customer-card" style="border: 1px solid var(--border-light); border-radius: var(--border-radius-md); padding: 16px; background: var(--card-bg); transition: var(--transition);">
@@ -109,13 +109,13 @@ page_header('客户管理', [
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; font-size: 14px; color: var(--text-secondary);">
                                 <?php if (!empty($customer['tax_id'])): ?>
                                     <div>
-                                        <strong>税号:</strong> <?php echo h($customer['tax_id']); ?>
+                                        <strong>稅號:</strong> <?php echo h($customer['tax_id']); ?>
                                     </div>
                                 <?php endif; ?>
 
                                 <?php if (!empty($customer['email'])): ?>
                                     <div>
-                                        <strong>邮箱:</strong>
+                                        <strong>郵箱:</strong>
                                         <a href="mailto:<?php echo h($customer['email']); ?>" style="color: var(--primary-color);">
                                             <?php echo h($customer['email']); ?>
                                         </a>
@@ -124,7 +124,7 @@ page_header('客户管理', [
 
                                 <?php if (!empty($customer['phone'])): ?>
                                     <div>
-                                        <strong>电话:</strong>
+                                        <strong>電話:</strong>
                                         <a href="tel:<?php echo h($customer['phone']); ?>" style="color: var(--primary-color);">
                                             <?php echo h($customer['phone']); ?>
                                         </a>
@@ -132,7 +132,7 @@ page_header('客户管理', [
                                 <?php endif; ?>
 
                                 <div>
-                                    <strong>创建日期:</strong> <?php echo format_date($customer['created_at']); ?>
+                                    <strong>建立日期:</strong> <?php echo format_date($customer['created_at']); ?>
                                 </div>
                             </div>
 
@@ -144,11 +144,11 @@ page_header('客户管理', [
                         </div>
 
                         <div style="display: flex; gap: 8px; margin-left: 16px;">
-                            <a href="/customers/view.php?id=<?php echo $customer['id']; ?>" class="btn btn-sm btn-outline" title="查看详情">
-                                查看
+                            <a href="/customers/view.php?id=<?php echo $customer['id']; ?>" class="btn btn-sm btn-outline" title="檢視詳情">
+                                檢視
                             </a>
-                            <a href="/customers/edit.php?id=<?php echo $customer['id']; ?>" class="btn btn-sm btn-primary" title="编辑客户">
-                                编辑
+                            <a href="/customers/edit.php?id=<?php echo $customer['id']; ?>" class="btn btn-sm btn-primary" title="編輯客戶">
+                                編輯
                             </a>
                         </div>
                     </div>
@@ -156,14 +156,14 @@ page_header('客户管理', [
             <?php endforeach; ?>
         </div>
 
-        <!-- 分页 -->
+        <!-- 分頁 -->
         <?php if ($total_pages > 1): ?>
             <?php echo generate_pagination($page, $total_pages, '/customers/'); ?>
         <?php endif; ?>
 
-        <!-- 统计信息 -->
+        <!-- 統計資訊 -->
         <div style="margin-top: 16px; padding: 12px; background: var(--bg-secondary); border-radius: var(--border-radius-md); font-size: 14px; color: var(--text-secondary); text-align: center;">
-            共 <?php echo number_format($total); ?> 位客户，第 <?php echo $page; ?>/<?php echo $total_pages; ?> 页
+            共 <?php echo number_format($total); ?> 位客戶，第 <?php echo $page; ?>/<?php echo $total_pages; ?> 頁
         </div>
     <?php endif; ?>
 
@@ -171,9 +171,9 @@ page_header('客户管理', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>

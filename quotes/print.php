@@ -5,14 +5,14 @@
  *
  * @version v2.0.0
  * @description A4 格式列印輸出頁面
- * @遵循宪法原则I: 安全优先开发 - XSS防护
- * @遵循宪法原则VI: 专业打印輸出 - A4格式，表頭固定
+ * @遵循憲法原則I: 安全優先開發 - XSS防護
+ * @遵循憲法原則VI: 專業列印輸出 - A4格式，表頭固定
  */
 
 // 防止直接存取
 define('QUOTABASE_SYSTEM', true);
 
-// 加載配置和依賴
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
@@ -292,7 +292,7 @@ if ($error) {
             white-space: pre-line;
         }
 
-        /* 頁腳 */
+        /* 頁尾 */
         .page-footer {
             position: fixed;
             bottom: 0;
@@ -496,7 +496,7 @@ if ($error) {
         <?php endif; ?>
     </div>
 
-    <!-- 頁腳 -->
+    <!-- 頁尾 -->
     <div class="page-footer">
         列印時間: <?php echo date('Y-m-d H:i:s'); ?> | 報價單號: <?php echo h($quote['quote_number']); ?>
     </div>

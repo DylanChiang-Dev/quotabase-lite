@@ -8,7 +8,7 @@ description: "Implementation tasks for Quote Item Editing + Discounts"
 
 ## Phase 1: Schema & Baseline
 - [X] T101 審查 `helpers/functions.php` 中現有報價明細流程，列出需調整的函式
-- [X] T102 撰寫 SQL ALTER 腳本 (`database/migrations/20251106_quote_items_discount.sql`) 與更新 `schema.sql`
+- [X] T102 撰寫 SQL ALTER 指令碼 (`database/migrations/20251106_quote_items_discount.sql`) 與更新 `schema.sql`
 
 ## Phase 2: Backend Core
 - [X] T201 新增計算函式 (`calculate_line_gross`, `calculate_line_subtotal` with discount, `calculate_discount_percent`)

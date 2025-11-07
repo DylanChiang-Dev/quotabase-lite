@@ -9,7 +9,7 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 **Input**: Design documents from `/specs/002-integrated-quote-system/`
 **Prerequisites**: plan.md, spec.md, data-model.md, contracts/
 
-**Tests**: Manual testing (未使用自动化测试框架) - NO automated test tasks included
+**Tests**: Manual testing (未使用自動化測試框架) - NO automated test tasks included
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -54,7 +54,7 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 
 **Goal**: Implement iOS-style bottom Tab navigation with highlighting, Dark Mode, and Safe-Area support
 
-**Independent Test**: Verify navigation visible on all non-print pages, current Tab highlights correctly, Dark Mode switches automatically, Safe-Area适配 works on mobile
+**Independent Test**: Verify navigation visible on all non-print pages, current Tab highlights correctly, Dark Mode switches automatically, Safe-Area適配 works on mobile
 
 - [X] T012 [P] [US1] Implement partials/ui.php bottom navigation component (5 tabs: quotes, products, services, customers, settings)
 - [X] T013 [US1] Add CSS styling for bottom navigation in assets/style.css (iOS style, 44px tap targets, Safe-Area)
@@ -183,11 +183,11 @@ description: "Task list for Quotabase-Lite Integrated Quote Management System im
 - [X] T063 [P] Error handling: Implement consistent error pages and logging without exposing sensitive data
 - [X] T064 [P] Create README.md with setup, configuration, and usage instructions
 - [X] T065 [P] Run quickstart.md validation to ensure deployment guide accuracy
-  - ✅ 验证通过 - 文档与文件完全匹配，部署步骤清晰可行
+  - ✅ 驗證透過 - 文件與檔案完全匹配，部署步驟清晰可行
 - [⚠️] T066 [P] Code review: Verify all files follow routing-as-filename principle and ≤300 lines
-  - ✅ 路由即文件名原则: 100% 符合
-  - ⚠️ 行数限制: 8个文件超过300行，主要为helpers/functions.php (2196行)
-  - 💡 建议: 拆分helpers/functions.php为多个模块文件
+  - ✅ 路由即檔名原則: 100% 符合
+  - ⚠️ 行數限制: 8個檔案超過300行，主要為helpers/functions.php (2196行)
+  - 💡 建議: 拆分helpers/functions.php為多個模組檔案
 - [X] T067 [P] UI polish: Ensure consistent iOS styling, spacing, and Dark Mode across all pages
 
 ---
@@ -230,20 +230,20 @@ With multiple developers:
 
 ## Success Metrics
 
-- **SC-001**:底部导航在所有非打印页面可见且当前 Tab 高亮显示，点击响应准确率 100%
-- **SC-002**: Dark Mode 支持验证通过，系统能根据 prefers-color-scheme 自动切换主题，文字对比度符合可访问性标准
-- **SC-003**: Safe-Area 适配验证通过，在移动设备上导航点击热区 ≥ 44px，无误触问题
-- **SC-004**: 管理员能够在 2 分钟内完成包含 5 个项目的标准报价单创建
-- **SC-005**: 报价单金额计算准确率 100%，小计、税额、总计与手工计算一致（两位小数精度）
-- **SC-006**: 报价单编号生成具备并发安全性，支持至少 10 个管理员同时创建编号无重复
-- **SC-007**: 报价单列表页面 P95 响应时间 ≤ 200ms
-- **SC-008**: 报价单打印输出支持 A4 格式，10+ 行表格分页合理，表头在每页固定显示
-- **SC-009**: 用户可以在 Chrome 和 Edge 浏览器正常打印报价单并导出 PDF，中文字符正确显示
-- **SC-010**: 报价单创建流程的事务完整性 100%，系统故障时不会产生不完整的报价单记录
-- **SC-011**: 年度切换时编号自动归零测试通过
-- **SC-012**: XSS 防护验证通过，客户名称或目录项名称包含特殊字符时正确显示无安全漏洞
-- **SC-013**: 产品/服务列表页面 P95 响应时间 ≤ 200ms
-- **SC-014**: 设置页面的所有配置项能正确保存并在对应功能中生效
+- **SC-001**:底部導航在所有非列印頁面可見且當前 Tab 高亮顯示，點選響應準確率 100%
+- **SC-002**: Dark Mode 支援驗證透過，系統能根據 prefers-color-scheme 自動切換主題，文字對比度符合可訪問性標準
+- **SC-003**: Safe-Area 適配驗證透過，在移動裝置上導航點選熱區 ≥ 44px，無誤觸問題
+- **SC-004**: 管理員能夠在 2 分鐘內完成包含 5 個專案的標準報價單建立
+- **SC-005**: 報價單金額計算準確率 100%，小計、稅額、總計與手工計算一致（兩位小數精度）
+- **SC-006**: 報價單編號生成具備併發安全性，支援至少 10 個管理員同時建立編號無重複
+- **SC-007**: 報價單列表頁面 P95 響應時間 ≤ 200ms
+- **SC-008**: 報價單列印輸出支援 A4 格式，10+ 行表格分頁合理，表頭在每頁固定顯示
+- **SC-009**: 使用者可以在 Chrome 和 Edge 瀏覽器正常列印報價單並匯出 PDF，中文字元正確顯示
+- **SC-010**: 報價單建立流程的事務完整性 100%，系統故障時不會產生不完整的報價單記錄
+- **SC-011**: 年度切換時編號自動歸零測試透過
+- **SC-012**: XSS 防護驗證透過，客戶名稱或目錄項名稱包含特殊字元時正確顯示無安全漏洞
+- **SC-013**: 產品/服務列表頁面 P95 響應時間 ≤ 200ms
+- **SC-014**: 設定頁面的所有配置項能正確儲存並在對應功能中生效
 
 ---
 

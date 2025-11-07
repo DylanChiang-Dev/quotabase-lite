@@ -1,33 +1,33 @@
 <?php
 /**
- * 编辑服务页面
+ * 編輯服務頁面
  * Edit Service Page
  *
  * @version v2.0.0
- * @description 编辑服务信息表单页面
- * @遵循宪法原则I: 安全优先开发 - XSS防护、CSRF验证、PDO预处理
+ * @description 編輯服務資訊表單頁面
+ * @遵循憲法原則I: 安全優先開發 - XSS防護、CSRF驗證、PDO預處理
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
 }
 
-// 获取服务ID
+// 獲取服務ID
 $service_id = intval($_GET['id'] ?? 0);
 
 if ($service_id <= 0) {
-    header('Location: /services/?error=' . urlencode('无效的服务ID'));
+    header('Location: /services/?error=' . urlencode('無效的服務ID'));
     exit;
 }
 
@@ -37,34 +37,34 @@ $service = null;
 $category_tree = get_catalog_categories_tree('service');
 $category_map = get_catalog_category_map('service');
 $selected_category_id = 0;
-// 获取服务信息
+// 獲取服務資訊
 try {
     $service = get_catalog_item($service_id);
 
     if (!$service) {
-        header('Location: /services/?error=' . urlencode('服务不存在'));
+        header('Location: /services/?error=' . urlencode('服務不存在'));
         exit;
     }
 
-    // 确保是服务类型
+    // 確保是服務型別
     if ($service['type'] !== 'service') {
-        header('Location: /services/?error=' . urlencode('无效的服务类型'));
+        header('Location: /services/?error=' . urlencode('無效的服務型別'));
         exit;
     }
 
     $selected_category_id = intval($service['category_id'] ?? 0);
 } catch (Exception $e) {
     error_log("Get service error: " . $e->getMessage());
-    $error = '加载服务信息失败';
+    $error = '載入服務資訊失敗';
 }
 
-// 处理表单提交
+// 處理表單提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 验证CSRF令牌
+    // 驗證CSRF令牌
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请重新提交。';
+        $error = '無效的請求，請重新提交。';
     } else {
-        // 准备数据
+        // 準備資料
         $selected_category_id = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
         $data = [
             'sku' => trim($_POST['sku'] ?? ''),
@@ -76,16 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'category_id' => $selected_category_id
         ];
 
-        // 更新服务
+        // 更新服務
         $result = update_catalog_item($service_id, $data);
 
         if ($result['success']) {
-            // 成功，重定向到列表页
-            header('Location: /services/?success=' . urlencode('服务信息更新成功'));
+            // 成功，重定向到列表頁
+            header('Location: /services/?success=' . urlencode('服務資訊更新成功'));
             exit;
         } else {
             $error = $result['error'];
-            // 合并数据用于表单显示
+            // 合併資料用於表單顯示
             $service = array_merge($service, [
                 'sku' => $data['sku'],
                 'name' => $data['name'],
@@ -99,18 +99,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 } else {
-    // GET请求，将价格从分转换为元显示
+    // GET請求，將價格從分轉換為元顯示
     $service['unit_price'] = ($service['unit_price_cents'] ?? 0) / 100;
 }
 
-// 页面开始
-html_start('编辑服务');
+// 頁面開始
+html_start('編輯服務');
 
-// 输出头部
-page_header('编辑服务', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '服务管理', 'url' => '/services/'],
-    ['label' => '编辑服务', 'url' => '/services/edit.php?id=' . $service_id]
+// 輸出頭部
+page_header('編輯服務', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '服務管理', 'url' => '/services/'],
+    ['label' => '編輯服務', 'url' => '/services/edit.php?id=' . $service_id]
 ]);
 
 ?>
@@ -129,29 +129,29 @@ page_header('编辑服务', [
     <?php endif; ?>
 
     <?php if ($service): ?>
-        <?php card_start('编辑服务信息'); ?>
+        <?php card_start('編輯服務資訊'); ?>
 
         <form method="POST" action="/services/edit.php?id=<?php echo $service_id; ?>">
             <?php echo csrf_input(); ?>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                <!-- 基本信息 -->
+                <!-- 基本資訊 -->
                 <div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">基本信息</h3>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">基本資訊</h3>
 
                     <?php
-                    form_field('sku', 'SKU编码', 'text', [], [
+                    form_field('sku', 'SKU編碼', 'text', [], [
                         'required' => true,
-                        'placeholder' => '请输入唯一SKU编码',
+                        'placeholder' => '請輸入唯一SKU編碼',
                         'value' => $service['sku'] ?? '',
-                        'help' => 'SKU用于唯一标识服务，仅支持字母、数字、-和_'
+                        'help' => 'SKU用於唯一標識服務，僅支援字母、數字、-和_'
                     ]);
                     ?>
 
                     <?php
-                    form_field('name', '服务名称', 'text', [], [
+                    form_field('name', '服務名稱', 'text', [], [
                         'required' => true,
-                        'placeholder' => '请输入服务名称',
+                        'placeholder' => '請輸入服務名稱',
                         'value' => $service['name'] ?? ''
                     ]);
                     ?>
@@ -167,62 +167,62 @@ page_header('编辑服务', [
                     ?>
 
                     <?php
-                // 货币选择
+                // 貨幣選擇
                 $selected_currency = $service['currency'] ?? 'TWD';
-                form_field('currency', '货币', 'select', CURRENCIES, [
+                form_field('currency', '貨幣', 'select', CURRENCIES, [
                     'required' => true,
                     'selected' => $selected_currency
                 ]);
                 ?>
 
-                <label class="form-label" style="margin-top: 24px;">服务分类</label>
+                <label class="form-label" style="margin-top: 24px;">服務分類</label>
                 <?php
                 render_category_selector('service', $category_tree, $category_map, $selected_category_id, [
                     'id_prefix' => 'service_edit_category_' . $service_id,
                     'manage_url' => '/categories/index.php?type=service',
-                    'manage_label' => '分类管理',
-                    'help_text' => '分类最多三级，可在分类管理中维护。',
-                    'empty_text' => '未选择分类'
+                    'manage_label' => '分類管理',
+                    'help_text' => '分類最多三級，可在分類管理中維護。',
+                    'empty_text' => '未選擇分類'
                 ]);
                 ?>
             </div>
 
-                <!-- 价格信息 -->
+                <!-- 價格資訊 -->
                 <div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">价格信息</h3>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">價格資訊</h3>
 
                     <?php
-                    form_field('unit_price', '单价', 'text', [], [
+                    form_field('unit_price', '單價', 'text', [], [
                         'required' => true,
                         'placeholder' => '0.00',
                         'value' => $service['unit_price'] ?? '0.00',
-                        'help' => '请输入服务价格，系统将以分为单位精确存储'
+                        'help' => '請輸入服務價格，系統將以分為單位精確儲存'
                     ]);
                     ?>
 
                     <?php
-                    // 税率选择
+                    // 稅率選擇
                     $selected_tax = $service['tax_rate'] ?? 0;
-                    form_field('tax_rate', '税率', 'select', TAX_RATES, [
+                    form_field('tax_rate', '稅率', 'select', TAX_RATES, [
                         'required' => true,
                         'selected' => (string)$selected_tax
                     ]);
                     ?>
 
-                    <!-- 价格预览 -->
+                    <!-- 價格預覽 -->
                     <div id="price-preview" style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--border-radius-md); display: none;">
-                        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">价格预览</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">價格預覽</div>
                         <div style="display: grid; gap: 8px; font-size: 14px;">
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-secondary);">单价:</span>
+                                <span style="color: var(--text-secondary);">單價:</span>
                                 <span id="preview-unit-price" style="font-weight: 600; color: var(--text-primary);">-</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-secondary);">税率:</span>
+                                <span style="color: var(--text-secondary);">稅率:</span>
                                 <span id="preview-tax-rate" style="font-weight: 600; color: var(--text-primary);">-</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border-color);">
-                                <span style="color: var(--text-secondary);">含税价格:</span>
+                                <span style="color: var(--text-secondary);">含稅價格:</span>
                                 <span id="preview-total-price" style="font-weight: 700; color: var(--primary-color);">-</span>
                             </div>
                         </div>
@@ -235,8 +235,8 @@ page_header('编辑服务', [
                     <a href="/services/" class="btn btn-outline">返回列表</a>
                 </div>
                 <div style="display: flex; gap: 12px;">
-                    <a href="/services/new.php" class="btn btn-secondary">新建服务</a>
-                    <button type="submit" class="btn btn-primary">保存更改</button>
+                    <a href="/services/new.php" class="btn btn-secondary">新建服務</a>
+                    <button type="submit" class="btn btn-primary">儲存更改</button>
                 </div>
             </div>
         </form>
@@ -246,10 +246,10 @@ page_header('编辑服务', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>
 

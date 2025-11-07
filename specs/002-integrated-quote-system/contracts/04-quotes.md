@@ -6,7 +6,7 @@
 
 ## GET /quotes/index.php
 
-获取报价单列表，支持分页和筛选。
+獲取報價單列表，支援分頁和篩選。
 
 ### Query Parameters
 
@@ -56,16 +56,16 @@
 
 ### Validation Rules
 
-- status: 可选枚举值，筛选特定状态的报价单
-- customer_id: 可选整数，筛选特定客户的报价单
-- date_from: 可选日期，格式 YYYY-MM-DD，筛选此日期之后的报价单
-- date_to: 可选日期，格式 YYYY-MM-DD，筛选此日期之前的报价单
+- status: 可選列舉值，篩選特定狀態的報價單
+- customer_id: 可選整數，篩選特定客戶的報價單
+- date_from: 可選日期，格式 YYYY-MM-DD，篩選此日期之後的報價單
+- date_to: 可選日期，格式 YYYY-MM-DD，篩選此日期之前的報價單
 
 ---
 
 ## GET /quotes/new.php
 
-获取新建报价单表单数据（客户列表、默认设置）。
+獲取新建報價單表單資料（客戶列表、預設設定）。
 
 ### Response 200 OK
 
@@ -92,7 +92,7 @@
 
 ## POST /quotes/new.php
 
-创建新报价单。
+建立新報價單。
 
 ### Request
 
@@ -123,7 +123,7 @@
 ```json
 {
   "success": true,
-  "message": "报价单创建成功",
+  "message": "報價單建立成功",
   "data": {
     "id": "integer (1-9223372036854775807)",
     "number": "string (required, format: 'Q-YYYY-000001')",
@@ -161,11 +161,11 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "customer_id": ["请选择客户"],
-    "items[0].qty": ["数量必须大于 0"],
-    "items[0].unit_price_cents": ["单价不能为负数"]
+    "customer_id": ["請選擇客戶"],
+    "items[0].qty": ["數量必須大於 0"],
+    "items[0].unit_price_cents": ["單價不能為負數"]
   }
 }
 ```
@@ -176,39 +176,39 @@
 {
   "success": false,
   "error": "TRANSACTION_FAILED",
-  "message": "报价单创建失败，请重试"
+  "message": "報價單建立失敗，請重試"
 }
 ```
 
 ### Validation Rules
 
-- customer_id: 必填，必须为有效客户 ID
-- issue_date: 必填，日期格式 YYYY-MM-DD，不能为空
-- valid_until: 可选，日期格式 YYYY-MM-DD，必须 >= issue_date
-- currency: 可选，默认 'TWD'，仅支持 TWD
-- title: 可选，0-255 个字符
-- notes: 可选，0-2000 个字符
-- items: 必填数组，至少 1 个项目
-  - catalog_item_id: 可选，如提供则必须是有效的目录项 ID
-  - description: 必填，1-500 个字符
-  - qty: 必填，大于 0 的小数，最大 9999999999.9999
-  - unit: 可选，0-20 个字符
-  - unit_price_cents: 必填，正整数或 0（单位：分）
-  - tax_rate: 必填，0.00-100.00 之间的小数
-- csrf_token: 必填，64 位十六进制字符串
+- customer_id: 必填，必須為有效客戶 ID
+- issue_date: 必填，日期格式 YYYY-MM-DD，不能為空
+- valid_until: 可選，日期格式 YYYY-MM-DD，必須 >= issue_date
+- currency: 可選，預設 'TWD'，僅支援 TWD
+- title: 可選，0-255 個字元
+- notes: 可選，0-2000 個字元
+- items: 必填陣列，至少 1 個專案
+  - catalog_item_id: 可選，如提供則必須是有效的目錄項 ID
+  - description: 必填，1-500 個字元
+  - qty: 必填，大於 0 的小數，最大 9999999999.9999
+  - unit: 可選，0-20 個字元
+  - unit_price_cents: 必填，正整數或 0（單位：分）
+  - tax_rate: 必填，0.00-100.00 之間的小數
+- csrf_token: 必填，64 位十六進位制字串
 
 ### Transaction Guarantee
 
-创建报价单使用数据库事务，确保：
-- 主档和明细同时成功写入
-- 任一失败时全数回滚
-- 不产生不完整的报价单记录
+建立報價單使用資料庫事務，確保：
+- 主檔和明細同時成功寫入
+- 任一失敗時全數回滾
+- 不產生不完整的報價單記錄
 
 ---
 
 ## GET /quotes/view.php?id={id}
 
-查看报价单详细信息。
+檢視報價單詳細資訊。
 
 ### Path Parameters
 
@@ -268,7 +268,7 @@
 {
   "success": false,
   "error": "QUOTE_NOT_FOUND",
-  "message": "报价单不存在"
+  "message": "報價單不存在"
 }
 ```
 
@@ -276,7 +276,7 @@
 
 ## POST /quotes/status.php
 
-更新报价单状态。
+更新報價單狀態。
 
 ### Request
 
@@ -293,7 +293,7 @@
 ```json
 {
   "success": true,
-  "message": "报价单状态更新成功"
+  "message": "報價單狀態更新成功"
 }
 ```
 
@@ -303,7 +303,7 @@
 {
   "success": false,
   "error": "INVALID_STATUS_TRANSITION",
-  "message": "不允许的状态转换"
+  "message": "不允許的狀態轉換"
 }
 ```
 
@@ -311,13 +311,13 @@
 
 - draft → sent
 - sent → accepted/rejected/expired
-- 其他状态不允许直接变更
+- 其他狀態不允許直接變更
 
 ---
 
 ## GET /quotes/print.php?id={id}
 
-生成打印页面（HTML 格式，无导航）。
+生成列印頁面（HTML 格式，無導航）。
 
 ### Path Parameters
 
@@ -333,13 +333,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>报价单 #Q-2025-000001</title>
+  <title>報價單 #Q-2025-000001</title>
   <!-- Print-optimized styles, no navigation -->
 </head>
 <body>
-  <!-- 报价单内容，A4 格式 -->
-  <!-- 包含公司抬头、客户信息、项目明细、金额计算 -->
-  <!-- 自动触发 window.print() -->
+  <!-- 報價單內容，A4 格式 -->
+  <!-- 包含公司抬頭、客戶資訊、專案明細、金額計算 -->
+  <!-- 自動觸發 window.print() -->
 </body>
 </html>
 ```
@@ -350,6 +350,6 @@
 {
   "success": false,
   "error": "QUOTE_NOT_FOUND",
-  "message": "报价单不存在"
+  "message": "報價單不存在"
 }
 ```

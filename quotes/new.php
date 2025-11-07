@@ -1,25 +1,25 @@
 <?php
 /**
- * 新建报价单页面
+ * 新建報價單頁面
  * Create New Quote Page
  *
  * @version v2.0.0
- * @description 报价单创建页面，支持客户选择、动态添加项目
- * @遵循宪法原则I: 安全优先开发 - XSS防护、CSRF验证
- * @遵循宪法原则II: 精确财务数据处理 - 金额以分存储
- * @遵循宪法原则III: 事务原子性 - 确保数据一致性
+ * @description 報價單建立頁面，支援客戶選擇、動態新增專案
+ * @遵循憲法原則I: 安全優先開發 - XSS防護、CSRF驗證
+ * @遵循憲法原則II: 精確財務資料處理 - 金額以分儲存
+ * @遵循憲法原則III: 事務原子性 - 確保資料一致性
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
@@ -30,22 +30,22 @@ $success = '';
 $customers = [];
 $catalog_items = [];
 
-// 获取客户列表和目录项列表
+// 獲取客戶列表和目錄項列表
 try {
     $customers = get_customer_list();
     $catalog_items = get_catalog_item_list();
 } catch (Exception $e) {
     error_log("Get lists error: " . $e->getMessage());
-    $error = '加载数据失败';
+    $error = '載入資料失敗';
 }
 
-// 处理表单提交
+// 處理表單提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 验证CSRF令牌
+    // 驗證CSRF令牌
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请重新提交。';
+        $error = '無效的請求，請重新提交。';
     } else {
-        // 准备数据
+        // 準備資料
         $data = [
             'customer_id' => intval($_POST['customer_id'] ?? 0),
             'status' => $_POST['status'] ?? 'draft',
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'note' => trim($_POST['note'] ?? '')
         ];
 
-        // 处理报价项目
+        // 處理報價專案
         $items = [];
         $item_count = intval($_POST['item_count'] ?? 0);
 
@@ -70,12 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // 创建报价单
+        // 建立報價單
         $result = create_quote($data, $items);
 
         if ($result['success']) {
-            // 成功，重定向到详情页
-            header('Location: /quotes/view.php?id=' . $result['id'] . '&success=' . urlencode('报价单创建成功'));
+            // 成功，重定向到詳情頁
+            header('Location: /quotes/view.php?id=' . $result['id'] . '&success=' . urlencode('報價單建立成功'));
             exit;
         } else {
             $error = $result['error'];
@@ -83,14 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 页面开始
-html_start('新建报价单');
+// 頁面開始
+html_start('新建報價單');
 
-// 输出头部
-page_header('新建报价单', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '报价管理', 'url' => '/quotes/'],
-    ['label' => '新建报价单', 'url' => '/quotes/new.php']
+// 輸出頭部
+page_header('新建報價單', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '報價管理', 'url' => '/quotes/'],
+    ['label' => '新建報價單', 'url' => '/quotes/new.php']
 ]);
 
 ?>
@@ -102,45 +102,45 @@ page_header('新建报价单', [
         </div>
     <?php endif; ?>
 
-    <?php card_start('新建报价单'); ?>
+    <?php card_start('新建報價單'); ?>
 
     <form method="POST" action="/quotes/new.php" id="quote-form">
         <?php echo csrf_input(); ?>
 
-        <!-- 基本信息 -->
+        <!-- 基本資訊 -->
         <div style="margin-bottom: 32px;">
-            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">基本信息</h3>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">基本資訊</h3>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
                 <?php
-                // 客户选择
+                // 客戶選擇
                 $selected_customer = $_POST['customer_id'] ?? '';
-                form_field('customer_id', '客户', 'select', array_column($customers, 'name', 'id'), [
+                form_field('customer_id', '客戶', 'select', array_column($customers, 'name', 'id'), [
                     'required' => true,
                     'selected' => $selected_customer,
-                    'placeholder' => '请选择客户'
+                    'placeholder' => '請選擇客戶'
                 ]);
                 ?>
 
                 <?php
-                // 状态选择
+                // 狀態選擇
                 $selected_status = $_POST['status'] ?? 'draft';
                 $status_options = [
                     'draft' => '草稿',
-                    'sent' => '已发送',
+                    'sent' => '已傳送',
                     'accepted' => '已接受',
-                    'rejected' => '已拒绝',
-                    'expired' => '已过期'
+                    'rejected' => '已拒絕',
+                    'expired' => '已過期'
                 ];
-                form_field('status', '状态', 'select', $status_options, [
+                form_field('status', '狀態', 'select', $status_options, [
                     'required' => true,
                     'selected' => $selected_status
                 ]);
                 ?>
 
                 <?php
-                // 开票日期
-                form_field('issue_date', '开票日期', 'date', [], [
+                // 開票日期
+                form_field('issue_date', '開票日期', 'date', [], [
                     'required' => true,
                     'value' => $_POST['issue_date'] ?? date('Y-m-d')
                 ]);
@@ -154,9 +154,9 @@ page_header('新建报价单', [
                 ?>
 
                 <?php
-                // 备注
-                form_field('note', '备注', 'textarea', [], [
-                    'placeholder' => '请输入备注信息（可选）',
+                // 備註
+                form_field('note', '備註', 'textarea', [], [
+                    'placeholder' => '請輸入備註資訊（可選）',
                     'rows' => 3,
                     'value' => $_POST['note'] ?? ''
                 ]);
@@ -164,39 +164,39 @@ page_header('新建报价单', [
             </div>
         </div>
 
-        <!-- 报价项目 -->
+        <!-- 報價專案 -->
         <div style="margin-bottom: 32px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary);">报价项目</h3>
+                <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary);">報價專案</h3>
                 <button type="button" onclick="addItem()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    添加项目
+                    新增專案
                 </button>
             </div>
 
             <div id="items-container">
-                <!-- 项目将动态添加到这里 -->
+                <!-- 專案將動態新增到這裡 -->
             </div>
 
             <input type="hidden" name="item_count" id="item_count" value="0">
         </div>
 
-        <!-- 金额汇总 -->
+        <!-- 金額彙總 -->
         <div style="margin-bottom: 32px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
-            <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">金额汇总</h4>
+            <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">金額彙總</h4>
             <div style="display: grid; gap: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
-                    <span style="color: var(--text-secondary);">小计：</span>
+                    <span style="color: var(--text-secondary);">小計：</span>
                     <span id="subtotal-display" style="font-weight: 600; color: var(--text-primary);">NT$ 0.00</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
-                    <span style="color: var(--text-secondary);">税额：</span>
+                    <span style="color: var(--text-secondary);">稅額：</span>
                     <span id="tax-display" style="font-weight: 600; color: var(--text-primary);">NT$ 0.00</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 2px solid var(--border-color); font-size: 18px; font-weight: 700;">
-                    <span style="color: var(--text-primary);">总计：</span>
+                    <span style="color: var(--text-primary);">總計：</span>
                     <span id="total-display" style="color: var(--primary-color);">NT$ 0.00</span>
                 </div>
             </div>
@@ -204,7 +204,7 @@ page_header('新建报价单', [
 
         <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end;">
             <a href="/quotes/" class="btn btn-secondary">取消</a>
-            <button type="submit" class="btn btn-primary">创建报价单</button>
+            <button type="submit" class="btn btn-primary">建立報價單</button>
         </div>
     </form>
 
@@ -212,15 +212,15 @@ page_header('新建报价单', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>
 
 <script>
-// 报价单项目管理
+// 報價單專案管理
 let itemIndex = 0;
 const catalogItems = <?php echo json_encode($catalog_items); ?>;
 
@@ -233,9 +233,9 @@ function addItem() {
     itemDiv.style.cssText = 'padding: 20px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin-bottom: 16px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end;';
     itemDiv.innerHTML = `
         <div>
-            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">产品/服务 *</label>
+            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">產品/服務 *</label>
             <select name="items[${itemCount}][catalog_item_id]" onchange="updateItemPrice(${itemCount})" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);">
-                <option value="">请选择</option>
+                <option value="">請選擇</option>
                 ${catalogItems.map(item => `
                     <option value="${item.id}" data-price="${item.unit_price_cents}" data-tax="${item.tax_rate}" data-unit="${item.unit}">
                         ${item.sku} - ${item.name} (NT$ ${(item.unit_price_cents / 100).toFixed(2)})
@@ -244,15 +244,15 @@ function addItem() {
             </select>
         </div>
         <div>
-            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">数量 *</label>
+            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">數量 *</label>
             <input type="number" name="items[${itemCount}][qty]" value="1" min="0.0001" step="0.0001" onchange="updateItemPrice(${itemCount})" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);">
         </div>
         <div>
-            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">单价</label>
+            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">單價</label>
             <div id="price-${itemCount}" style="padding: 10px 12px; background: var(--bg-secondary); border-radius: var(--border-radius-sm); font-size: 14px; font-weight: 600; color: var(--text-primary);">NT$ 0.00</div>
         </div>
         <div>
-            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">小计</label>
+            <label style="display: block; font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px;">小計</label>
             <div id="subtotal-${itemCount}" style="padding: 10px 12px; background: var(--bg-secondary); border-radius: var(--border-radius-sm); font-size: 14px; font-weight: 600; color: var(--text-primary);">NT$ 0.00</div>
         </div>
         <div>
@@ -326,7 +326,7 @@ function recalculateTotal() {
     document.getElementById('total-display').textContent = `NT$ ${total.toFixed(2)}`;
 }
 
-// 页面加载时添加一个初始项目
+// 頁面載入時新增一個初始專案
 document.addEventListener('DOMContentLoaded', function() {
     addItem();
 });

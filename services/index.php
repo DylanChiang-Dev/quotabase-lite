@@ -1,36 +1,36 @@
 <?php
 /**
- * 服务列表页面
+ * 服務列表頁面
  * Services List Page
  *
  * @version v2.0.0
- * @description 服务目录列表页面，支持分页和搜索
- * @遵循宪法原则I: 安全优先开发 - XSS防护、CSRF验证、PDO预处理
+ * @description 服務目錄列表頁面，支援分頁和搜尋
+ * @遵循憲法原則I: 安全優先開發 - XSS防護、CSRF驗證、PDO預處理
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 require_once __DIR__ . '/../partials/catalog-import-ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
 }
 
-// 获取查询参数
+// 獲取查詢引數
 $page = max(1, intval($_GET['page'] ?? 1));
 $limit = 20;
 $search = trim($_GET['search'] ?? '');
 $offset = ($page - 1) * $limit;
 
-// 获取服务列表
+// 獲取服務列表
 try {
     $result = get_catalog_items('service', $page, $limit, $search);
     $services = $result['data'];
@@ -44,17 +44,17 @@ try {
     $total = 0;
     $total_pages = 0;
     $current_page = 1;
-    $error = '加载服务列表失败';
+    $error = '載入服務列表失敗';
     $category_paths = [];
 }
 
-// 页面开始
-html_start('服务管理');
+// 頁面開始
+html_start('服務管理');
 
-// 输出头部
-page_header('服务管理', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '服务管理', 'url' => '/services/']
+// 輸出頭部
+page_header('服務管理', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '服務管理', 'url' => '/services/']
 ]);
 
 ?>
@@ -78,18 +78,18 @@ page_header('服务管理', [
         </div>
     <?php endif; ?>
 
-    <?php card_start('服务目录'); ?>
+    <?php card_start('服務目錄'); ?>
 
-    <!-- 工具栏 -->
+    <!-- 工具欄 -->
     <div class="list-toolbar">
         <form method="GET" action="/services/index.php" class="list-search">
             <input
                 type="text"
                 name="search"
-                placeholder="搜索 SKU 或服务名称..."
+                placeholder="搜尋 SKU 或服務名稱..."
                 value="<?php echo h($search); ?>"
             >
-            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+            <button type="submit" class="btn btn-secondary btn-compact">搜尋</button>
             <?php if (!empty($search)): ?>
                 <a href="/services/" class="btn btn-outline btn-compact">清除</a>
             <?php endif; ?>
@@ -97,42 +97,42 @@ page_header('服务管理', [
 
         <div class="list-actions">
             <?php render_catalog_import_ui('service'); ?>
-            <a href="/services/new.php" class="btn btn-primary btn-compact list-primary-action">新建服务</a>
+            <a href="/services/new.php" class="btn btn-primary btn-compact list-primary-action">新建服務</a>
         </div>
     </div>
 
-    <!-- 统计信息 -->
+    <!-- 統計資訊 -->
     <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--border-radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; gap: 24px; align-items: center;">
             <div>
                 <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">
                     <?php echo number_format($total); ?>
                 </div>
-                <div style="font-size: 14px; color: var(--text-tertiary);">服务总数</div>
+                <div style="font-size: 14px; color: var(--text-tertiary);">服務總數</div>
             </div>
             <?php if (!empty($search)): ?>
                 <div style="font-size: 14px; color: var(--text-secondary);">
-                    搜索: "<?php echo h($search); ?>"
+                    搜尋: "<?php echo h($search); ?>"
                 </div>
             <?php endif; ?>
         </div>
         <div style="font-size: 14px; color: var(--text-tertiary);">
-            第 <?php echo $current_page; ?> 页，共 <?php echo $total_pages; ?> 页
+            第 <?php echo $current_page; ?> 頁，共 <?php echo $total_pages; ?> 頁
         </div>
     </div>
 
-    <!-- 服务列表 -->
+    <!-- 服務列表 -->
     <?php if (empty($services)): ?>
         <div style="text-align: center; padding: 48px 24px; color: var(--text-tertiary);">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin: 0 auto 16px; color: var(--text-tertiary); opacity: 0.5;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
             <?php if (!empty($search)): ?>
-                <div style="font-size: 16px;">未找到匹配的服务</div>
-                <div style="font-size: 14px; margin-top: 4px;">请尝试其他搜索关键词</div>
+                <div style="font-size: 16px;">未找到匹配的服務</div>
+                <div style="font-size: 14px; margin-top: 4px;">請嘗試其他搜尋關鍵詞</div>
             <?php else: ?>
-                <div style="font-size: 16px;">暂无服务</div>
-                <div style="font-size: 14px; margin-top: 4px;">点击上方按钮创建第一个服务</div>
+                <div style="font-size: 16px;">暫無服務</div>
+                <div style="font-size: 14px; margin-top: 4px;">點選上方按鈕建立第一個服務</div>
             <?php endif; ?>
         </div>
     <?php else: ?>
@@ -140,11 +140,11 @@ page_header('服务管理', [
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
                     <tr>
-                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary); width: 26%;">分类</th>
-                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">服务名称</th>
-                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单位</th>
-                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">单价</th>
-                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">税率</th>
+                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary); width: 26%;">分類</th>
+                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">服務名稱</th>
+                        <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">單位</th>
+                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">單價</th>
+                        <th style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600; color: var(--text-secondary);">稅率</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,8 +157,8 @@ page_header('服务管理', [
                                     $path = $category_paths[$service['category_id']] ?? get_catalog_category_path($service['category_id']);
                                 }
                                 ?>
-                                <div style="font-size: 13px; color: var(--text-tertiary);" title="<?php echo h($path ?: '未分类'); ?>">
-                                    <?php echo $path ? h($path) : '<span style="color: var(--text-secondary);">未分类</span>'; ?>
+                                <div style="font-size: 13px; color: var(--text-tertiary);" title="<?php echo h($path ?: '未分類'); ?>">
+                                    <?php echo $path ? h($path) : '<span style="color: var(--text-secondary);">未分類</span>'; ?>
                                 </div>
                             </td>
                             <td style="padding: 16px 12px;">
@@ -190,7 +190,7 @@ page_header('服务管理', [
         </div>
     <?php endif; ?>
 
-    <!-- 分页 -->
+    <!-- 分頁 -->
     <?php if ($total_pages > 1): ?>
         <div style="margin-top: 24px; display: flex; justify-content: center;">
             <?php
@@ -207,9 +207,9 @@ page_header('服务管理', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>

@@ -120,8 +120,8 @@ $users = get_all_users();
 html_start('使用者管理');
 
 page_header('使用者管理', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '系统设置', 'url' => '/settings/'],
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '系統設定', 'url' => '/settings/'],
     ['label' => '使用者管理', 'url' => '/settings/users.php']
 ]);
 ?>

@@ -6,7 +6,7 @@
 
 ## GET /exports/export-customers.php
 
-导出客户数据为 CSV 或 JSON 格式。
+匯出客戶資料為 CSV 或 JSON 格式。
 
 ### Query Parameters
 
@@ -21,8 +21,8 @@
 **Content-Type: text/csv** (format=csv)
 
 ```csv
-ID,客户名称,税务登记号,邮箱,电话,账单地址,收货地址,备注,状态,创建时间
-1,ABC 公司,12345678,info@abc.com,02-12345678,"台北市信义区","台北市信义区","重点客户",活跃,2025-01-01 10:00:00
+ID,客戶名稱,稅務登記號,郵箱,電話,賬單地址,收貨地址,備註,狀態,建立時間
+1,ABC 公司,12345678,info@abc.com,02-12345678,"臺北市信義區","臺北市信義區","重點客戶",活躍,2025-01-01 10:00:00
 ```
 
 **Content-Type: application/json** (format=json)
@@ -56,7 +56,7 @@ ID,客户名称,税务登记号,邮箱,电话,账单地址,收货地址,备注,�
 {
   "success": false,
   "error": "UNAUTHORIZED",
-  "message": "请先登录"
+  "message": "請先登入"
 }
 ```
 
@@ -64,7 +64,7 @@ ID,客户名称,税务登记号,邮箱,电话,账单地址,收货地址,备注,�
 
 ## GET /exports/export-products.php
 
-导出产品数据为 CSV 或 JSON 格式。
+匯出產品資料為 CSV 或 JSON 格式。
 
 ### Query Parameters
 
@@ -79,8 +79,8 @@ ID,客户名称,税务登记号,邮箱,电话,账单地址,收货地址,备注,�
 **Content-Type: text/csv** (format=csv)
 
 ```csv
-ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
-1,product,P001,产品A,pcs,TWD,10000,5.00,启用,2025-01-01 10:00:00
+ID,型別,SKU,名稱,單位,幣種,單價(分),稅率,狀態,建立時間
+1,product,P001,產品A,pcs,TWD,10000,5.00,啟用,2025-01-01 10:00:00
 ```
 
 **Content-Type: application/json** (format=json)
@@ -112,7 +112,7 @@ ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
 
 ## GET /exports/export-services.php
 
-导出服务数据为 CSV 或 JSON 格式。
+匯出服務資料為 CSV 或 JSON 格式。
 
 ### Query Parameters
 
@@ -127,8 +127,8 @@ ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
 **Content-Type: text/csv** (format=csv)
 
 ```csv
-ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
-1,service,S001,咨询服务,小时,TWD,50000,0.00,启用,2025-01-01 10:00:00
+ID,型別,SKU,名稱,單位,幣種,單價(分),稅率,狀態,建立時間
+1,service,S001,諮詢服務,小時,TWD,50000,0.00,啟用,2025-01-01 10:00:00
 ```
 
 **Content-Type: application/json** (format=json)
@@ -160,7 +160,7 @@ ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
 
 ## GET /exports/export-quotes.php
 
-导出报价单数据为 CSV 或 JSON 格式。
+匯出報價單資料為 CSV 或 JSON 格式。
 
 ### Query Parameters
 
@@ -177,7 +177,7 @@ ID,类型,SKU,名称,单位,币种,单价(分),税率,状态,创建时间
 **Content-Type: text/csv** (format=csv)
 
 ```csv
-报价单编号,客户,发出日期,状态,小计(分),税额(分),总计(分),币种
+報價單編號,客戶,發出日期,狀態,小計(分),稅額(分),總計(分),幣種
 Q-2025-000001,ABC 公司,2025-01-01,草稿,10000,500,10500,TWD
 ```
 
@@ -208,13 +208,13 @@ Q-2025-000001,ABC 公司,2025-01-01,草稿,10000,500,10500,TWD
 
 ### Validation Rules
 
-- date_from: 可选，格式 YYYY-MM-DD，筛选此日期之后的报价单
-- date_to: 可选，格式 YYYY-MM-DD，筛选此日期之前的报价单
-- 如果同时提供 date_from 和 date_to，则 date_from <= date_to
+- date_from: 可選，格式 YYYY-MM-DD，篩選此日期之後的報價單
+- date_to: 可選，格式 YYYY-MM-DD，篩選此日期之前的報價單
+- 如果同時提供 date_from 和 date_to，則 date_from <= date_to
 
 ### Export Notes
 
-- CSV 格式使用 UTF-8 编码，支持中文字符
-- JSON 格式使用 UTF-8 编码，字段名使用下划线命名
-- 导出文件包含导出时间戳和总记录数
-- 金额以分为单位导出，便于程序处理
+- CSV 格式使用 UTF-8 編碼，支援中文字元
+- JSON 格式使用 UTF-8 編碼，欄位名使用下劃線命名
+- 匯出檔案包含匯出時間戳和總記錄數
+- 金額以分為單位匯出，便於程式處理

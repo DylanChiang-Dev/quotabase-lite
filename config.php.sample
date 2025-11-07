@@ -1,27 +1,27 @@
 <?php
 /**
  * Quotabase-Lite Configuration Template
- * 配置模板文件 - 复制为 config.php 并填入实际配置
+ * 配置模板檔案 - 複製為 config.php 並填入實際配置
  *
  * @version v2.0.0
  */
 
-// 防止直接访问
+// 防止直接訪問
 if (!defined('QUOTABASE_SYSTEM')) {
     define('QUOTABASE_SYSTEM', true);
 }
 
 /**
  * ========================================
- * 数据库配置 (Database Configuration)
+ * 資料庫配置 (Database Configuration)
  * ========================================
  */
 
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');           // 数据库主机
-define('DB_NAME', getenv('DB_NAME') ?: 'quotabase_lite');      // 数据库名
-define('DB_USER', getenv('DB_USER') ?: 'your_username');       // 数据库用户名
-define('DB_PASS', getenv('DB_PASS') ?: 'your_password');       // 数据库密码
-define('DB_CHARSET', 'utf8mb4');          // 字符集
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');           // 資料庫主機
+define('DB_NAME', getenv('DB_NAME') ?: 'quotabase_lite');      // 資料庫名
+define('DB_USER', getenv('DB_USER') ?: 'your_username');       // 資料庫使用者名稱
+define('DB_PASS', getenv('DB_PASS') ?: 'your_password');       // 資料庫密碼
+define('DB_CHARSET', 'utf8mb4');          // 字元集
 
 /**
  * ========================================
@@ -29,41 +29,41 @@ define('DB_CHARSET', 'utf8mb4');          // 字符集
  * ========================================
  */
 
-define('SESSION_TIMEOUT', 3600);          // 会话超时时间（秒，默认1小时）
-define('CSRF_TOKEN_NAME', 'csrf_token');  // CSRF token 名称
-define('ENCRYPTION_KEY', 'generate_a_32_character_random_string'); // 加密密钥
+define('SESSION_TIMEOUT', 3600);          // 會話超時時間（秒，預設1小時）
+define('CSRF_TOKEN_NAME', 'csrf_token');  // CSRF token 名稱
+define('ENCRYPTION_KEY', 'generate_a_32_character_random_string'); // 加密金鑰
 
 /**
  * ========================================
- * 时区配置 (Timezone Configuration)
+ * 時區配置 (Timezone Configuration)
  * ========================================
  */
 
-define('DEFAULT_TIMEZONE', getenv('DEFAULT_TIMEZONE') ?: 'Asia/Taipei');    // 默认时区
-define('DISPLAY_TIMEZONE', getenv('DISPLAY_TIMEZONE') ?: DEFAULT_TIMEZONE); // 显示时区
+define('DEFAULT_TIMEZONE', getenv('DEFAULT_TIMEZONE') ?: 'Asia/Taipei');    // 預設時區
+define('DISPLAY_TIMEZONE', getenv('DISPLAY_TIMEZONE') ?: DEFAULT_TIMEZONE); // 顯示時區
 
 /**
  * ========================================
- * 应用配置 (Application Configuration)
+ * 應用配置 (Application Configuration)
  * ========================================
  */
 
-define('APP_NAME', 'Quotabase-Lite');     // 应用名称
-define('APP_VERSION', '2.0.0');           // 应用版本
-define('DEFAULT_ORG_ID', 1);              // 默认组织 ID（MVP 使用 1）
+define('APP_NAME', 'Quotabase-Lite');     // 應用名稱
+define('APP_VERSION', '2.0.0');           // 應用版本
+define('DEFAULT_ORG_ID', 1);              // 預設組織 ID（MVP 使用 1）
 
 /**
- * 默认分页数量
+ * 預設分頁數量
  */
 define('DEFAULT_PAGE_SIZE', 20);
 
 /**
  * ========================================
- * 错误处理 (Error Handling)
+ * 錯誤處理 (Error Handling)
  * ========================================
  */
 
-// 生产环境：错误信息不显示，启用日志记录
+// 生產環境：錯誤資訊不顯示，啟用日誌記錄
 $serverName = $_SERVER['SERVER_NAME'] ?? '';
 $isCli = php_sapi_name() === 'cli';
 
@@ -72,12 +72,12 @@ if (!$isCli && $serverName !== 'localhost' && !isset($_GET['debug'])) {
     ini_set('log_errors', 1);
     ini_set('error_log', __DIR__ . '/logs/error.log');
 } else {
-    // 开发环境：显示错误信息
+    // 開發環境：顯示錯誤資訊
     ini_set('display_errors', 1);
     error_reporting(E_ALL);
 }
 
-// 创建日志目录
+// 建立日誌目錄
 $logDir = __DIR__ . '/logs';
 if (!is_dir($logDir)) {
     @mkdir($logDir, 0755, true);
@@ -85,12 +85,12 @@ if (!is_dir($logDir)) {
 
 /**
  * ========================================
- * 启动会话 (Start Session)
+ * 啟動會話 (Start Session)
  * ========================================
  */
 
 if (session_status() === PHP_SESSION_NONE) {
-    // 会话安全配置
+    // 會話安全配置
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
     ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
@@ -100,7 +100,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 /**
  * ========================================
- * 自动加载函数库 (Auto-load Functions)
+ * 自動載入函式庫 (Auto-load Functions)
  * ========================================
  */
 
@@ -108,7 +108,7 @@ require_once __DIR__ . '/helpers/functions.php';
 
 /**
  * ========================================
- * 数据库连接 (Database Connection)
+ * 資料庫連線 (Database Connection)
  * ========================================
  */
 
@@ -122,18 +122,18 @@ try {
 
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 } catch (PDOException $e) {
-    // 生产环境不显示详细错误
+    // 生產環境不顯示詳細錯誤
     if ($_SERVER['SERVER_NAME'] !== 'localhost') {
         error_log("Database connection failed: " . $e->getMessage());
-        die("系统维护中，请稍后再试。");
+        die("系統維護中，請稍後再試。");
     } else {
-        die("数据库连接失败: " . $e->getMessage());
+        die("資料庫連線失敗: " . $e->getMessage());
     }
 }
 
 /**
  * ========================================
- * 初始化系统设置 (Initialize System Settings)
+ * 初始化系統設定 (Initialize System Settings)
  * ========================================
  */
 

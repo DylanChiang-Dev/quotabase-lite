@@ -1,22 +1,22 @@
 <?php
 /**
- * 登录页面
+ * 登入頁面
  * Login Page
  *
  * @version v2.0.0
- * @description 用户登录认证页面
- * @遵循宪法原则I: 安全优先开发
+ * @description 使用者登入認證頁面
+ * @遵循憲法原則I: 安全優先開發
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和工具函数
+// 載入配置和工具函式
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/helpers/functions.php';
 require_once __DIR__ . '/db.php';
 
-// 如果已登录，重定向到首页
+// 如果已登入，重定向到首頁
 if (is_logged_in()) {
     header('Location: /');
     exit;
@@ -25,34 +25,34 @@ if (is_logged_in()) {
 $error = '';
 $success = '';
 
-// 处理登录请求
+// 處理登入請求
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 验证CSRF令牌
+    // 驗證CSRF令牌
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请重新提交。';
+        $error = '無效的請求，請重新提交。';
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        // 验证输入
+        // 驗證輸入
         if (empty($username) || empty($password)) {
-            $error = '请输入用户名和密码。';
+            $error = '請輸入使用者名稱和密碼。';
         } elseif (!validate_string_length($username, 50, 1)) {
-            $error = '用户名长度不正确。';
+            $error = '使用者名稱長度不正確。';
         } elseif (!validate_string_length($password, 100, 6)) {
-            $error = '密码长度至少6位。';
+            $error = '密碼長度至少6位。';
         } else {
             try {
                 $user = get_user_by_username($username);
 
                 if (!$user) {
-                    $error = '用户名或密码错误。';
+                    $error = '使用者名稱或密碼錯誤。';
                     error_log("Failed login attempt (not found): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
                 } elseif ($user['status'] !== 'active') {
-                    $error = '账号已被停用，请联系管理员。';
+                    $error = '賬號已被停用，請聯絡管理員。';
                     error_log("Blocked login attempt (suspended): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
                 } elseif (!password_verify($password, $user['password_hash'])) {
-                    $error = '用户名或密码错误。';
+                    $error = '使用者名稱或密碼錯誤。';
                     error_log("Failed login attempt (bad password): " . $username . " from " . ($_SERVER['REMOTE_ADDR'] ?? ''));
                 } else {
                     session_regenerate_id(true);
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } catch (Exception $e) {
                 error_log("Login error: " . $e->getMessage());
-                $error = '登录失败，请稍后再试。';
+                $error = '登入失敗，請稍後再試。';
             }
         }
     }
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - <?php echo APP_NAME; ?></title>
+    <title>登入 - <?php echo APP_NAME; ?></title>
     <style>
         * {
             margin: 0;
@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-container">
         <div class="login-header">
             <h1><?php echo APP_NAME; ?></h1>
-            <p>集成报价管理系统</p>
+            <p>整合報價管理系統</p>
         </div>
 
         <form class="login-form" method="POST" action="/login.php">
@@ -249,13 +249,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="form-group">
-                <label class="form-label" for="username">用户名</label>
+                <label class="form-label" for="username">使用者名稱</label>
                 <input
                     type="text"
                     id="username"
                     name="username"
                     class="form-control"
-                    placeholder="请输入用户名"
+                    placeholder="請輸入使用者名稱"
                     required
                     maxlength="50"
                     value="<?php echo h($_POST['username'] ?? ''); ?>"
@@ -264,13 +264,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">密码</label>
+                <label class="form-label" for="password">密碼</label>
                 <input
                     type="password"
                     id="password"
                     name="password"
                     class="form-control"
-                    placeholder="请输入密码"
+                    placeholder="請輸入密碼"
                     required
                     minlength="6"
                     maxlength="100"
@@ -279,13 +279,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <button type="submit" class="btn-login">
-                登录系统
+                登入系統
             </button>
 
             <div class="demo-info">
-                <strong>演示账号</strong>
-                用户名: admin<br>
-                密码: admin123
+                <strong>演示賬號</strong>
+                使用者名稱: admin<br>
+                密碼: admin123
             </div>
         </form>
 

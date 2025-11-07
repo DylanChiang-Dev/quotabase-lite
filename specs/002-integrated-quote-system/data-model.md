@@ -5,71 +5,71 @@
 
 ## Entities Overview
 
-系统包含 6 个核心实体，采用单租户架构（ORG_ID=1），所有表预留 org_id 字段支持未来多租户升级。
+系統包含 6 個核心實體，採用單租戶架構（ORG_ID=1），所有表預留 org_id 欄位支援未來多租戶升級。
 
 ## Entity Details
 
-### 1. Organizations (组织)
+### 1. Organizations (組織)
 
-**Purpose**: 支持未来多租户升级的预留表，当前 MVP 使用 ORG_ID=1
+**Purpose**: 支援未來多租戶升級的預留表，當前 MVP 使用 ORG_ID=1
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 组织 ID |
-| name | VARCHAR(255) | NOT NULL | 组织名称 |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 組織 ID |
+| name | VARCHAR(255) | NOT NULL | 組織名稱 |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
 
-**Note**: MVP 阶段将使用硬编码的 ORG_ID=1，无需创建多租户表结构。
+**Note**: MVP 階段將使用硬編碼的 ORG_ID=1，無需建立多租戶表結構。
 
 ---
 
-### 2. Customers (客户)
+### 2. Customers (客戶)
 
-**Purpose**: 存储企业客户基本信息和联系方式
+**Purpose**: 儲存企業客戶基本資訊和聯絡方式
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 客户 ID |
-| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 组织 ID（预留多租户） |
-| name | VARCHAR(255) | NOT NULL | 客户名称（必填） |
-| tax_id | VARCHAR(50) | NULL | 税务登记号 |
-| email | VARCHAR(255) | NULL | 邮箱 |
-| phone | VARCHAR(50) | NULL | 电话 |
-| billing_address | TEXT | NULL | 账单地址 |
-| shipping_address | TEXT | NULL | 收货地址 |
-| note | TEXT | NULL | 备注 |
-| active | TINYINT(1) | DEFAULT 1 | 软删除标记 |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 客戶 ID |
+| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 組織 ID（預留多租戶） |
+| name | VARCHAR(255) | NOT NULL | 客戶名稱（必填） |
+| tax_id | VARCHAR(50) | NULL | 稅務登記號 |
+| email | VARCHAR(255) | NULL | 郵箱 |
+| phone | VARCHAR(50) | NULL | 電話 |
+| billing_address | TEXT | NULL | 賬單地址 |
+| shipping_address | TEXT | NULL | 收貨地址 |
+| note | TEXT | NULL | 備註 |
+| active | TINYINT(1) | DEFAULT 1 | 軟刪除標記 |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
 
 **Indexes**:
 - `idx_customers_org_id` ON (org_id)
 - `idx_customers_active` ON (active)
 
 **State Transitions**:
-- 活跃 → 禁用（soft delete, active = 0）
-- 禁用 → 活跃（active = 1）
+- 活躍 → 停用（soft delete, active = 0）
+- 停用 → 活躍（active = 1）
 
 ---
 
-### 3. Catalog Items (目录项 - 产品/服务统一表)
+### 3. Catalog Items (目錄項 - 產品/服務統一表)
 
-**Purpose**: 统一存储产品和服务信息，通过 type 字段区分
+**Purpose**: 統一儲存產品和服務資訊，透過 type 欄位區分
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 项目 ID |
-| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 组织 ID（预留多租户） |
-| type | ENUM('product', 'service') | NOT NULL | 类型：产品或服务 |
-| sku | VARCHAR(100) | NOT NULL | SKU 编码（同一 org_id 下唯一） |
-| name | VARCHAR(255) | NOT NULL | 名称（必填） |
-| unit | VARCHAR(20) | DEFAULT 'pcs' | 单位 |
-| currency | VARCHAR(3) | DEFAULT 'TWD' | 币种（仅支持 TWD） |
-| unit_price_cents | BIGINT UNSIGNED | NOT NULL | 单价（单位：分） |
-| tax_rate | DECIMAL(5,2) | DEFAULT 0.00 | 税率（%） |
-| active | TINYINT(1) | DEFAULT 1 | 状态（启用/禁用） |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 專案 ID |
+| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 組織 ID（預留多租戶） |
+| type | ENUM('product', 'service') | NOT NULL | 型別：產品或服務 |
+| sku | VARCHAR(100) | NOT NULL | SKU 編碼（同一 org_id 下唯一） |
+| name | VARCHAR(255) | NOT NULL | 名稱（必填） |
+| unit | VARCHAR(20) | DEFAULT 'pcs' | 單位 |
+| currency | VARCHAR(3) | DEFAULT 'TWD' | 幣種（僅支援 TWD） |
+| unit_price_cents | BIGINT UNSIGNED | NOT NULL | 單價（單位：分） |
+| tax_rate | DECIMAL(5,2) | DEFAULT 0.00 | 稅率（%） |
+| active | TINYINT(1) | DEFAULT 1 | 狀態（啟用/停用） |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
 
 **Indexes**:
 - `idx_catalog_org_type` ON (org_id, type)
@@ -77,38 +77,38 @@
 - `idx_catalog_active` ON (active)
 
 **Validation Rules**:
-- SKU 在同一 org_id 下必须唯一（UNIQUE 约束）
+- SKU 在同一 org_id 下必須唯一（UNIQUE 約束）
 - type 只能是 'product' 或 'service'
-- unit_price_cents 必须为正整数（>= 0）
-- tax_rate 范围：0.00 - 100.00
+- unit_price_cents 必須為正整數（>= 0）
+- tax_rate 範圍：0.00 - 100.00
 
 **State Transitions**:
-- 启用 → 禁用（active = 0）
-- 禁用 → 启用（active = 1）
+- 啟用 → 停用（active = 0）
+- 停用 → 啟用（active = 1）
 
 ---
 
-### 4. Quotes (报价单主档)
+### 4. Quotes (報價單主檔)
 
-**Purpose**: 存储报价单基本信息
+**Purpose**: 儲存報價單基本資訊
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 报价单 ID |
-| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 组织 ID |
-| number | VARCHAR(50) | NOT NULL, UNIQUE | 报价单编号（格式：前缀-YYYY-000001） |
-| customer_id | BIGINT UNSIGNED | NOT NULL, INDEX | 客户 ID（外键） |
-| issue_date | DATE | NOT NULL | 发出日期（UTC） |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 報價單 ID |
+| org_id | BIGINT UNSIGNED | NOT NULL, INDEX | 組織 ID |
+| number | VARCHAR(50) | NOT NULL, UNIQUE | 報價單編號（格式：字首-YYYY-000001） |
+| customer_id | BIGINT UNSIGNED | NOT NULL, INDEX | 客戶 ID（外部索引鍵） |
+| issue_date | DATE | NOT NULL | 發出日期（UTC） |
 | valid_until | DATE | NULL | 有效期至（UTC） |
-| currency | VARCHAR(3) | DEFAULT 'TWD' | 币种（仅支持 TWD） |
-| status | ENUM('draft', 'sent', 'accepted', 'rejected', 'expired') | DEFAULT 'draft' | 状态 |
-| title | VARCHAR(255) | NULL | 报价单标题 |
-| notes | TEXT | NULL | 备注 |
-| subtotal_cents | BIGINT UNSIGNED | NOT NULL | 小计（分） |
-| tax_amount_cents | BIGINT UNSIGNED | NOT NULL | 税额（分） |
-| total_cents | BIGINT UNSIGNED | NOT NULL | 总计（分） |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+| currency | VARCHAR(3) | DEFAULT 'TWD' | 幣種（僅支援 TWD） |
+| status | ENUM('draft', 'sent', 'accepted', 'rejected', 'expired') | DEFAULT 'draft' | 狀態 |
+| title | VARCHAR(255) | NULL | 報價單標題 |
+| notes | TEXT | NULL | 備註 |
+| subtotal_cents | BIGINT UNSIGNED | NOT NULL | 小計（分） |
+| tax_amount_cents | BIGINT UNSIGNED | NOT NULL | 稅額（分） |
+| total_cents | BIGINT UNSIGNED | NOT NULL | 總計（分） |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
 
 **Indexes**:
 - `idx_quotes_org_customer_date` ON (org_id, customer_id, issue_date)
@@ -117,74 +117,74 @@
 - `idx_quotes_issue_date` ON (issue_date)
 
 **Foreign Keys**:
-- `FOREIGN KEY (customer_id) REFERENCES customers(id)` (需要时启用)
+- `FOREIGN KEY (customer_id) REFERENCES customers(id)` (需要時啟用)
 
 **State Transitions**:
 - draft → sent
 - sent → accepted/rejected/expired
-- 其他状态不允许直接变更
+- 其他狀態不允許直接變更
 
 **Validation Rules**:
-- 金额字段（subtotal_cents、tax_amount_cents、total_cents）必须 >= 0
-- 金额计算公式：total_cents = subtotal_cents + tax_amount_cents
-- valid_until 必须 >= issue_date
-- 编号格式：前缀-YYYY-000001（如 Q-2025-000001）
+- 金額欄位（subtotal_cents、tax_amount_cents、total_cents）必須 >= 0
+- 金額計算公式：total_cents = subtotal_cents + tax_amount_cents
+- valid_until 必須 >= issue_date
+- 編號格式：字首-YYYY-000001（如 Q-2025-000001）
 
 ---
 
-### 5. Quote Items (报价项目明细)
+### 5. Quote Items (報價專案明細)
 
-**Purpose**: 存储报价单明细行项目
+**Purpose**: 儲存報價單明細行專案
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 项目 ID |
-| quote_id | BIGINT UNSIGNED | NOT NULL, INDEX | 报价单 ID（外键） |
-| catalog_item_id | BIGINT UNSIGNED | NULL | 关联的目录项 ID（可为空，支持手工输入描述） |
-| description | VARCHAR(500) | NOT NULL | 项目描述 |
-| qty | DECIMAL(18,4) | NOT NULL | 数量（精确到 0.0001） |
-| unit | VARCHAR(20) | NULL | 单位 |
-| unit_price_cents | BIGINT UNSIGNED | NOT NULL | 单价（分） |
-| tax_rate | DECIMAL(5,2) | NOT NULL | 税率（%） |
-| line_subtotal_cents | BIGINT UNSIGNED | NOT NULL | 行小计（分） |
-| line_tax_cents | BIGINT UNSIGNED | NOT NULL | 行税额（分） |
-| line_total_cents | BIGINT UNSIGNED | NOT NULL | 行总计（分） |
-| line_order | INT | NOT NULL | 行顺序（排序用） |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 專案 ID |
+| quote_id | BIGINT UNSIGNED | NOT NULL, INDEX | 報價單 ID（外部索引鍵） |
+| catalog_item_id | BIGINT UNSIGNED | NULL | 關聯的目錄項 ID（可為空，支援手工輸入描述） |
+| description | VARCHAR(500) | NOT NULL | 專案描述 |
+| qty | DECIMAL(18,4) | NOT NULL | 數量（精確到 0.0001） |
+| unit | VARCHAR(20) | NULL | 單位 |
+| unit_price_cents | BIGINT UNSIGNED | NOT NULL | 單價（分） |
+| tax_rate | DECIMAL(5,2) | NOT NULL | 稅率（%） |
+| line_subtotal_cents | BIGINT UNSIGNED | NOT NULL | 行小計（分） |
+| line_tax_cents | BIGINT UNSIGNED | NOT NULL | 行稅額（分） |
+| line_total_cents | BIGINT UNSIGNED | NOT NULL | 行總計（分） |
+| line_order | INT | NOT NULL | 行順序（排序用） |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
 
 **Indexes**:
 - `idx_quote_items_quote_id` ON (quote_id)
 - `idx_quote_items_order` ON (quote_id, line_order)
 
 **Foreign Keys**:
-- `FOREIGN KEY (quote_id) REFERENCES quotes(id)` (需要时启用)
-- `FOREIGN KEY (catalog_item_id) REFERENCES catalog_items(id)` (需要时启用)
+- `FOREIGN KEY (quote_id) REFERENCES quotes(id)` (需要時啟用)
+- `FOREIGN KEY (catalog_item_id) REFERENCES catalog_items(id)` (需要時啟用)
 
 **Calculation Formula**:
-- 行小计 = qty × unit_price_cents
-- 行税额 = 行小计 × tax_rate
-- 行总计 = 行小计 + 行税额
+- 行小計 = qty × unit_price_cents
+- 行稅額 = 行小計 × tax_rate
+- 行總計 = 行小計 + 行稅額
 
 **Validation Rules**:
-- qty 必须 > 0
-- unit_price_cents 必须 >= 0
-- tax_rate 范围：0.00 - 100.00
-- line_order 用于排序，必须在同一报价单内唯一
+- qty 必須 > 0
+- unit_price_cents 必須 >= 0
+- tax_rate 範圍：0.00 - 100.00
+- line_order 用於排序，必須在同一報價單內唯一
 
 ---
 
-### 6. Quote Sequences (年度编号序列表)
+### 6. Quote Sequences (年度編號序列表)
 
-**Purpose**: 管理年度报价单编号计数器
+**Purpose**: 管理年度報價單編號計數器
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 序号 ID |
-| org_id | BIGINT UNSIGNED | NOT NULL, UNIQUE | 组织 ID（每个组织一条记录） |
-| prefix | VARCHAR(10) | DEFAULT 'Q' | 编号前缀 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 序號 ID |
+| org_id | BIGINT UNSIGNED | NOT NULL, UNIQUE | 組織 ID（每個組織一條記錄） |
+| prefix | VARCHAR(10) | DEFAULT 'Q' | 編號字首 |
 | year | INT | NOT NULL | 年度 |
-| current_number | INT | DEFAULT 0 | 当前编号 |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+| current_number | INT | DEFAULT 0 | 當前編號 |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
 
 **Indexes**:
 - `idx_quote_sequences_org_year` ON (org_id, year) UNIQUE
@@ -203,32 +203,32 @@ BEGIN
     DECLARE v_current INT;
     DECLARE v_next INT;
 
-    -- 获取当前年份
+    -- 獲取當前年份
     SET v_year = YEAR(NOW());
     SET v_prefix = (SELECT prefix FROM quote_sequences WHERE org_id = p_org_id);
 
-    -- 锁定行防止并发
+    -- 鎖定行防止併發
     SELECT current_number INTO v_current
     FROM quote_sequences
     WHERE org_id = p_org_id AND year = v_year
     FOR UPDATE;
 
-    -- 如果不存在则创建新记录
+    -- 如果不存在則建立新記錄
     IF v_current IS NULL THEN
         INSERT INTO quote_sequences (org_id, year, prefix, current_number)
         VALUES (p_org_id, v_year, v_prefix, 0);
         SET v_current = 0;
     END IF;
 
-    -- 递增编号
+    -- 遞增編號
     SET v_next = v_current + 1;
 
-    -- 更新计数器
+    -- 更新計數器
     UPDATE quote_sequences
     SET current_number = v_next
     WHERE org_id = p_org_id AND year = v_year;
 
-    -- 构造返回编号：前缀-YYYY-000001
+    -- 構造返回編號：字首-YYYY-000001
     SET p_out_number = CONCAT(v_prefix, '-', v_year, '-', LPAD(v_next, 6, '0'));
 END//
 DELIMITER ;
@@ -236,23 +236,23 @@ DELIMITER ;
 
 ---
 
-### 7. Settings (系统设置)
+### 7. Settings (系統設定)
 
-**Purpose**: 存储系统全局配置
+**Purpose**: 儲存系統全域性配置
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 设置 ID |
-| org_id | BIGINT UNSIGNED | NOT NULL, UNIQUE | 组织 ID（每个组织一条记录） |
-| company_name | VARCHAR(255) | NULL | 公司名称 |
+| id | BIGINT UNSIGNED | PK, AUTO_INCREMENT | 設定 ID |
+| org_id | BIGINT UNSIGNED | NOT NULL, UNIQUE | 組織 ID（每個組織一條記錄） |
+| company_name | VARCHAR(255) | NULL | 公司名稱 |
 | company_address | TEXT | NULL | 公司地址 |
-| company_contact | VARCHAR(255) | NULL | 公司联系方式 |
-| quote_prefix | VARCHAR(10) | DEFAULT 'Q' | 报价单编号前缀 |
-| default_tax_rate | DECIMAL(5,2) | DEFAULT 0.00 | 默认税率（%） |
-| print_terms | TEXT | NULL | 打印条款文字 |
-| timezone | VARCHAR(50) | DEFAULT 'Asia/Taipei' | 时区 |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+| company_contact | VARCHAR(255) | NULL | 公司聯絡方式 |
+| quote_prefix | VARCHAR(10) | DEFAULT 'Q' | 報價單編號字首 |
+| default_tax_rate | DECIMAL(5,2) | DEFAULT 0.00 | 預設稅率（%） |
+| print_terms | TEXT | NULL | 列印條款文字 |
+| timezone | VARCHAR(50) | DEFAULT 'Asia/Taipei' | 時區 |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
 
 **Indexes**:
 - `idx_settings_org_id` ON (org_id) UNIQUE
@@ -277,29 +277,29 @@ Catalog Items (1) ── (N) Quote Items
 
 ## Database Index Strategy
 
-### Primary Indexes (基于查询模式)
+### Primary Indexes (基於查詢模式)
 
 1. **Customers**
-   - `idx_customers_org_id` - 支持按组织查询
-   - `idx_customers_active` - 支持按状态筛选
+   - `idx_customers_org_id` - 支援按組織查詢
+   - `idx_customers_active` - 支援按狀態篩選
 
 2. **Catalog Items**
-   - `idx_catalog_org_type` - 支持按组织+类型查询（产品列表、服务列表）
-   - `idx_catalog_sku` (UNIQUE) - SKU 唯一性约束
-   - `idx_catalog_active` - 支持按状态筛选
+   - `idx_catalog_org_type` - 支援按組織+型別查詢（產品列表、服務列表）
+   - `idx_catalog_sku` (UNIQUE) - SKU 唯一性約束
+   - `idx_catalog_active` - 支援按狀態篩選
 
 3. **Quotes**
-   - `idx_quotes_org_customer_date` - 支持报价列表按客户、日期筛选
-   - `idx_quotes_number` (UNIQUE) - 编号唯一性
-   - `idx_quotes_status` - 支持按状态筛选
-   - `idx_quotes_issue_date` - 支持按日期筛选和排序
+   - `idx_quotes_org_customer_date` - 支援報價列表按客戶、日期篩選
+   - `idx_quotes_number` (UNIQUE) - 編號唯一性
+   - `idx_quotes_status` - 支援按狀態篩選
+   - `idx_quotes_issue_date` - 支援按日期篩選和排序
 
 4. **Quote Items**
-   - `idx_quote_items_quote_id` - 查询报价明细
-   - `idx_quote_items_order` - 支持按顺序排序
+   - `idx_quote_items_quote_id` - 查詢報價明細
+   - `idx_quote_items_order` - 支援按順序排序
 
 5. **Quote Sequences**
-   - `idx_quote_sequences_org_year` (UNIQUE) - 年度编号管理
+   - `idx_quote_sequences_org_year` (UNIQUE) - 年度編號管理
 
 ---
 
@@ -307,25 +307,25 @@ Catalog Items (1) ── (N) Quote Items
 
 ### Precision Choices
 
-- **BIGINT UNSIGNED for monetary amounts**: 避免浮点数精度问题，支持最大约 9 万亿元（足够中小企业使用）
-- **DECIMAL(18,4) for quantities**: 支持精确到 0.0001 的数量（如 0.1234 个产品）
-- **DECIMAL(5,2) for tax rates**: 支持 0.00% 到 999.99% 的税率范围
-- **TINYINT(1) for boolean flags**: 节省存储空间，语义清晰
+- **BIGINT UNSIGNED for monetary amounts**: 避免浮點數精度問題，支援最大約 9 萬億元（足夠中小企業使用）
+- **DECIMAL(18,4) for quantities**: 支援精確到 0.0001 的數量（如 0.1234 個產品）
+- **DECIMAL(5,2) for tax rates**: 支援 0.00% 到 999.99% 的稅率範圍
+- **TINYINT(1) for boolean flags**: 節省儲存空間，語義清晰
 
 ### Timezone Handling
 
-- **Database**: 所有时间戳存储 UTC 时间
-- **Application**: 界面显示使用 Asia/Taipei 时区
-- **Date Fields**: issue_date、valid_until 使用 DATE 类型（不带时区）
+- **Database**: 所有時間戳儲存 UTC 時間
+- **Application**: 介面顯示使用 Asia/Taipei 時區
+- **Date Fields**: issue_date、valid_until 使用 DATE 型別（不帶時區）
 
 ---
 
 ## Constraints Summary
 
 ### NOT NULL Constraints
-- 所有核心业务字段（name、sku、price 等）
-- 外键关联字段
-- 计算结果字段（subtotal、tax、total）
+- 所有核心業務欄位（name、sku、price 等）
+- 外部索引鍵關聯欄位
+- 計算結果欄位（subtotal、tax、total）
 
 ### UNIQUE Constraints
 - CatalogItems: (org_id, sku)
@@ -333,7 +333,7 @@ Catalog Items (1) ── (N) Quote Items
 - QuoteSequences: (org_id, year)
 - Settings: org_id
 
-### CHECK Constraints (建议)
+### CHECK Constraints (建議)
 - unit_price_cents >= 0
 - tax_rate BETWEEN 0.00 AND 100.00
 - qty > 0
@@ -344,36 +344,36 @@ Catalog Items (1) ── (N) Quote Items
 ## Migration Notes
 
 ### Initial Schema Version
-- 所有表需要添加 `org_id` 字段（预留多租户）
-- MVP 阶段所有记录使用 ORG_ID=1
-- 未来升级多租户时，此字段将激活使用
+- 所有表需要新增 `org_id` 欄位（預留多租戶）
+- MVP 階段所有記錄使用 ORG_ID=1
+- 未來升級多租戶時，此欄位將啟用使用
 
 ### Stored Procedures
-1. `next_quote_number(org_id, OUT out_number)` - 年度编号生成
-2. 需要在 MySQL 中创建这些存储过程
+1. `next_quote_number(org_id, OUT out_number)` - 年度編號生成
+2. 需要在 MySQL 中建立這些儲存過程
 
 ### Data Seeding
-1. 创建默认组织记录（ORG_ID=1）
-2. 创建默认设置记录
-3. 初始化 QuoteSequence 记录
+1. 建立預設組織記錄（ORG_ID=1）
+2. 建立預設設定記錄
+3. 初始化 QuoteSequence 記錄
 
 ---
 
 ## Security Considerations
 
 ### SQL Injection Prevention
-- 所有用户输入字段必须使用 PDO 预处理
-- 严禁字符串拼接 SQL
-- 数字字段严格类型转换
+- 所有使用者輸入欄位必須使用 PDO 預處理
+- 嚴禁字串拼接 SQL
+- 數字欄位嚴格型別轉換
 
 ### XSS Prevention
-- 所有动态输出使用 h() 函数转义
-- 特别处理客户名称、地址等文本字段
+- 所有動態輸出使用 h() 函式轉義
+- 特別處理客戶名稱、地址等文字欄位
 
 ### CSRF Protection
-- 所有 POST 表单添加 CSRF Token
-- 验证 Token 有效性
+- 所有 POST 表單新增 CSRF Token
+- 驗證 Token 有效性
 
 ### Data Privacy
-- 错误日志不得包含客户姓名、电话、地址、邮箱、税号
-- 生产环境关闭 display_errors
+- 錯誤日誌不得包含客戶姓名、電話、地址、郵箱、稅號
+- 生產環境關閉 display_errors

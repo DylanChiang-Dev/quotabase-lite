@@ -1,14 +1,14 @@
 <?php
 /**
  * System Initialization
- * 系统初始化脚本
+ * 系統初始化指令碼
  *
  * @version v2.0.0
- * @description 系统初始化，创建默认数据
- * @遵循宪法原则IV: 极简架构
+ * @description 系統初始化，建立預設資料
+ * @遵循憲法原則IV: 極簡架構
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
 if (!defined('SKIP_INIT_REDIRECT')) {
@@ -79,7 +79,7 @@ function handle_config_file_setup($configPath) {
                 if ($formData['encryption_key'] === '') {
                     $formData['encryption_key'] = generate_setup_encryption_key();
                 } elseif (!preg_match('/^[a-f0-9]{32,}$/i', $formData['encryption_key'])) {
-                    $errors['encryption_key'] = '加密金鑰必須為至少32位的十六進位字串（例如 64 個字符）。';
+                    $errors['encryption_key'] = '加密金鑰必須為至少32位的十六進位字串（例如 64 個字元）。';
                 }
 
                 if (empty($errors)) {
@@ -93,7 +93,7 @@ function handle_config_file_setup($configPath) {
                             header('Location: /init.php?message=' . urlencode($message) . '&type=success');
                             exit;
                         }
-                        $generalError = $writeError ?: '無法寫入設定檔，請確認目錄權限。';
+                        $generalError = $writeError ?: '無法寫入設定檔，請確認目錄許可權。';
                     }
                 }
             }
@@ -343,7 +343,7 @@ function handle_config_file_setup($configPath) {
                 </form>
 
                 <div class="note" style="margin-top: 24px;">
-                    提示：如果提交後顯示無法寫入，請檢查網站根目錄（<?php echo htmlspecialchars(dirname($configPath), ENT_QUOTES, 'UTF-8'); ?>）的寫入權限。
+                    提示：如果提交後顯示無法寫入，請檢查網站根目錄（<?php echo htmlspecialchars(dirname($configPath), ENT_QUOTES, 'UTF-8'); ?>）的寫入許可權。
                 </div>
             </div>
         </div>
@@ -442,7 +442,7 @@ function config_setup_write_config($targetPath, $samplePath, array $formData) {
     }
 
     if (@file_put_contents($targetPath, $content) === false) {
-        return [false, '無法寫入設定檔，請確認資料夾具備寫入權限。'];
+        return [false, '無法寫入設定檔，請確認資料夾具備寫入許可權。'];
     }
 
     @chmod($targetPath, 0640);
@@ -559,31 +559,31 @@ if (!defined('SKIP_INIT_REDIRECT')) {
 PHP;
 }
 
-// 加载依赖
+// 載入依賴
 require_once $configPath;
 require_once __DIR__ . '/helpers/functions.php';
 require_once __DIR__ . '/db.php';
 
 /**
- * 检查系统是否已初始化
+ * 檢查系統是否已初始化
  *
  * @return bool 是否已初始化
  */
 function is_system_initialized() {
     try {
-        // 检查组织表
+        // 檢查組織表
         $org_count = dbQueryOne("SELECT COUNT(*) as count FROM organizations");
         if ($org_count['count'] == 0) {
             return false;
         }
 
-        // 检查设置表
+        // 檢查設定表
         $settings_count = dbQueryOne("SELECT COUNT(*) as count FROM settings");
         if ($settings_count['count'] == 0) {
             return false;
         }
 
-        // 检查报价序号表
+        // 檢查報價序號表
         $sequence_count = dbQueryOne("SELECT COUNT(*) as count FROM quote_sequences");
         if ($sequence_count['count'] == 0) {
             return false;
@@ -597,7 +597,7 @@ function is_system_initialized() {
 }
 
 /**
- * 初始化系统数据
+ * 初始化系統資料
  *
  * @return array ['success' => bool, 'message' => string]
  */
@@ -610,26 +610,26 @@ function initialize_system() {
 
         $db->beginTransaction();
 
-        // 1. 创建默认组织
+        // 1. 建立預設組織
         $org_exists = dbQueryOne("SELECT id FROM organizations WHERE id = ?", [DEFAULT_ORG_ID]);
         if (!$org_exists) {
             dbExecute(
                 "INSERT INTO organizations (id, name) VALUES (?, ?)",
-                [DEFAULT_ORG_ID, '默认组织']
+                [DEFAULT_ORG_ID, '預設組織']
             );
             error_log("Created default organization: ID=" . DEFAULT_ORG_ID);
         }
 
-        // 2. 创建默认设置
+        // 2. 建立預設設定
         $settings_exists = dbQueryOne("SELECT id FROM settings WHERE org_id = ?", [DEFAULT_ORG_ID]);
         if (!$settings_exists) {
             dbExecute(
                 "INSERT INTO settings (org_id, company_name, company_address, company_contact, quote_prefix, default_tax_rate, timezone) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [
                     DEFAULT_ORG_ID,
-                    '您的公司名称',
+                    '您的公司名稱',
                     '公司地址',
-                    '联系电话',
+                    '聯絡電話',
                     'Q',
                     5.00,
                     'Asia/Taipei'
@@ -638,7 +638,7 @@ function initialize_system() {
             error_log("Created default settings for org_id=" . DEFAULT_ORG_ID);
         }
 
-        // 3. 初始化报价序号表
+        // 3. 初始化報價序號表
         $current_year = date('Y');
         $sequence_exists = dbQueryOne(
             "SELECT id FROM quote_sequences WHERE org_id = ? AND year = ?",
@@ -656,7 +656,7 @@ function initialize_system() {
 
         return [
             'success' => true,
-            'message' => '系统初始化完成！'
+            'message' => '系統初始化完成！'
         ];
     } catch (Exception $e) {
         if ($db->inTransaction()) {
@@ -667,13 +667,13 @@ function initialize_system() {
 
         return [
             'success' => false,
-            'message' => '系统初始化失败: ' . $e->getMessage()
+            'message' => '系統初始化失敗: ' . $e->getMessage()
         ];
     }
 }
 
 /**
- * 重置系统数据（谨慎使用）
+ * 重置系統資料（謹慎使用）
  *
  * @return array
  */
@@ -682,7 +682,7 @@ function reset_system() {
         $db = getDB();
         $db->beginTransaction();
 
-        // 删除所有数据（保留表结构）
+        // 刪除所有資料（保留表結構）
         dbExecute("SET FOREIGN_KEY_CHECKS = 0");
 
         dbExecute("TRUNCATE TABLE quote_items");
@@ -702,7 +702,7 @@ function reset_system() {
 
         return [
             'success' => true,
-            'message' => '系统重置完成！'
+            'message' => '系統重置完成！'
         ];
     } catch (Exception $e) {
         if ($db->inTransaction()) {
@@ -711,7 +711,7 @@ function reset_system() {
 
         return [
             'success' => false,
-            'message' => '系统重置失败: ' . $e->getMessage()
+            'message' => '系統重置失敗: ' . $e->getMessage()
         ];
     }
 }
@@ -744,7 +744,7 @@ function get_schema_status() {
         'catalog_categories' => 'catalog_categories（分類）',
         'catalog_items' => 'catalog_items（產品/服務）',
         'quotes' => 'quotes（報價單）',
-        'quote_items' => 'quote_items（報價項目）',
+        'quote_items' => 'quote_items（報價專案）',
         'quote_sequences' => 'quote_sequences（年度序號）',
         'settings' => 'settings（系統設定）',
         'users' => 'users（使用者）',
@@ -796,7 +796,7 @@ function column_exists(PDO $pdo, $table, $column) {
 }
 
 /**
- * 判斷儲存程序是否存在
+ * 判斷儲存程式是否存在
  *
  * @param PDO $pdo
  * @param string $procedure
@@ -809,7 +809,7 @@ function procedure_exists(PDO $pdo, $procedure) {
 }
 
 /**
- * 判斷外鍵是否存在
+ * 判斷外部索引鍵是否存在
  *
  * @param PDO $pdo
  * @param string $table
@@ -837,138 +837,138 @@ function install_database_schema() {
         $tableStatements = [
             "CREATE TABLE IF NOT EXISTS organizations (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                name VARCHAR(255) NOT NULL COMMENT '组织名称',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                name VARCHAR(255) NOT NULL COMMENT '組織名稱',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
                 INDEX idx_org_name (name)
-            ) ENGINE=InnoDB COMMENT='组织表（预留多租户）'",
+            ) ENGINE=InnoDB COMMENT='組織表（預留多租戶）'",
 
             "CREATE TABLE IF NOT EXISTS customers (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
-                name VARCHAR(255) NOT NULL COMMENT '客户名称（必填）',
-                tax_id VARCHAR(50) NULL COMMENT '税务登记号',
-                email VARCHAR(255) NULL COMMENT '邮箱',
-                phone VARCHAR(50) NULL COMMENT '电话',
-                billing_address TEXT NULL COMMENT '账单地址',
-                shipping_address TEXT NULL COMMENT '收货地址',
-                note TEXT NULL COMMENT '备注',
-                active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '软删除标记（1=激活，0=禁用）',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                name VARCHAR(255) NOT NULL COMMENT '客戶名稱（必填）',
+                tax_id VARCHAR(50) NULL COMMENT '稅務登記號',
+                email VARCHAR(255) NULL COMMENT '郵箱',
+                phone VARCHAR(50) NULL COMMENT '電話',
+                billing_address TEXT NULL COMMENT '賬單地址',
+                shipping_address TEXT NULL COMMENT '收貨地址',
+                note TEXT NULL COMMENT '備註',
+                active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '軟刪除標記（1=啟用，0=停用）',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 INDEX idx_customers_org_id (org_id),
                 INDEX idx_customers_active (active),
                 INDEX idx_customers_name (name)
-            ) ENGINE=InnoDB COMMENT='客户表'",
+            ) ENGINE=InnoDB COMMENT='客戶表'",
 
             "CREATE TABLE IF NOT EXISTS catalog_categories (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
-                type ENUM('product', 'service') NOT NULL DEFAULT 'product' COMMENT '分类类型',
-                parent_id BIGINT UNSIGNED NULL COMMENT '父级分类ID（NULL为顶级）',
-                level TINYINT UNSIGNED NOT NULL COMMENT '分类层级（1-3）',
-                name VARCHAR(100) NOT NULL COMMENT '分类名称',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                type ENUM('product', 'service') NOT NULL DEFAULT 'product' COMMENT '分類型別',
+                parent_id BIGINT UNSIGNED NULL COMMENT '父級分類ID（NULL為頂級）',
+                level TINYINT UNSIGNED NOT NULL COMMENT '分類層級（1-3）',
+                name VARCHAR(100) NOT NULL COMMENT '分類名稱',
                 sort_order INT NOT NULL DEFAULT 0 COMMENT '排序值',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 UNIQUE KEY uq_category_name (org_id, type, parent_id, name),
                 INDEX idx_category_org_type (org_id, type),
                 INDEX idx_category_parent (parent_id),
                 INDEX idx_category_level (org_id, level),
                 CONSTRAINT fk_category_parent FOREIGN KEY (parent_id) REFERENCES catalog_categories(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB COMMENT='产品/服务分类表'",
+            ) ENGINE=InnoDB COMMENT='產品/服務分類表'",
 
             "CREATE TABLE IF NOT EXISTS catalog_items (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
-                type ENUM('product', 'service') NOT NULL COMMENT '类型：产品或服务',
-                sku VARCHAR(100) NOT NULL COMMENT 'SKU编码（同一org_id下唯一）',
-                name VARCHAR(255) NOT NULL COMMENT '名称（必填）',
-                unit VARCHAR(20) NOT NULL DEFAULT 'pcs' COMMENT '单位',
-                currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '币种（仅支持TWD）',
-                unit_price_cents BIGINT UNSIGNED NOT NULL COMMENT '单价（单位：分）',
-                tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '税率（%）',
-                category_id BIGINT UNSIGNED NULL COMMENT '分类ID（三级分类）',
-                active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '状态（1=启用，0=禁用）',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                type ENUM('product', 'service') NOT NULL COMMENT '型別：產品或服務',
+                sku VARCHAR(100) NOT NULL COMMENT 'SKU編碼（同一org_id下唯一）',
+                name VARCHAR(255) NOT NULL COMMENT '名稱（必填）',
+                unit VARCHAR(20) NOT NULL DEFAULT 'pcs' COMMENT '單位',
+                currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '幣種（僅支援TWD）',
+                unit_price_cents BIGINT UNSIGNED NOT NULL COMMENT '單價（單位：分）',
+                tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '稅率（%）',
+                category_id BIGINT UNSIGNED NULL COMMENT '分類ID（三級分類）',
+                active TINYINT(1) NOT NULL DEFAULT 1 COMMENT '狀態（1=啟用，0=停用）',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 INDEX idx_catalog_org_type (org_id, type),
                 INDEX idx_catalog_sku (org_id, sku),
                 INDEX idx_catalog_active (active),
                 INDEX idx_catalog_category (category_id),
                 UNIQUE KEY uq_catalog_sku (org_id, sku)
-            ) ENGINE=InnoDB COMMENT='目录项表（产品/服务统一）'",
+            ) ENGINE=InnoDB COMMENT='目錄項表（產品/服務統一）'",
 
             "CREATE TABLE IF NOT EXISTS quotes (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
-                quote_number VARCHAR(50) NOT NULL COMMENT '报价单编号（格式：前缀-YYYY-000001）',
-                customer_id BIGINT UNSIGNED NOT NULL COMMENT '客户ID（外键）',
-                issue_date DATE NOT NULL COMMENT '发出日期（UTC）',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                quote_number VARCHAR(50) NOT NULL COMMENT '報價單編號（格式：字首-YYYY-000001）',
+                customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID（外部索引鍵）',
+                issue_date DATE NOT NULL COMMENT '發出日期（UTC）',
                 valid_until DATE NULL COMMENT '有效期至（UTC）',
-                currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '币种（仅支持TWD）',
-                status ENUM('draft', 'sent', 'accepted', 'rejected', 'expired') NOT NULL DEFAULT 'draft' COMMENT '状态',
-                title VARCHAR(255) NULL COMMENT '报价单标题',
-                notes TEXT NULL COMMENT '备注',
-                subtotal_cents BIGINT UNSIGNED NOT NULL COMMENT '小计（分）',
-                tax_cents BIGINT UNSIGNED NOT NULL COMMENT '税额（分）',
-                total_cents BIGINT UNSIGNED NOT NULL COMMENT '总计（分）',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '幣種（僅支援TWD）',
+                status ENUM('draft', 'sent', 'accepted', 'rejected', 'expired') NOT NULL DEFAULT 'draft' COMMENT '狀態',
+                title VARCHAR(255) NULL COMMENT '報價單標題',
+                notes TEXT NULL COMMENT '備註',
+                subtotal_cents BIGINT UNSIGNED NOT NULL COMMENT '小計（分）',
+                tax_cents BIGINT UNSIGNED NOT NULL COMMENT '稅額（分）',
+                total_cents BIGINT UNSIGNED NOT NULL COMMENT '總計（分）',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 INDEX idx_quotes_org_customer_date (org_id, customer_id, issue_date),
                 INDEX idx_quotes_number (quote_number),
                 INDEX idx_quotes_status (status),
                 INDEX idx_quotes_issue_date (issue_date),
                 UNIQUE KEY uq_quotes_number (quote_number)
-            ) ENGINE=InnoDB COMMENT='报价单主档表'",
+            ) ENGINE=InnoDB COMMENT='報價單主檔表'",
 
             "CREATE TABLE IF NOT EXISTS quote_items (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                quote_id BIGINT UNSIGNED NOT NULL COMMENT '报价单ID（外键）',
-                catalog_item_id BIGINT UNSIGNED NULL COMMENT '关联的目录项ID（可为空）',
-                description VARCHAR(500) NOT NULL COMMENT '项目描述',
-                qty DECIMAL(18,4) NOT NULL COMMENT '数量（精确到0.0001）',
-                unit VARCHAR(20) NULL COMMENT '单位',
-                unit_price_cents BIGINT UNSIGNED NOT NULL COMMENT '单价（分）',
-                discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金额（分）',
-                tax_rate DECIMAL(5,2) NOT NULL COMMENT '税率（%）',
-                line_subtotal_cents BIGINT UNSIGNED NOT NULL COMMENT '行小计（分）',
-                line_tax_cents BIGINT UNSIGNED NOT NULL COMMENT '行税额（分）',
-                line_total_cents BIGINT UNSIGNED NOT NULL COMMENT '行总计（分）',
-                line_order INT NOT NULL COMMENT '行顺序（排序用）',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID（外部索引鍵）',
+                catalog_item_id BIGINT UNSIGNED NULL COMMENT '關聯的目錄項ID（可為空）',
+                description VARCHAR(500) NOT NULL COMMENT '專案描述',
+                qty DECIMAL(18,4) NOT NULL COMMENT '數量（精確到0.0001）',
+                unit VARCHAR(20) NULL COMMENT '單位',
+                unit_price_cents BIGINT UNSIGNED NOT NULL COMMENT '單價（分）',
+                discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金額（分）',
+                tax_rate DECIMAL(5,2) NOT NULL COMMENT '稅率（%）',
+                line_subtotal_cents BIGINT UNSIGNED NOT NULL COMMENT '行小計（分）',
+                line_tax_cents BIGINT UNSIGNED NOT NULL COMMENT '行稅額（分）',
+                line_total_cents BIGINT UNSIGNED NOT NULL COMMENT '行總計（分）',
+                line_order INT NOT NULL COMMENT '行順序（排序用）',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
                 INDEX idx_quote_items_quote_id (quote_id),
                 INDEX idx_quote_items_order (quote_id, line_order),
                 CONSTRAINT fk_quote_items_quote FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB COMMENT='报价项目明细表'",
+            ) ENGINE=InnoDB COMMENT='報價專案明細表'",
 
             "CREATE TABLE IF NOT EXISTS quote_sequences (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID（每个组织一条记录）',
-                prefix VARCHAR(10) NOT NULL DEFAULT 'Q' COMMENT '编号前缀',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID（每個組織一條記錄）',
+                prefix VARCHAR(10) NOT NULL DEFAULT 'Q' COMMENT '編號字首',
                 year INT NOT NULL COMMENT '年度',
-                current_number INT NOT NULL DEFAULT 0 COMMENT '当前编号',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                current_number INT NOT NULL DEFAULT 0 COMMENT '當前編號',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 UNIQUE KEY uq_quote_sequences_org_year (org_id, year)
-            ) ENGINE=InnoDB COMMENT='年度编号序列表'",
+            ) ENGINE=InnoDB COMMENT='年度編號序列表'",
 
             "CREATE TABLE IF NOT EXISTS settings (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID（每个组织一条记录）',
-                company_name VARCHAR(255) NULL COMMENT '公司名称',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID（每個組織一條記錄）',
+                company_name VARCHAR(255) NULL COMMENT '公司名稱',
                 company_address TEXT NULL COMMENT '公司地址',
-                company_contact VARCHAR(255) NULL COMMENT '公司联系方式',
-                quote_prefix VARCHAR(10) NOT NULL DEFAULT 'Q' COMMENT '报价单编号前缀',
-                default_tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '默认税率（%）',
-                print_terms TEXT NULL COMMENT '打印条款文字',
-                timezone VARCHAR(50) NOT NULL DEFAULT 'Asia/Taipei' COMMENT '时区',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                company_contact VARCHAR(255) NULL COMMENT '公司聯絡方式',
+                quote_prefix VARCHAR(10) NOT NULL DEFAULT 'Q' COMMENT '報價單編號字首',
+                default_tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '預設稅率（%）',
+                print_terms TEXT NULL COMMENT '列印條款文字',
+                timezone VARCHAR(50) NOT NULL DEFAULT 'Asia/Taipei' COMMENT '時區',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
                 UNIQUE KEY uq_settings_org_id (org_id)
-            ) ENGINE=InnoDB COMMENT='系统设置表'",
+            ) ENGINE=InnoDB COMMENT='系統設定表'",
 
             "CREATE TABLE IF NOT EXISTS users (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
                 username VARCHAR(100) NOT NULL COMMENT '登入帳號（唯一）',
                 password_hash VARCHAR(255) NOT NULL COMMENT '密碼雜湊',
                 email VARCHAR(255) NULL COMMENT '電子郵件',
@@ -990,7 +990,7 @@ function install_database_schema() {
             $pdo->exec($sql);
         }
 
-        // 确保外键存在
+        // 確保外部索引鍵存在
         if (!foreign_key_exists($pdo, 'quotes', 'fk_quotes_customer')) {
             $pdo->exec("ALTER TABLE quotes
                 ADD CONSTRAINT fk_quotes_customer
@@ -1001,7 +1001,7 @@ function install_database_schema() {
         ensure_schema_upgrades($pdo);
         ensure_default_admin_user($pdo);
 
-        // 重新建立儲存程序
+        // 重新建立儲存程式
         $pdo->exec("DROP PROCEDURE IF EXISTS next_quote_number");
         $pdo->exec("
             CREATE PROCEDURE next_quote_number(
@@ -1085,7 +1085,7 @@ function ensure_schema_upgrades(PDO $pdo) {
 
     if (table_exists($pdo, 'quote_items') && !column_exists($pdo, 'quote_items', 'discount_cents')) {
         $pdo->exec("ALTER TABLE quote_items
-            ADD COLUMN discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金额（分）' AFTER unit_price_cents");
+            ADD COLUMN discount_cents BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '行折扣金額（分）' AFTER unit_price_cents");
     }
 
     if (table_exists($pdo, 'catalog_categories') && !foreign_key_exists($pdo, 'catalog_categories', 'fk_category_parent')) {
@@ -1102,7 +1102,7 @@ function ensure_schema_upgrades(PDO $pdo) {
 
     if (table_exists($pdo, 'settings') && !column_exists($pdo, 'settings', 'company_tax_id')) {
         $pdo->exec("ALTER TABLE settings
-            ADD COLUMN company_tax_id VARCHAR(50) NULL COMMENT '公司统一编号' AFTER company_contact");
+            ADD COLUMN company_tax_id VARCHAR(50) NULL COMMENT '公司統一編號' AFTER company_contact");
     }
 }
 
@@ -1110,7 +1110,7 @@ function create_users_table(PDO $pdo) {
     $sql = "
         CREATE TABLE IF NOT EXISTS users (
             id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '组织ID',
+            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
             username VARCHAR(100) NOT NULL COMMENT '登入帳號（唯一）',
             password_hash VARCHAR(255) NOT NULL COMMENT '密碼雜湊',
             email VARCHAR(255) NULL COMMENT '電子郵件',
@@ -1169,14 +1169,14 @@ function ensure_default_admin_user(PDO $pdo) {
 }
 
 /**
- * 获取系统状态信息
+ * 獲取系統狀態資訊
  *
- * @return array 系统状态
+ * @return array 系統狀態
  */
 function get_system_status() {
     $status = [];
 
-    // 检查数据库连接
+    // 檢查資料庫連線
     try {
         $pdo = getDB()->getConnection();
         $status['database'] = 'OK';
@@ -1184,7 +1184,7 @@ function get_system_status() {
         $status['database'] = 'ERROR: ' . $e->getMessage();
     }
 
-    // 检查组织数据
+    // 檢查組織資料
     try {
         $org_count = dbQueryOne("SELECT COUNT(*) as count FROM organizations");
         $status['organizations'] = $org_count['count'];
@@ -1192,7 +1192,7 @@ function get_system_status() {
         $status['organizations'] = 'ERROR';
     }
 
-    // 检查设置数据
+    // 檢查設定資料
     try {
         $settings_count = dbQueryOne("SELECT COUNT(*) as count FROM settings");
         $status['settings'] = $settings_count['count'];
@@ -1208,7 +1208,7 @@ function get_system_status() {
         $status['users'] = 'ERROR';
     }
 
-    // 检查报价序号数据
+    // 檢查報價序號資料
     try {
         $sequence_count = dbQueryOne("SELECT COUNT(*) as count FROM quote_sequences");
         $status['sequences'] = $sequence_count['count'];
@@ -1216,7 +1216,7 @@ function get_system_status() {
         $status['sequences'] = 'ERROR';
     }
 
-    // 系统版本信息
+    // 系統版本資訊
     $status['app_version'] = APP_VERSION;
     $status['php_version'] = PHP_VERSION;
     $status['initialized'] = is_system_initialized();
@@ -1239,7 +1239,7 @@ function get_system_status() {
     return $status;
 }
 
-// 命令行调用
+// 命令列呼叫
 if (php_sapi_name() === 'cli') {
     $action = $argv[1] ?? 'status';
 
@@ -1251,7 +1251,7 @@ if (php_sapi_name() === 'cli') {
 
         case 'init':
             if (is_system_initialized()) {
-                echo "系统已初始化，无需重复初始化。\n";
+                echo "系統已初始化，無需重複初始化。\n";
                 exit(0);
             }
 
@@ -1260,8 +1260,8 @@ if (php_sapi_name() === 'cli') {
             exit($result['success'] ? 0 : 1);
 
         case 'reset':
-            echo "警告：这将删除所有数据！\n";
-            echo "确认重置系统？(输入 'YES' 确认): ";
+            echo "警告：這將刪除所有資料！\n";
+            echo "確認重置系統？(輸入 'YES' 確認): ";
             $confirm = trim(fgets(STDIN));
 
             if ($confirm !== 'YES') {
@@ -1276,13 +1276,13 @@ if (php_sapi_name() === 'cli') {
         case 'status':
         default:
             $status = get_system_status();
-            echo "系统状态:\n";
-            echo "  数据库: " . $status['database'] . "\n";
-            echo "  组织数量: " . $status['organizations'] . "\n";
-            echo "  设置数量: " . $status['settings'] . "\n";
-            echo "  使用者数量: " . $status['users'] . "\n";
-            echo "  序号数量: " . $status['sequences'] . "\n";
-            echo "  存储过程: " . $status['stored_procedure'] . "\n";
+            echo "系統狀態:\n";
+            echo "  資料庫: " . $status['database'] . "\n";
+            echo "  組織數量: " . $status['organizations'] . "\n";
+            echo "  設定數量: " . $status['settings'] . "\n";
+            echo "  使用者數量: " . $status['users'] . "\n";
+            echo "  序號數量: " . $status['sequences'] . "\n";
+            echo "  儲存過程: " . $status['stored_procedure'] . "\n";
             echo "  資料表狀態: " . ($status['schema_ready'] ? '完整' : '需要處理') . "\n";
             if (!$status['schema_ready']) {
                 if (!empty($status['schema_missing_tables'])) {
@@ -1295,7 +1295,7 @@ if (php_sapi_name() === 'cli') {
                     echo "    模式檢查錯誤: " . $status['schema_error'] . "\n";
                 }
             }
-            echo "  应用版本: " . $status['app_version'] . "\n";
+            echo "  應用版本: " . $status['app_version'] . "\n";
             echo "  PHP版本: " . $status['php_version'] . "\n";
             echo "  已初始化: " . ($status['initialized'] ? '是' : '否') . "\n";
             exit(0);
@@ -1607,7 +1607,7 @@ if (php_sapi_name() !== 'cli') {
                             </div>
                         </div>
                     </div>
-                    <p class="subtitle">系統會使用 <code><?php echo h(DB_NAME); ?></code> 資料庫，請先在伺服器上建立好資料庫與權限。</p>
+                    <p class="subtitle">系統會使用 <code><?php echo h(DB_NAME); ?></code> 資料庫，請先在伺服器上建立好資料庫與許可權。</p>
                 </div>
 
                 <!-- Step 2 -->
@@ -1647,7 +1647,7 @@ if (php_sapi_name() !== 'cli') {
                         <?php endif; ?>
                         <?php if (!$hasProcedure): ?>
                             <ul class="status-list">
-                                <li>缺少儲存程序：next_quote_number</li>
+                                <li>缺少儲存程式：next_quote_number</li>
                             </ul>
                         <?php endif; ?>
                         <?php if ($schemaError): ?>
@@ -1713,7 +1713,7 @@ if (php_sapi_name() !== 'cli') {
                     <div class="step-title">指令模式快速操作</div>
                 </div>
                 <p class="subtitle">若你習慣使用終端機，也可以透過以下指令完成相同步驟：</p>
-                <pre>php init.php status    # 查看狀態
+                <pre>php init.php status    # 檢視狀態
 php init.php install   # 建立 / 更新資料表
 php init.php init      # 初始化系統
 php init.php reset     # 重置系統（會清空資料）</pre>

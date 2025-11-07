@@ -12,7 +12,7 @@
 
 ### Project Structure (structure.md)
 - 前端 UI 直接修改 `products/index.php`、`services/index.php`：新增匯入卡片與 modal。
-- API 放在 `products/import-txt.php` / `services/import-txt.php` 或共用的 `/api/catalog/import-txt.php`（採後者，利於共用 type 參數）。
+- API 放在 `products/import-txt.php` / `services/import-txt.php` 或共用的 `/api/catalog/import-txt.php`（採後者，利於共用 type 引數）。
 - 新增 `helpers/import/catalog_import.php` 專責解析 + 驗證 + 寫入。
 
 ## Code Reuse Analysis
@@ -46,8 +46,8 @@ products/services page
 ```
 
 ### Modular Design Principles
-- 前端：小型 modal/section 元件，避免干擾既有列表排版。
-- 後端：`CatalogImportService` 封裝 parsing + validation；`CatalogImportReporter` 收集成功/失敗資訊。
+- 前端：小型 modal/section 元件，避免幹擾既有列表排版。
+- 後端：`CatalogImportService` 封裝 parsing + validation；`CatalogImportReporter` 收整合功/失敗資訊。
 - 分離分類解析（`CategoryPathResolver`）與匯入主流程，後續可重複利用於 CSV/JSON。
 
 ## Components and Interfaces
@@ -70,7 +70,7 @@ products/services page
 - **Reuses:** 既有 catalog helper 做查詢/插入；使用 `dbExecute`、`dbQueryOne`。
 
 ### Component 3 — CategoryPathResolver
-- **Purpose:** 將 `設備 > 高速 > 切割機` 類的字串轉成層級，若不存在即建立。
+- **Purpose:** 將 `裝置 > 高速 > 切割機` 類的字串轉成層級，若不存在即建立。
 - **Interfaces:** `ensure(string $path, string $type): int` 回傳 category_id。
 - **Dependencies:** `catalog_categories` table。
 
@@ -121,7 +121,7 @@ ParsedLine
 ## Testing Strategy
 
 ### Unit Testing
-- 對 `CatalogImportService` 的 `parseLine`、`validateFields`、`ensureCategory` 撰寫純 PHP 測試（可用 `phpunit` 或手寫 CLI 腳本），覆蓋各欄位驗證與策略。
+- 對 `CatalogImportService` 的 `parseLine`、`validateFields`、`ensureCategory` 撰寫純 PHP 測試（可用 `phpunit` 或手寫 CLI 指令碼），覆蓋各欄位驗證與策略。
 - 測試 `CategoryPathResolver` 在空資料庫/既有資料下的建立行為。
 
 ### Integration Testing

@@ -6,7 +6,7 @@
 
 ## GET /settings/index.php
 
-获取系统设置。
+獲取系統設定。
 
 ### Response 200 OK
 
@@ -33,7 +33,7 @@
 
 ## POST /settings/index.php
 
-保存系统设置。
+儲存系統設定。
 
 ### Request
 
@@ -55,7 +55,7 @@
 ```json
 {
   "success": true,
-  "message": "设置保存成功"
+  "message": "設定儲存成功"
 }
 ```
 
@@ -65,21 +65,21 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "quote_prefix": ["编号前缀不能为空"],
-    "default_tax_rate": ["税率必须在 0.00-100.00 之间"]
+    "quote_prefix": ["編號字首不能為空"],
+    "default_tax_rate": ["稅率必須在 0.00-100.00 之間"]
   }
 }
 ```
 
 ### Validation Rules
 
-- company_name: 可选，0-255 个字符
-- company_address: 可选，0-2000 个字符
-- company_contact: 可选，0-255 个字符
-- quote_prefix: 可选，0-10 个字符，默认 'Q'
-- default_tax_rate: 可选，0.00-100.00 之间的小数，默认 0.00
-- print_terms: 可选，0-5000 个字符
-- timezone: 可选，0-50 个字符，默认 'Asia/Taipei'
-- csrf_token: 必填，64 位十六进制字符串
+- company_name: 可選，0-255 個字元
+- company_address: 可選，0-2000 個字元
+- company_contact: 可選，0-255 個字元
+- quote_prefix: 可選，0-10 個字元，預設 'Q'
+- default_tax_rate: 可選，0.00-100.00 之間的小數，預設 0.00
+- print_terms: 可選，0-5000 個字元
+- timezone: 可選，0-50 個字元，預設 'Asia/Taipei'
+- csrf_token: 必填，64 位十六進位制字串

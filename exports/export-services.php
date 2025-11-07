@@ -1,40 +1,40 @@
 <?php
 /**
- * 服务数据导出
+ * 服務資料匯出
  * Export Services
  *
  * @version v2.0.0
- * @description 导出服务数据为CSV或JSON格式
- * @遵循宪法原则I: 安全优先开发 - 权限检查
+ * @description 匯出服務資料為CSV或JSON格式
+ * @遵循憲法原則I: 安全優先開發 - 許可權檢查
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     http_response_code(401);
-    echo json_encode(['error' => '未授权访问']);
+    echo json_encode(['error' => '未授權訪問']);
     exit;
 }
 
-// 获取导出格式
+// 獲取匯出格式
 $format = $_GET['format'] ?? 'csv';
 $format = strtolower($format);
 
 if (!in_array($format, ['csv', 'json'])) {
     http_response_code(400);
-    echo json_encode(['error' => '不支持的导出格式']);
+    echo json_encode(['error' => '不支援的匯出格式']);
     exit;
 }
 
 try {
-    // 获取所有服务数据
+    // 獲取所有服務資料
     $org_id = get_current_org_id();
     $sql = "
         SELECT id, type, sku, name, unit, currency, unit_price_cents, tax_rate, active, created_at, updated_at
@@ -45,34 +45,34 @@ try {
     $services = dbQuery($sql, [$org_id]);
     $exportedAt = gmdate('c');
 
-    // 设置响应头
+    // 設定響應頭
     if ($format === 'csv') {
-        // CSV导出
+        // CSV匯出
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="services_' . date('Y-m-d') . '.csv"');
 
-        // 输出BOM头，确保Excel正确识别UTF-8
+        // 輸出BOM頭，確保Excel正確識別UTF-8
         echo "\xEF\xBB\xBF";
 
-        // 打开输出流
+        // 開啟輸出流
         $output = fopen('php://output', 'w');
 
-        // 写入表头
+        // 寫入表頭
         fputcsv($output, [
             'ID',
-            '类型',
+            '型別',
             'SKU',
-            '名称',
-            '单位',
-            '币种',
-            '单价(分)',
-            '税率(%)',
-            '状态',
-            '创建时间',
-            '更新时间'
+            '名稱',
+            '單位',
+            '幣種',
+            '單價(分)',
+            '稅率(%)',
+            '狀態',
+            '建立時間',
+            '更新時間'
         ]);
 
-        // 写入数据
+        // 寫入資料
         foreach ($services as $service) {
             fputcsv($output, [
                 $service['id'],
@@ -83,7 +83,7 @@ try {
                 $service['currency'],
                 $service['unit_price_cents'],
                 number_format($service['tax_rate'], 2),
-                $service['active'] ? '启用' : '禁用',
+                $service['active'] ? '啟用' : '停用',
                 format_datetime($service['created_at'], 'Y-m-d H:i:s'),
                 !empty($service['updated_at']) ? format_datetime($service['updated_at'], 'Y-m-d H:i:s') : ''
             ]);
@@ -92,11 +92,11 @@ try {
         fclose($output);
 
     } else {
-        // JSON导出
+        // JSON匯出
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Disposition: attachment; filename="services_' . date('Y-m-d') . '.json"');
 
-        // 格式化输出
+        // 格式化輸出
         $output = [
             'success' => true,
             'exported_at' => $exportedAt,
@@ -127,7 +127,7 @@ try {
     echo json_encode([
         'success' => false,
         'error' => 'EXPORT_FAILED',
-        'message' => '导出失败: ' . $e->getMessage()
+        'message' => '匯出失敗: ' . $e->getMessage()
     ]);
 }
 ?>

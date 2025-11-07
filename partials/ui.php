@@ -1,24 +1,24 @@
 <?php
 /**
  * Shared UI Components
- * 共享UI组件
+ * 共享UI元件
  *
  * @version v2.0.0
- * @description 共享的UI组件，包括页首、底部导航等
- * @遵循宪法原则V: iOS风格用户体验
+ * @description 共享的UI元件，包括頁首、底部導航等
+ * @遵循憲法原則V: iOS風格使用者體驗
  */
 
-// 防止直接访问
+// 防止直接訪問
 if (!defined('QUOTABASE_SYSTEM')) {
     require_once __DIR__ . '/../config.php';
     require_once __DIR__ . '/../helpers/functions.php';
 }
 
 /**
- * 输出HTML文档开始
+ * 輸出HTML文件開始
  *
- * @param string $title 页面标题
- * @param array $extra_head 额外的head内容
+ * @param string $title 頁面標題
+ * @param array $extra_head 額外的head內容
  */
 function html_start($title = '', $extra_head = []) {
     $page_title = $title ? h($title) . ' - ' . APP_NAME : APP_NAME;
@@ -32,15 +32,15 @@ function html_start($title = '', $extra_head = []) {
     echo '<meta name="theme-color" content="#007AFF">';
     echo '<title>' . $page_title . '</title>';
 
-    // 加载样式文件
+    // 載入樣式檔案
     echo '<link rel="stylesheet" href="/assets/style.css">';
 
-    // 输出额外的head内容
+    // 輸出額外的head內容
     foreach ($extra_head as $content) {
         echo $content;
     }
 
-    // 主題切換腳本
+    // 主題切換指令碼
     echo '<script>
         (function() {
             try {
@@ -66,9 +66,9 @@ function html_start($title = '', $extra_head = []) {
 }
 
 /**
- * 输出页首
+ * 輸出頁首
  *
- * @param string $title 页面标题，默认使用组织名称
+ * @param string $title 頁面標題，預設使用組織名稱
  */
 function page_header($title = '', $breadcrumb_items = []) {
     $header_title = $title ? h($title) : (isset($org_settings['company_name']) ? h($org_settings['company_name']) : APP_NAME);
@@ -90,7 +90,7 @@ function page_header($title = '', $breadcrumb_items = []) {
 }
 
 /**
- * 输出页脚
+ * 輸出頁尾
  */
 function page_footer() {
     echo '<footer class="page-footer">';
@@ -99,7 +99,7 @@ function page_footer() {
 }
 
 /**
- * 输出HTML文档结束
+ * 輸出HTML文件結束
  */
 function html_end() {
     echo '<script>
@@ -146,9 +146,9 @@ function html_end() {
 }
 
 /**
- * 输出面包屑导航
+ * 輸出麵包屑導航
  *
- * @param array $items 导航项数组，格式：['label' => '首页', 'url' => '/']
+ * @param array $items 導航項陣列，格式：['label' => '首頁', 'url' => '/']
  */
 function breadcrumb($items = [], $inline = false) {
     if (empty($items)) {
@@ -180,10 +180,10 @@ function breadcrumb($items = [], $inline = false) {
 }
 
 /**
- * 输出卡片容器
+ * 輸出卡片容器
  *
- * @param string $title 卡片标题
- * @param array $actions 操作按钮数组
+ * @param string $title 卡片標題
+ * @param array $actions 操作按鈕陣列
  */
 function card_start($title = '', $actions = []) {
     echo '<div class="card">';
@@ -231,7 +231,7 @@ function card_start($title = '', $actions = []) {
 }
 
 /**
- * 输出卡片结束
+ * 輸出卡片結束
  */
 function card_end() {
     echo '</div>'; // card-body
@@ -239,11 +239,11 @@ function card_end() {
 }
 
 /**
- * 输出表单开始
+ * 輸出表單開始
  *
- * @param string $action 表单提交地址
- * @param string $method 表单方法，默认POST
- * @param array $extra_attributes 额外属性
+ * @param string $action 表單提交地址
+ * @param string $method 表單方法，預設POST
+ * @param array $extra_attributes 額外屬性
  */
 function form_start($action = '', $method = 'POST', $extra_attributes = []) {
     echo '<form';
@@ -258,25 +258,25 @@ function form_start($action = '', $method = 'POST', $extra_attributes = []) {
 
     echo '>';
 
-    // 自动添加CSRF令牌
+    // 自動新增CSRF令牌
     echo csrf_input();
 }
 
 /**
- * 输出表单结束
+ * 輸出表單結束
  */
 function form_end() {
     echo '</form>';
 }
 
 /**
- * 输出表单字段
+ * 輸出表單欄位
  *
- * @param string $name 字段名
- * @param string $label 字段标签
- * @param string $type 字段类型，默认text
- * @param array $options 选项（select类型用）
- * @param array $attributes 额外属性
+ * @param string $name 欄位名
+ * @param string $label 欄位標籤
+ * @param string $type 欄位型別，預設text
+ * @param array $options 選項（select型別用）
+ * @param array $attributes 額外屬性
  */
 function form_field($name, $label, $type = 'text', $options = [], $attributes = []) {
     $id = $attributes['id'] ?? 'field_' . $name;
@@ -291,7 +291,7 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
 
     echo '<div class="form-group' . ($error ? ' has-error' : '') . '">';
 
-    // 标签
+    // 標籤
     echo '<label for="' . h($id) . '" class="form-label">';
     echo h($label);
     if ($required) {
@@ -299,7 +299,7 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
     }
     echo '</label>';
 
-    // 输入字段
+    // 輸入欄位
     switch ($type) {
         case 'textarea':
             echo '<textarea';
@@ -357,7 +357,7 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
             break;
     }
 
-    // 错误信息
+    // 錯誤資訊
     if ($error) {
         echo '<div class="error-message">' . h($error) . '</div>';
     }
@@ -370,13 +370,13 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
 }
 
 /**
- * 输出三级分类选择器
+ * 輸出三級分類選擇器
  *
- * @param string $type 分类类型（product/service）
- * @param array $category_tree 分类树结构
- * @param array $category_map 分类字典
- * @param int|null $selected_id 当前选中分类ID
- * @param array $options 额外配置（input_name, id_prefix, manage_url, manage_label, help_text, empty_text）
+ * @param string $type 分類型別（product/service）
+ * @param array $category_tree 分類樹結構
+ * @param array $category_map 分類字典
+ * @param int|null $selected_id 當前選中分類ID
+ * @param array $options 額外配置（input_name, id_prefix, manage_url, manage_label, help_text, empty_text）
  */
 function render_category_selector($type, array $category_tree, array $category_map, $selected_id = null, array $options = []) {
     $input_name = $options['input_name'] ?? 'category_id';
@@ -390,14 +390,14 @@ function render_category_selector($type, array $category_tree, array $category_m
         }
     }
     $manage_url = $options['manage_url'] ?? '/categories/index.php?type=' . $type;
-    $manage_label = $options['manage_label'] ?? '分类管理';
-    $help_text = $options['help_text'] ?? '分类最多三级，可在分类管理中维护。';
-    $empty_text = $options['empty_text'] ?? '未选择分类';
+    $manage_label = $options['manage_label'] ?? '分類管理';
+    $help_text = $options['help_text'] ?? '分類最多三級，可在分類管理中維護。';
+    $empty_text = $options['empty_text'] ?? '未選擇分類';
 
     if (empty($category_tree)) {
         echo '<input type="hidden" name="' . h($input_name) . '" value="">';
         echo '<div class="alert alert-warning" style="margin-top: 8px;">';
-        echo '<span class="alert-message">尚未设置分类。<a href="' . h($manage_url) . '">前往分类管理</a></span>';
+        echo '<span class="alert-message">尚未設定分類。<a href="' . h($manage_url) . '">前往分類管理</a></span>';
         echo '</div>';
         return;
     }
@@ -417,9 +417,9 @@ function render_category_selector($type, array $category_tree, array $category_m
     $path_text = $selected_id ? get_catalog_category_path($selected_id) : $empty_text;
 
     echo '<div class="category-select-row">';
-    echo '<select id="' . h($level1_id) . '" class="form-select"><option value="">选择一级分类</option></select>';
-    echo '<select id="' . h($level2_id) . '" class="form-select" disabled><option value="">选择二级分类</option></select>';
-    echo '<select id="' . h($level3_id) . '" class="form-select" disabled><option value="">选择三级分类</option></select>';
+    echo '<select id="' . h($level1_id) . '" class="form-select"><option value="">選擇一級分類</option></select>';
+    echo '<select id="' . h($level2_id) . '" class="form-select" disabled><option value="">選擇二級分類</option></select>';
+    echo '<select id="' . h($level3_id) . '" class="form-select" disabled><option value="">選擇三級分類</option></select>';
     echo '</div>';
 
     echo '<input type="hidden" name="' . h($input_name) . '" id="' . h($input_id) . '" value="' . ($selected_id ? h($selected_id) : '') . '">';
@@ -454,8 +454,8 @@ function render_category_selector($type, array $category_tree, array $category_m
     echo 'const childrenMap = {};';
     echo 'const buildMap = function(nodes){(nodes||[]).forEach(function(node){childrenMap[node.id] = node.children || []; if (node.children && node.children.length){buildMap(node.children);}});};';
     echo 'buildMap(tree);';
-    echo 'const placeholders = {1:"选择一级分类",2:"选择二级分类",3:"选择三级分类"};';
-    echo 'const populate = function(select, nodes, level){if(!select)return; select.innerHTML=""; const opt=document.createElement("option"); opt.value=""; opt.textContent=placeholders[level]||"请选择"; select.appendChild(opt); (nodes||[]).forEach(function(node){const option=document.createElement("option"); option.value=node.id; option.textContent=node.name; select.appendChild(option);}); select.disabled = !(nodes && nodes.length);};';
+    echo 'const placeholders = {1:"選擇一級分類",2:"選擇二級分類",3:"選擇三級分類"};';
+    echo 'const populate = function(select, nodes, level){if(!select)return; select.innerHTML=""; const opt=document.createElement("option"); opt.value=""; opt.textContent=placeholders[level]||"請選擇"; select.appendChild(opt); (nodes||[]).forEach(function(node){const option=document.createElement("option"); option.value=node.id; option.textContent=node.name; select.appendChild(option);}); select.disabled = !(nodes && nodes.length);};';
     echo 'const getChildren = function(id){ if(!id){ return tree; } return childrenMap[id] || []; };';
     echo 'const buildPath = function(id){ const names=[]; let current = map[id]; while(current){ names.unshift(current.name); if(!current.parent_id) break; current = map[current.parent_id]; } return names.join(" / "); };';
     echo 'const updateHidden = function(){ let selected=""; if (level3 && level3.value) { selected = level3.value; } else if (level2 && level2.value) { selected = level2.value; } else if (level1 && level1.value) { selected = level1.value; } hidden.value = selected; if (pathEl) { pathEl.textContent = selected ? buildPath(selected) : ' . $empty_text_js . '; } };';
@@ -468,11 +468,11 @@ function render_category_selector($type, array $category_tree, array $category_m
 }
 
 /**
- * 输出按钮
+ * 輸出按鈕
  *
- * @param string $label 按钮文字
- * @param string $type 按钮类型，默认button
- * @param array $attributes 额外属性
+ * @param string $label 按鈕文字
+ * @param string $type 按鈕型別，預設button
+ * @param array $attributes 額外屬性
  */
 function button($label, $type = 'button', $attributes = []) {
     $class = $attributes['class'] ?? 'btn-primary';
@@ -492,12 +492,12 @@ function button($label, $type = 'button', $attributes = []) {
 }
 
 /**
- * 输出底部Tab导航（iOS风格）
+ * 輸出底部Tab導航（iOS風格）
  *
- * @遵循宪法原则V: iOS风格用户体验
+ * @遵循憲法原則V: iOS風格使用者體驗
  */
 function bottom_tab_navigation() {
-    // 打印页面隐藏导航
+    // 列印頁面隱藏導航
     if (is_print_page()) {
         return;
     }
@@ -511,7 +511,7 @@ function bottom_tab_navigation() {
     echo '<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">';
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />';
     echo '</svg>';
-    echo '<span class="tab-label">报价</span>';
+    echo '<span class="tab-label">報價</span>';
     echo '</a>';
 
     echo '<a href="/products/" class="tab-item';
@@ -520,7 +520,7 @@ function bottom_tab_navigation() {
     echo '<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">';
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />';
     echo '</svg>';
-    echo '<span class="tab-label">产品</span>';
+    echo '<span class="tab-label">產品</span>';
     echo '</a>';
 
     echo '<a href="/services/" class="tab-item';
@@ -529,7 +529,7 @@ function bottom_tab_navigation() {
     echo '<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">';
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />';
     echo '</svg>';
-    echo '<span class="tab-label">服务</span>';
+    echo '<span class="tab-label">服務</span>';
     echo '</a>';
 
     echo '<a href="/customers/" class="tab-item';
@@ -538,7 +538,7 @@ function bottom_tab_navigation() {
     echo '<svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">';
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />';
     echo '</svg>';
-    echo '<span class="tab-label">客户</span>';
+    echo '<span class="tab-label">客戶</span>';
     echo '</a>';
 
     echo '<a href="/settings/" class="tab-item';
@@ -548,26 +548,26 @@ function bottom_tab_navigation() {
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />';
     echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />';
     echo '</svg>';
-    echo '<span class="tab-label">设置</span>';
+    echo '<span class="tab-label">設定</span>';
     echo '</a>';
 
     echo '</nav>';
 }
 
 /**
- * 输出安全区域适配的底部导航
+ * 輸出安全區域適配的底部導航
  *
- * @遵循宪法原则V: iOS风格用户体验 - Safe-Area适配
+ * @遵循憲法原則V: iOS風格使用者體驗 - Safe-Area適配
  */
 function safe_area_bottom_navigation() {
     bottom_tab_navigation();
 }
 
 /**
- * 输出警告提示
+ * 輸出警告提示
  *
- * @param string $message 消息内容
- * @param string $type 消息类型（success, error, warning, info）
+ * @param string $message 訊息內容
+ * @param string $type 訊息型別（success, error, warning, info）
  */
 function alert($message, $type = 'info') {
     $class_map = [
@@ -586,21 +586,21 @@ function alert($message, $type = 'info') {
 }
 
 /**
- * 输出加载指示器
+ * 輸出載入指示器
  */
 function loading_indicator() {
     echo '<div class="loading-indicator">';
     echo '<div class="spinner"></div>';
-    echo '<span>加载中...</span>';
+    echo '<span>載入中...</span>';
     echo '</div>';
 }
 
 /**
- * 输出空状态
+ * 輸出空狀態
  *
- * @param string $message 空状态消息
- * @param string $action_text 操作按钮文字
- * @param string $action_url 操作按钮链接
+ * @param string $message 空狀態訊息
+ * @param string $action_text 操作按鈕文字
+ * @param string $action_url 操作按鈕連結
  */
 function empty_state($message, $action_text = '', $action_url = '') {
     echo '<div class="empty-state">';
@@ -613,16 +613,16 @@ function empty_state($message, $action_text = '', $action_url = '') {
 }
 
 /**
- * 输出确认对话框HTML和JS
+ * 輸出確認對話方塊HTML和JS
  *
- * @param string $message 确认消息
- * @param string $confirm_text 确认按钮文字
- * @param string $cancel_text 取消按钮文字
+ * @param string $message 確認訊息
+ * @param string $confirm_text 確認按鈕文字
+ * @param string $cancel_text 取消按鈕文字
  */
-function confirm_dialog($message, $confirm_text = '确认', $cancel_text = '取消') {
+function confirm_dialog($message, $confirm_text = '確認', $cancel_text = '取消') {
     echo '<div id="confirmDialog" class="modal" style="display: none;">';
     echo '<div class="modal-content">';
-    echo '<h3>确认操作</h3>';
+    echo '<h3>確認操作</h3>';
     echo '<p>' . h($message) . '</p>';
     echo '<div class="modal-actions">';
     echo '<button type="button" class="btn btn-secondary" onclick="closeConfirmDialog()">' . h($cancel_text) . '</button>';
@@ -645,7 +645,7 @@ function confirm_dialog($message, $confirm_text = '确认', $cancel_text = '取�
 }
 
 /**
- * 检查用户是否已登录（用于显示/隐藏导航）
+ * 檢查使用者是否已登入（用於顯示/隱藏導航）
  *
  * @return bool
  */
@@ -654,12 +654,12 @@ function user_is_logged_in() {
 }
 
 /**
- * 获取当前用户显示名称
+ * 獲取當前使用者顯示名稱
  *
  * @return string
  */
 function get_current_user_display_name() {
-    return $_SESSION['user_name'] ?? '用户';
+    return $_SESSION['user_name'] ?? '使用者';
 }
 
 ?>

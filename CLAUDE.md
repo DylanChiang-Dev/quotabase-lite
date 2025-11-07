@@ -1,251 +1,251 @@
-# Quotabase-Lite: 集成报价管理系统
+# Quotabase-Lite: 整合報價管理系統
 
-**项目愿景**: 为中小企业提供简洁、高效、可信赖的报价管理解决方案
+**專案願景**: 為中小企業提供簡潔、高效、可信賴的報價管理解決方案
 
-**项目状态**: ✅ 规范完成，质量检查通过，准备实施 (2025-11-05 20:15:00)
+**專案狀態**: ✅ 規範完成，質量檢查透過，準備實施 (2025-11-05 20:15:00)
 
-**质量验证**: 100/100 项质量检查通过 ✅
-
----
-
-## 📋 项目概述
-
-Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系统，专注于核心业务流程的简洁性和易用性。项目采用 **零框架、零 Composer** 的极简架构，确保系统轻量、易维护、易扩展。
-
-### 核心价值主张
-
-- **极简架构**: 纯 PHP 8.3，无需复杂依赖
-- **精确财务**: 金额以分存储，避免浮点精度问题
-- **iOS 体验**: 现代化界面，底部 Tab 导航，Dark Mode
-- **数据安全**: 事务原子性，并发安全，XSS/CSRF 防护
-- **专业输出**: A4 格式打印，表头固定，支持 PDF 导出
+**質量驗證**: 100/100 項質量檢查透過 ✅
 
 ---
 
-## 🏗️ 系统架构总览
+## 📋 專案概述
 
-### 技术栈
+Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系統，專注於核心業務流程的簡潔性和易用性。專案採用 **零框架、零 Composer** 的極簡架構，確保系統輕量、易維護、易擴充套件。
+
+### 核心價值主張
+
+- **極簡架構**: 純 PHP 8.3，無需複雜依賴
+- **精確財務**: 金額以分儲存，避免浮點精度問題
+- **iOS 體驗**: 現代化介面，底部 Tab 導航，Dark Mode
+- **資料安全**: 事務原子性，併發安全，XSS/CSRF 防護
+- **專業輸出**: A4 格式列印，表頭固定，支援 PDF 匯出
+
+---
+
+## 🏗️ 系統架構總覽
+
+### 技術棧
 
 ```mermaid
 graph TB
-    A[PHP 8.3 应用层] --> B[MySQL/MariaDB]
+    A[PHP 8.3 應用層] --> B[MySQL/MariaDB]
     A --> C[HTML/CSS/JavaScript]
-    A --> D[会话管理]
-    A --> E[PDO 数据库抽象]
-    A --> F[存储过程]
+    A --> D[會話管理]
+    A --> E[PDO 資料庫抽象]
+    A --> F[儲存過程]
 ```
 
-### 核心模块
+### 核心模組
 
 ```mermaid
 graph LR
-    A[客户管理] --> F[报价单系统]
-    B[产品目录] --> F
-    C[服务目录] --> F
-    D[设置管理] --> F
-    E[数据导出] --> F
-    F --> G[PDF 打印]
+    A[客戶管理] --> F[報價單系統]
+    B[產品目錄] --> F
+    C[服務目錄] --> F
+    D[設定管理] --> F
+    E[資料匯出] --> F
+    F --> G[PDF 列印]
 ```
 
 ---
 
-## 📦 模块索引
+## 📦 模組索引
 
-### 核心业务模块
+### 核心業務模組
 
-| 模块 | 路径 | 状态 | 说明 |
+| 模組 | 路徑 | 狀態 | 說明 |
 |------|------|------|------|
-| **客户管理** | `/customers/` | 📋 规范已完成 | CRUD 操作，支持软删除 |
-| **产品管理** | `/products/` | 📋 规范已完成 | 产品目录，SKU 唯一性 |
-| **服务管理** | `/services/` | 📋 规范已完成 | 服务目录，与产品共用表 |
-| **报价单系统** | `/quotes/` | 📋 规范已完成 | 核心业务，事务安全 |
-| **设置管理** | `/settings/` | 📋 规范已完成 | 系统配置，公司信息 |
-| **数据导出** | `/exports/` | 📋 规范已完成 | CSV/JSON 导出 |
+| **客戶管理** | `/customers/` | 📋 規範已完成 | CRUD 操作，支援軟刪除 |
+| **產品管理** | `/products/` | 📋 規範已完成 | 產品目錄，SKU 唯一性 |
+| **服務管理** | `/services/` | 📋 規範已完成 | 服務目錄，與產品共用表 |
+| **報價單系統** | `/quotes/` | 📋 規範已完成 | 核心業務，事務安全 |
+| **設定管理** | `/settings/` | 📋 規範已完成 | 系統配置，公司資訊 |
+| **資料匯出** | `/exports/` | 📋 規範已完成 | CSV/JSON 匯出 |
 
-### 共享组件
+### 共享元件
 
-| 组件 | 路径 | 说明 |
+| 元件 | 路徑 | 說明 |
 |------|------|------|
-| **UI 组件** | `/partials/ui.php` | 底部导航、页首 |
-| **工具函数** | `/helpers/functions.php` | h() 转义、金额格式化 |
-| **数据库层** | `/db.php` | PDO 连接、错误处理 |
-| **样式资源** | `/assets/style.css` | iOS 风格、Dark Mode、打印样式 |
+| **UI 元件** | `/partials/ui.php` | 底部導航、頁首 |
+| **工具函式** | `/helpers/functions.php` | h() 轉義、金額格式化 |
+| **資料庫層** | `/db.php` | PDO 連線、錯誤處理 |
+| **樣式資源** | `/assets/style.css` | iOS 風格、Dark Mode、列印樣式 |
 
-### 文档模块
+### 文件模組
 
-| 模块 | 路径 | 说明 |
+| 模組 | 路徑 | 說明 |
 |------|------|------|
-| **特性规范** | `/specs/002-integrated-quote-system/` | 完整需求、API、数据模型 |
-| **任务清单** | `/specs/002-integrated-quote-system/tasks.md` | 67 个实现任务 |
-| **质量检查** | `/specs/002-integrated-quote-system/checklists/` | 需求质量验证 |
-| **API 契约** | `/specs/002-integrated-quote-system/contracts/` | 6 个模块 API 定义 |
+| **特性規範** | `/specs/002-integrated-quote-system/` | 完整需求、API、資料模型 |
+| **任務清單** | `/specs/002-integrated-quote-system/tasks.md` | 67 個實現任務 |
+| **質量檢查** | `/specs/002-integrated-quote-system/checklists/` | 需求質量驗證 |
+| **API 契約** | `/specs/002-integrated-quote-system/contracts/` | 6 個模組 API 定義 |
 
 ---
 
-## 📊 项目统计
+## 📊 專案統計
 
 ```
-文档覆盖率:
-✅ 需求规格 (spec.md)          - 100%
-✅ 技术计划 (plan.md)          - 100%
-✅ 数据模型 (data-model.md)    - 100%
-✅ API 契约 (contracts/)       - 100%
-✅ 任务清单 (tasks.md)         - 100%
-✅ 快速开始 (quickstart.md)    - 100%
-✅ 质量检查 (checklists/)      - 100%
+文件覆蓋率:
+✅ 需求規格 (spec.md)          - 100%
+✅ 技術計劃 (plan.md)          - 100%
+✅ 資料模型 (data-model.md)    - 100%
+✅ API 契約 (contracts/)       - 100%
+✅ 任務清單 (tasks.md)         - 100%
+✅ 快速開始 (quickstart.md)    - 100%
+✅ 質量檢查 (checklists/)      - 100%
 
-任务进度:
-总任务数: 67
-Phase 1 (Setup): 5 任务
-Phase 2 (Foundational): 6 任务
-用户故事: 45 任务
-数据导出: 4 任务
-优化: 7 任务
+任務進度:
+總任務數: 67
+Phase 1 (Setup): 5 任務
+Phase 2 (Foundational): 6 任務
+使用者故事: 45 任務
+資料匯出: 4 任務
+最佳化: 7 任務
 
-用户故事:
-🎯 US1: iOS 导航 (P1) - 6 任务
-🎯 US2: 客户管理 (P1) - 7 任务
-🎯 US3: 目录管理 (P1) - 9 任务
-🎯 US4: 报价系统 (P1) - 11 任务
-🎯 US5: 设置管理 (P2) - 5 任务
-🎯 US6: 打印功能 (P2) - 7 任务
+使用者故事:
+🎯 US1: iOS 導航 (P1) - 6 任務
+🎯 US2: 客戶管理 (P1) - 7 任務
+🎯 US3: 目錄管理 (P1) - 9 任務
+🎯 US4: 報價系統 (P1) - 11 任務
+🎯 US5: 設定管理 (P2) - 5 任務
+🎯 US6: 列印功能 (P2) - 7 任務
 ```
 
 ---
 
-## 🎯 当前阶段
+## 🎯 當前階段
 
-**阶段**: 规划完成，准备实施
+**階段**: 規劃完成，準備實施
 
 **下一步**:
-1. 开始 Phase 1: 项目基础设施搭建
-2. 完成 Phase 2: 基础组件开发
-3. 并行实施 P1 用户故事 (US1-US4)
-4. 交付核心 MVP 系统
+1. 開始 Phase 1: 專案基礎設施搭建
+2. 完成 Phase 2: 基礎元件開發
+3. 並行實施 P1 使用者故事 (US1-US4)
+4. 交付核心 MVP 系統
 
 ---
 
-## 🏛️ 全局开发规范
+## 🏛️ 全域性開發規範
 
-### 架构原则
+### 架構原則
 
-- **零框架**: 仅使用 PHP 核心功能，无 Composer 依赖
-- **路由即文件名**: 清晰直观的 URL 结构
-- **单文件 ≤ 300 行**: 保持代码可读性
-- **模块化**: 每个功能模块独立组织
+- **零框架**: 僅使用 PHP 核心功能，無 Composer 依賴
+- **路由即檔名**: 清晰直觀的 URL 結構
+- **單檔案 ≤ 300 行**: 保持程式碼可讀性
+- **模組化**: 每個功能模組獨立組織
 
-### 安全规范
+### 安全規範
 
-- **PDO 预处理**: 所有 SQL 操作使用占位符
-- **XSS 防护**: h() 函数统一转义输出
-- **CSRF 验证**: 所有 POST 表单携带令牌
-- **事务安全**: 报价单创建使用数据库事务
-- **并发控制**: SELECT...FOR UPDATE 防止重复编号
+- **PDO 預處理**: 所有 SQL 操作使用佔位符
+- **XSS 防護**: h() 函式統一轉義輸出
+- **CSRF 驗證**: 所有 POST 表單攜帶令牌
+- **事務安全**: 報價單建立使用資料庫事務
+- **併發控制**: SELECT...FOR UPDATE 防止重複編號
 
-### 数据规范
+### 資料規範
 
-- **金额存储**: BIGINT UNSIGNED (分)
-- **时间处理**: UTC 存储，Asia/Taipei 显示
-- **精度控制**: DECIMAL(18,4) 数量，DECIMAL(5,2) 税率
-- **软删除**: active 字段标记
+- **金額儲存**: BIGINT UNSIGNED (分)
+- **時間處理**: UTC 儲存，Asia/Taipei 顯示
+- **精度控制**: DECIMAL(18,4) 數量，DECIMAL(5,2) 稅率
+- **軟刪除**: active 欄位標記
 
-### UI/UX 规范
+### UI/UX 規範
 
-- **iOS 风格**: 卡片布局，大标题，底部导航
-- **Dark Mode**: prefers-color-scheme 支持
+- **iOS 風格**: 卡片佈局，大標題，底部導航
+- **Dark Mode**: prefers-color-scheme 支援
 - **Safe-Area**: env(safe-area-inset-bottom)
-- **打印优化**: A4 格式，表头固定，@media print
+- **列印最佳化**: A4 格式，表頭固定，@media print
 
 ---
 
-## 📖 关键文档
+## 📖 關鍵文件
 
-### 设计文档
+### 設計文件
 
-1. **[需求规格](/specs/002-integrated-quote-system/spec.md)** - 用户故事、功能需求、成功标准
-2. **[技术计划](/specs/002-integrated-quote-system/plan.md)** - 架构决策、技术栈、合规检查
-3. **[数据模型](/specs/002-integrated-quote-system/data-model.md)** - 7 个实体、关系、索引
-4. **[API 契约](/specs/002-integrated-quote-system/contracts/)** - 6 个模块 API 定义
-5. **[快速开始](/specs/002-integrated-quote-system/quickstart.md)** - 部署指南、配置说明
-6. **[任务清单](/specs/002-integrated-quote-system/tasks.md)** - 67 个实现任务
+1. **[需求規格](/specs/002-integrated-quote-system/spec.md)** - 使用者故事、功能需求、成功標準
+2. **[技術計劃](/specs/002-integrated-quote-system/plan.md)** - 架構決策、技術棧、合規檢查
+3. **[資料模型](/specs/002-integrated-quote-system/data-model.md)** - 7 個實體、關係、索引
+4. **[API 契約](/specs/002-integrated-quote-system/contracts/)** - 6 個模組 API 定義
+5. **[快速開始](/specs/002-integrated-quote-system/quickstart.md)** - 部署指南、配置說明
+6. **[任務清單](/specs/002-integrated-quote-system/tasks.md)** - 67 個實現任務
 
-### 质量保证
+### 質量保證
 
-1. **[需求质量检查](/specs/002-integrated-quote-system/checklists/comprehensive-quality.md)** - 100 项质量验证
-2. **[规格检查清单](/specs/002-integrated-quote-system/checklists/requirements.md)** - 需求完整性验证
+1. **[需求質量檢查](/specs/002-integrated-quote-system/checklists/comprehensive-quality.md)** - 100 項質量驗證
+2. **[規格檢查清單](/specs/002-integrated-quote-system/checklists/requirements.md)** - 需求完整性驗證
 
 ---
 
-## 🚀 快速开始
+## 🚀 快速開始
 
-### 环境要求
+### 環境要求
 
 - PHP 8.3+
 - MySQL 8.0+ / MariaDB 10.6+
 - Nginx / Apache
-- 宝塔面板 (推荐)
+- 寶塔面板 (推薦)
 
-### 实施步骤
+### 實施步驟
 
-1. 克隆项目
-2. 配置数据库 (参考 quickstart.md)
-3. 执行 schema.sql
+1. 克隆專案
+2. 配置資料庫 (參考 quickstart.md)
+3. 執行 schema.sql
 4. 配置 config.php
-5. 开始任务实施 (参考 tasks.md)
+5. 開始任務實施 (參考 tasks.md)
 
 ---
 
-## 📈 性能目标
+## 📈 效能目標
 
-| 操作 | 目标 | 测量 |
+| 操作 | 目標 | 測量 |
 |------|------|------|
-| 列表加载 | P95 ≤ 200ms | 报价、产品、客户列表 |
-| 报价创建 | ≤ 2 分钟 | 5 个项目的标准报价单 |
-| 打印输出 | A4 格式 | 表头固定，10+ 行分页 |
-| 并发支持 | 10+ 用户 | 同时创建报价单 |
+| 列表載入 | P95 ≤ 200ms | 報價、產品、客戶列表 |
+| 報價建立 | ≤ 2 分鐘 | 5 個專案的標準報價單 |
+| 列印輸出 | A4 格式 | 表頭固定，10+ 行分頁 |
+| 併發支援 | 10+ 使用者 | 同時建立報價單 |
 
 ---
 
-## 📝 版本信息
+## 📝 版本資訊
 
-- **当前版本**: v0.1.0 (规划阶段)
+- **當前版本**: v0.1.0 (規劃階段)
 - **最低 PHP**: 8.3
 - **最低 MySQL**: 8.0 / MariaDB 10.6
-- **许可证**: MIT
+- **許可證**: MIT
 
 ---
 
-## 👥 参与贡献
+## 👥 參與貢獻
 
-### 开发流程
+### 開發流程
 
-1. 阅读 [Constitution v2.0.0](.specify/memory/constitution.md)
-2. 确认需求规范 (spec.md)
-3. 从任务清单选择任务 (tasks.md)
-4. 实施并遵循编码规范
-5. 运行质量检查清单
+1. 閱讀 [Constitution v2.0.0](.specify/memory/constitution.md)
+2. 確認需求規範 (spec.md)
+3. 從任務清單選擇任務 (tasks.md)
+4. 實施並遵循編碼規範
+5. 執行質量檢查清單
 
-### 代码规范
+### 程式碼規範
 
-- 遵循 PHP 8.3 标准规范
-- 单文件 ≤ 300 行
-- 路由即文件名
-- 详细注释关键逻辑
-
----
-
-## 📞 支持与联系
-
-- **项目类型**: 单体 Web 应用
-- **部署环境**: Linux + 宝塔面板
-- **技术栈**: PHP 8.3 + MySQL + Nginx
-- **设计模式**: 最小化架构，路由即文件名
+- 遵循 PHP 8.3 標準規範
+- 單檔案 ≤ 300 行
+- 路由即檔名
+- 詳細註釋關鍵邏輯
 
 ---
 
-**注意**: 本文档为 AI 辅助开发环境生成，包含了完整的项目上下文和开发指南。所有开发决策应参考对应的详细文档。
+## 📞 支援與聯絡
 
-<!-- 手动添加内容区域 -->
+- **專案型別**: 單體 Web 應用
+- **部署環境**: Linux + 寶塔面板
+- **技術棧**: PHP 8.3 + MySQL + Nginx
+- **設計模式**: 最小化架構，路由即檔名
+
+---
+
+**注意**: 本文件為 AI 輔助開發環境生成，包含了完整的專案上下文和開發指南。所有開發決策應參考對應的詳細文件。
+
+<!-- 手動新增內容區域 -->
 <!-- MANUAL ADDITIONS START -->
 
 <!-- MANUAL ADDITIONS END -->

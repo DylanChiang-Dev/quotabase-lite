@@ -11,7 +11,7 @@ function render_catalog_import_ui(string $type = 'product') {
     $form_id = 'catalog-import-form-' . $type;
     $sample_lines = [
         "type\tsku\tname\tunit\tcurrency\tunit_price\ttax_rate\tcategory_path\tactive",
-        "product\tPRO-001\t桌上型切割機\tpcs\tTWD\t1200\t5\t設備 > 切割\t1",
+        "product\tPRO-001\t桌上型切割機\tpcs\tTWD\t1200\t5\t裝置 > 切割\t1",
         "service\tSRV-010\t現場維護\ttime\tTWD\t3500\t0\t維保服務\t1"
     ];
     ?>
@@ -30,7 +30,7 @@ function render_catalog_import_ui(string $type = 'product') {
             <ol class="catalog-import-steps">
                 <li>下載模板或複製以下範例，建議使用 <strong>Tab</strong> 或 <code>|</code> 做為分隔。</li>
                 <li>欄位順序：<code>type, sku, name, unit, currency, unit_price, tax_rate, category_path, active</code>；type 可留空由面板預設值套用。</li>
-                <li>檔案須為 UTF-8 編碼之 .txt（≤ 1MB），單位請僅使用系統支援代碼，如 <code>pcs</code>/<code>set</code>/<code>time</code>/<code>hour</code> 等。</li>
+                <li>檔案須為 UTF-8 編碼之 .txt（≤ 1MB），單位請僅使用系統支援程式碼，如 <code>pcs</code>/<code>set</code>/<code>time</code>/<code>hour</code> 等。</li>
             </ol>
             <div class="catalog-import-template">
                 <div class="template-label">範例</div>
@@ -85,7 +85,7 @@ function render_catalog_import_ui(string $type = 'product') {
             METHOD_NOT_ALLOWED: '請以 POST 方式上傳資料。',
             UNAUTHORIZED: '尚未登入，請重新登入後再試。',
             INVALID_CSRF_TOKEN: 'CSRF 驗證失敗，請重新整理頁面後再試。',
-            INVALID_TYPE: '匯入類型不正確。',
+            INVALID_TYPE: '匯入型別不正確。',
             INVALID_STRATEGY: '匯入策略不正確。',
             UPLOAD_FAILED: '檔案上傳失敗，請重新選擇檔案。',
             FILE_TOO_LARGE: '檔案不可超過 1MB。',
@@ -148,7 +148,7 @@ function render_catalog_import_ui(string $type = 'product') {
             const type = typeLabels[summary.type] || summary.type || '—';
             const strategy = strategyLabels[summary.strategy] || summary.strategy || '—';
             return [
-                `匯入類型: ${type}`,
+                `匯入型別: ${type}`,
                 `策略: ${strategy}`,
                 `處理總筆數: ${summary.total ?? 0}`,
                 `新增: ${summary.created ?? 0}`,
@@ -252,7 +252,7 @@ function render_catalog_import_ui(string $type = 'product') {
             const statsHtml = `
                 <div class="catalog-import-result__summary">
                     <div>
-                        <div class="label">匯入類型</div>
+                        <div class="label">匯入型別</div>
                         <div class="value">${type}</div>
                     </div>
                     <div>
@@ -293,7 +293,7 @@ function render_catalog_import_ui(string $type = 'product') {
                     </li>
                 `).join('');
                 const extraHtml = extraCount > 0
-                    ? `<li class="event-meta">... 其餘 ${extraCount} 筆請下載報表查看</li>`
+                    ? `<li class="event-meta">... 其餘 ${extraCount} 筆請下載報表檢視</li>`
                     : '';
                 eventsHtml = `
                     <div class="catalog-import-result__list">
@@ -313,7 +313,7 @@ function render_catalog_import_ui(string $type = 'product') {
                         <span class="event-meta">${escapeHtml(item.reason || '')}</span>
                     </li>
                 `).join('');
-                const extra = skipped.length > 6 ? `<li class="event-meta">... 其餘 ${skipped.length - 6} 筆請下載報表查看</li>` : '';
+                const extra = skipped.length > 6 ? `<li class="event-meta">... 其餘 ${skipped.length - 6} 筆請下載報表檢視</li>` : '';
                 skippedHtml = `
                     <div class="catalog-import-result__list">
                         <div class="section-title">跳過記錄</div>
@@ -332,7 +332,7 @@ function render_catalog_import_ui(string $type = 'product') {
                         ${err.raw ? `<span class="event-meta">${escapeHtml(truncate(err.raw, 60))}</span>` : ''}
                     </li>
                 `).join('');
-                const extra = errors.length > 8 ? `<li class="event-meta">... 其餘 ${errors.length - 8} 筆請下載錯誤清單查看</li>` : '';
+                const extra = errors.length > 8 ? `<li class="event-meta">... 其餘 ${errors.length - 8} 筆請下載錯誤清單檢視</li>` : '';
                 errorsHtml = `
                     <div class="catalog-import-result__list catalog-import-result__errors">
                         <div class="section-title">錯誤明細</div>

@@ -1,11 +1,11 @@
 <?php
 /**
- * 编辑报价单页面
+ * 編輯報價單頁面
  * Edit Quote Page with line discount handling
  *
  * @version v2.1.0
- * @description 草稿报价单明细可编修，并新增折扣金额计算
- * @遵循宪法原则I: 安全优先开发
+ * @description 草稿報價單明細可編修，並新增折扣金額計算
+ * @遵循憲法原則I: 安全優先開發
  */
 
 define('QUOTABASE_SYSTEM', true);
@@ -22,7 +22,7 @@ if (!is_logged_in()) {
 
 $quote_id = intval($_GET['id'] ?? 0);
 if ($quote_id <= 0) {
-    header('Location: /quotes/?error=' . urlencode('无效的报价单ID'));
+    header('Location: /quotes/?error=' . urlencode('無效的報價單ID'));
     exit;
 }
 
@@ -34,12 +34,12 @@ $form_items_override = null;
 try {
     $quote = get_quote($quote_id);
     if (!$quote) {
-        header('Location: /quotes/?error=' . urlencode('报价单不存在'));
+        header('Location: /quotes/?error=' . urlencode('報價單不存在'));
         exit;
     }
 } catch (Exception $e) {
     error_log("Get quote error: " . $e->getMessage());
-    $error = '加载报价单信息失败';
+    $error = '載入報價單資訊失敗';
 }
 
 if (!$error && isset($_GET['error'])) {
@@ -49,8 +49,8 @@ if (!$error && isset($_GET['error'])) {
 $default_tax_rate = get_default_tax_rate();
 
 $catalog_groups = [
-    'product' => ['label' => '产品', 'items' => []],
-    'service' => ['label' => '服务', 'items' => []],
+    'product' => ['label' => '產品', 'items' => []],
+    'service' => ['label' => '服務', 'items' => []],
 ];
 $catalog_map = [];
 
@@ -72,38 +72,38 @@ try {
 } catch (Exception $e) {
     error_log("Catalog list error: " . $e->getMessage());
     if (!$error) {
-        $error = '加载产品/服务列表失败';
+        $error = '載入產品/服務列表失敗';
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        $error = '无效的请求，请重新提交。';
+        $error = '無效的請求，請重新提交。';
     } else {
         $action = $_POST['action'] ?? '';
         if ($action === 'update_status') {
             $new_status = $_POST['status'] ?? '';
             $result = update_quote_status($quote_id, $new_status);
             if ($result['success']) {
-                header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('状态更新成功'));
+                header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('狀態更新成功'));
                 exit;
             }
-            $error = $result['error'] ?? '状态更新失败';
+            $error = $result['error'] ?? '狀態更新失敗';
             $quote['status'] = $new_status;
         } elseif ($action === 'update_items') {
             if ($quote['status'] !== 'draft') {
-                $error = '仅草稿状态可编辑明细';
+                $error = '僅草稿狀態可編輯明細';
             } else {
                 $result = process_quote_edit($quote, $_POST);
                 if ($result['success']) {
-                    header('Location: /quotes/edit.php?id=' . $quote_id . '&success=' . urlencode('明细已更新'));
+                    header('Location: /quotes/edit.php?id=' . $quote_id . '&success=' . urlencode('明細已更新'));
                     exit;
                 }
-                $error = $result['error'] ?? '更新明细失败';
+                $error = $result['error'] ?? '更新明細失敗';
                 $form_items_override = $_POST['items'] ?? [];
             }
         } else {
-            $error = '未知操作请求';
+            $error = '未知操作請求';
         }
     }
 }
@@ -221,7 +221,7 @@ foreach ($initial_items as $item) {
 
 ob_start();
 ?>
-<option value="">请选择产品/服务</option>
+<option value="">請選擇產品/服務</option>
 <?php foreach ($catalog_groups as $group): ?>
     <?php if (!empty($group['items'])): ?>
         <optgroup label="<?php echo h($group['label']); ?>">
@@ -241,12 +241,12 @@ $initial_items_json = json_encode($initial_items, JSON_UNESCAPED_UNICODE);
 $default_tax_rate_json = json_encode($default_tax_rate);
 $unit_labels_json = json_encode(UNITS, JSON_UNESCAPED_UNICODE);
 
-html_start('编辑报价单');
+html_start('編輯報價單');
 
-page_header('编辑报价单', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '报价管理', 'url' => '/quotes/'],
-    ['label' => '编辑报价单', 'url' => '/quotes/edit.php?id=' . $quote_id]
+page_header('編輯報價單', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '報價管理', 'url' => '/quotes/'],
+    ['label' => '編輯報價單', 'url' => '/quotes/edit.php?id=' . $quote_id]
 ]);
 ?>
 <div class="main-content">
@@ -263,18 +263,18 @@ page_header('编辑报价单', [
     <?php endif; ?>
 
     <?php if ($quote): ?>
-        <?php card_start('报价单基本信息'); ?>
+        <?php card_start('報價單基本資訊'); ?>
             <div class="info-grid">
                 <div class="info-item">
-                    <label>报价单号</label>
+                    <label>報價單號</label>
                     <div class="info-value monospace"><?php echo h($quote['quote_number']); ?></div>
                 </div>
                 <div class="info-item">
-                    <label>客户</label>
+                    <label>客戶</label>
                     <div class="info-value"><?php echo h($quote['customer_name']); ?></div>
                 </div>
                 <div class="info-item">
-                    <label>开票日期</label>
+                    <label>開票日期</label>
                     <div class="info-value"><?php echo format_date($quote['issue_date']); ?></div>
                 </div>
                 <div class="info-item">
@@ -282,19 +282,19 @@ page_header('编辑报价单', [
                     <div class="info-value"><?php echo $quote['valid_until'] ? format_date($quote['valid_until']) : '—'; ?></div>
                 </div>
                 <div class="info-item">
-                    <label>状态</label>
+                    <label>狀態</label>
                     <div class="info-value"><?php echo get_status_badge($quote['status']); ?></div>
                 </div>
                 <div class="info-item">
-                    <label>备注</label>
+                    <label>備註</label>
                     <div class="info-value multiline"><?php echo nl2br(h($quote['note'] ?? '')); ?></div>
                 </div>
             </div>
         <?php card_end(); ?>
 
         <?php if ($quote['status'] === 'draft'): ?>
-            <?php card_start('编辑报价明细'); ?>
-                <p class="section-hint">草稿状态可自由增删调整明细，折扣金额会自动换算百分比与合计。</p>
+            <?php card_start('編輯報價明細'); ?>
+                <p class="section-hint">草稿狀態可自由增刪調整明細，折扣金額會自動換算百分比與合計。</p>
                 <div id="quote-items-error" class="form-message hidden"></div>
 
                 <form method="POST" action="/quotes/edit.php?id=<?php echo $quote_id; ?>" id="quote-items-form">
@@ -305,45 +305,45 @@ page_header('编辑报价单', [
 
                     <button type="button" class="btn btn-secondary add-item-btn" id="add-quote-item-btn">
                         <span class="btn-icon-circle">＋</span>
-                        添加项目
+                        新增專案
                     </button>
 
                     <div class="quote-totals" id="quote-totals">
                         <div class="quote-total-card">
-                            <span>税前小计</span>
+                            <span>稅前小計</span>
                             <strong id="quote-total-subtotal"><?php echo format_currency_cents($initial_totals['subtotal']); ?></strong>
                         </div>
                         <div class="quote-total-card">
-                            <span>税额</span>
+                            <span>稅額</span>
                             <strong id="quote-total-tax"><?php echo format_currency_cents($initial_totals['tax']); ?></strong>
                         </div>
                         <div class="quote-total-card highlight">
-                            <span>含税总计</span>
+                            <span>含稅總計</span>
                             <strong id="quote-total-total"><?php echo format_currency_cents($initial_totals['total']); ?></strong>
                         </div>
                     </div>
 
                     <div class="form-actions">
                         <a href="/quotes/view.php?id=<?php echo $quote_id; ?>" class="btn btn-secondary">取消</a>
-                        <button type="submit" class="btn btn-primary">保存明细</button>
+                        <button type="submit" class="btn btn-primary">儲存明細</button>
                     </div>
                 </form>
             <?php card_end(); ?>
         <?php else: ?>
-            <?php card_start('报价单明细'); ?>
+            <?php card_start('報價單明細'); ?>
                 <div class="table-wrapper">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>SKU</th>
-                                <th>项目</th>
-                                <th class="text-right">数量</th>
-                                <th class="text-right">单价</th>
+                                <th>專案</th>
+                                <th class="text-right">數量</th>
+                                <th class="text-right">單價</th>
                                 <th class="text-right">折扣</th>
                                 <th class="text-right">折扣%</th>
-                                <th class="text-right">税率</th>
-                                <th class="text-right">税额</th>
-                                <th class="text-right">含税总计</th>
+                                <th class="text-right">稅率</th>
+                                <th class="text-right">稅額</th>
+                                <th class="text-right">含稅總計</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -380,47 +380,47 @@ page_header('编辑报价单', [
             <?php card_end(); ?>
         <?php endif; ?>
 
-        <?php card_start('状态管理'); ?>
+        <?php card_start('狀態管理'); ?>
             <form method="POST" action="/quotes/edit.php?id=<?php echo $quote_id; ?>" class="status-form">
                 <?php echo csrf_input(); ?>
                 <input type="hidden" name="action" value="update_status">
 
                 <div class="status-grid">
                     <div class="status-field">
-                        <label>当前状态</label>
+                        <label>當前狀態</label>
                         <div class="info-value"><?php echo get_status_badge($quote['status']); ?></div>
                     </div>
                     <div class="status-field">
-                        <label>更新为</label>
+                        <label>更新為</label>
                         <?php
                         $status_options = [
                             'draft' => '草稿',
-                            'sent' => '已发送',
+                            'sent' => '已傳送',
                             'accepted' => '已接受',
-                            'rejected' => '已拒绝',
-                            'expired' => '已过期'
+                            'rejected' => '已拒絕',
+                            'expired' => '已過期'
                         ];
                         form_field('status', '', 'select', $status_options, [
                             'required' => true,
                             'selected' => $quote['status'],
-                            'placeholder' => '选择新状态'
+                            'placeholder' => '選擇新狀態'
                         ]);
                         ?>
                     </div>
                 </div>
 
                 <div class="status-legend">
-                    <strong>状态说明</strong>
+                    <strong>狀態說明</strong>
                     <ul>
-                        <li><span>草稿</span>：可编辑明细</li>
-                        <li><span>已发送</span>：已交付客户，可继续变更状态</li>
-                        <li><span>已接受 / 已拒绝 / 已过期</span>：明细锁定，仅供查看</li>
+                        <li><span>草稿</span>：可編輯明細</li>
+                        <li><span>已傳送</span>：已交付客戶，可繼續變更狀態</li>
+                        <li><span>已接受 / 已拒絕 / 已過期</span>：明細鎖定，僅供檢視</li>
                     </ul>
                 </div>
 
                 <div class="form-actions">
-                    <a href="/quotes/view.php?id=<?php echo $quote_id; ?>" class="btn btn-secondary">返回详情</a>
-                    <button type="submit" class="btn btn-primary">更新状态</button>
+                    <a href="/quotes/view.php?id=<?php echo $quote_id; ?>" class="btn btn-secondary">返回詳情</a>
+                    <button type="submit" class="btn btn-primary">更新狀態</button>
                 </div>
             </form>
         <?php card_end(); ?>
@@ -430,62 +430,62 @@ page_header('编辑报价单', [
 <template id="quote-item-template">
     <div class="quote-item-row" data-index="__INDEX__">
         <div class="quote-item-field quote-item-field--wide">
-            <label>产品/服务 *</label>
+            <label>產品/服務 *</label>
             <select name="items[__INDEX__][catalog_item_id]" class="catalog-select" required>
                 <?php echo $catalog_options_html; ?>
             </select>
         </div>
         <div class="quote-item-field quote-item-field--wide">
             <label>描述 *</label>
-            <input type="text" name="items[__INDEX__][description]" class="description-input" maxlength="500" placeholder="请输入描述">
+            <input type="text" name="items[__INDEX__][description]" class="description-input" maxlength="500" placeholder="請輸入描述">
         </div>
         <div class="quote-item-field quote-item-field--sm">
-            <label>数量 *</label>
+            <label>數量 *</label>
             <input type="number" name="items[__INDEX__][qty]" class="qty-input" min="0.0001" step="0.0001" required>
         </div>
         <div class="quote-item-field quote-item-field--sm">
-            <label>单位</label>
+            <label>單位</label>
             <input type="hidden" name="items[__INDEX__][unit]" class="unit-input" value="pcs">
             <div class="unit-display" data-role="unit-label">—</div>
         </div>
         <div class="quote-item-field quote-item-field--sm">
-            <label>单价 (NT$)</label>
+            <label>單價 (NT$)</label>
             <input type="number" name="items[__INDEX__][unit_price]" class="unit-price-input" min="0" step="0.01" placeholder="0.00">
             <input type="hidden" name="items[__INDEX__][unit_price_cents]" class="unit-price-cents-input">
         </div>
         <div class="quote-item-field quote-item-field--sm">
-            <label>税率 (%)</label>
+            <label>稅率 (%)</label>
             <input type="number" name="items[__INDEX__][tax_rate]" class="tax-rate-input" min="0" max="100" step="0.01" placeholder="0">
         </div>
         <div class="quote-item-field quote-item-field--sm">
-            <label>折扣金额 (NT$)</label>
+            <label>折扣金額 (NT$)</label>
             <input type="number" name="items[__INDEX__][discount]" class="discount-input" min="0" step="0.01" placeholder="0.00">
             <input type="hidden" name="items[__INDEX__][discount_cents]" class="discount-cents-input">
             <div class="field-error" data-role="discount-error"></div>
         </div>
         <div class="quote-item-field quote-item-field--summary">
-            <label>折扣 / 金额摘要</label>
+            <label>折扣 / 金額摘要</label>
             <div class="quote-item-summary">
                 <div class="summary-line">
                     <span>折扣%</span>
                     <strong data-role="discount-percent">0%</strong>
                 </div>
                 <div class="summary-line">
-                    <span>税额</span>
+                    <span>稅額</span>
                     <strong data-role="line-tax">NT$ 0.00</strong>
                 </div>
                 <div class="summary-line">
-                    <span>税前小计</span>
+                    <span>稅前小計</span>
                     <strong data-role="line-subtotal">NT$ 0.00</strong>
                 </div>
                 <div class="summary-line">
-                    <span>含税总计</span>
+                    <span>含稅總計</span>
                     <strong data-role="line-total">NT$ 0.00</strong>
                 </div>
             </div>
         </div>
         <div class="quote-item-field quote-item-field--actions">
-            <button type="button" class="btn-icon remove-item-btn" aria-label="删除明细">
+            <button type="button" class="btn-icon remove-item-btn" aria-label="刪除明細">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                     <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
@@ -665,7 +665,7 @@ page_header('编辑报价单', [
         const effectiveDiscount = Math.min(discountCents, grossCents);
 
         if (discountCents > grossCents) {
-            discountError.textContent = '折扣金额超过行金额';
+            discountError.textContent = '折扣金額超過行金額';
             row.dataset.hasError = 'true';
         } else {
             discountError.textContent = '';
@@ -826,7 +826,7 @@ page_header('编辑报价单', [
 
         if (!valid && errorBox) {
             errorBox.classList.remove('hidden');
-            errorBox.textContent = '请修正标记项目后再保存。';
+            errorBox.textContent = '請修正標記專案後再儲存。';
             window.scrollTo({ top: errorBox.offsetTop - 120, behavior: 'smooth' });
         }
 

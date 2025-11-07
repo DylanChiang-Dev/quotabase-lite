@@ -1,33 +1,33 @@
 <?php
 /**
  * Helper Functions Library
- * 工具函数库
+ * 工具函式庫
  *
  * @version v2.0.0
- * @description 通用工具函数集合，包含安全、数据处理、格式化等函数
- * @遵循宪法原则I: 安全优先开发
- * @遵循宪法原则II: 精确财务数据处理
+ * @description 通用工具函式集合，包含安全、資料處理、格式化等函式
+ * @遵循憲法原則I: 安全優先開發
+ * @遵循憲法原則II: 精確財務資料處理
  */
 
-// 防止直接访问
+// 防止直接訪問
 if (!defined('QUOTABASE_SYSTEM')) {
     define('QUOTABASE_SYSTEM', true);
 }
 
 /**
  * ========================================
- * 安全防护函数 (Security Functions)
- * 遵循宪法原则I: 安全优先开发
+ * 安全防護函式 (Security Functions)
+ * 遵循憲法原則I: 安全優先開發
  * ========================================
  */
 
 /**
- * HTML转义函数（防止XSS攻击）
- * 必须用于所有动态输出到HTML的内容
+ * HTML轉義函式（防止XSS攻擊）
+ * 必須用於所有動態輸出到HTML的內容
  *
- * @param string $string 待转义的字符串
- * @param string $encoding 字符编码，默认UTF-8
- * @return string 转义后的字符串
+ * @param string $string 待轉義的字串
+ * @param string $encoding 字元編碼，預設UTF-8
+ * @return string 轉義後的字串
  */
 function h($string, $encoding = 'UTF-8') {
     return htmlspecialchars($string ?? '', ENT_QUOTES | ENT_SUBSTITUTE, $encoding);
@@ -36,7 +36,7 @@ function h($string, $encoding = 'UTF-8') {
 /**
  * 生成CSRF令牌
  *
- * @return string 64位十六进制字符串
+ * @return string 64位十六進位制字串
  */
 function generate_csrf_token() {
     if (session_status() === PHP_SESSION_NONE) {
@@ -50,10 +50,10 @@ function generate_csrf_token() {
 }
 
 /**
- * 验证CSRF令牌
+ * 驗證CSRF令牌
  *
- * @param string $token 待验证的令牌
- * @return bool 验证结果
+ * @param string $token 待驗證的令牌
+ * @return bool 驗證結果
  */
 function verify_csrf_token($token) {
     if (session_status() === PHP_SESSION_NONE) {
@@ -64,7 +64,7 @@ function verify_csrf_token($token) {
 }
 
 /**
- * 检查用户是否已登录
+ * 檢查使用者是否已登入
  *
  * @return bool
  */
@@ -76,7 +76,7 @@ function is_logged_in() {
 }
 
 /**
- * 检查会话是否过期
+ * 檢查會話是否過期
  *
  * @return bool
  */
@@ -92,7 +92,7 @@ function is_session_expired() {
 }
 
 /**
- * 获取当前用户ID
+ * 獲取當前使用者ID
  *
  * @return int|null
  */
@@ -104,7 +104,7 @@ function get_current_user_id() {
 }
 
 /**
- * 获取当前组织ID
+ * 獲取當前組織ID
  *
  * @return int
  */
@@ -116,11 +116,11 @@ function get_current_org_id() {
 }
 
 /**
- * 生成随机密码
+ * 生成隨機密碼
  *
- * @param int $length 密码长度，默认12
- * @param bool $include_special 是否包含特殊字符，默认false
- * @return string 生成的密码
+ * @param int $length 密碼長度，預設12
+ * @param bool $include_special 是否包含特殊字元，預設false
+ * @return string 生成的密碼
  */
 function generate_password($length = 12, $include_special = false) {
     $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -137,24 +137,24 @@ function generate_password($length = 12, $include_special = false) {
 }
 
 /**
- * 验证密码强度
+ * 驗證密碼強度
  *
- * @param string $password 密码
+ * @param string $password 密碼
  * @return array ['valid' => bool, 'message' => string]
  */
 function validate_password_strength($password) {
     $errors = [];
 
     if (strlen($password) < 8) {
-        $errors[] = '密码长度至少8位';
+        $errors[] = '密碼長度至少8位';
     }
 
     if (!preg_match('/[A-Za-z]/', $password)) {
-        $errors[] = '密码必须包含字母';
+        $errors[] = '密碼必須包含字母';
     }
 
     if (!preg_match('/[0-9]/', $password)) {
-        $errors[] = '密码必须包含数字';
+        $errors[] = '密碼必須包含數字';
     }
 
     return [
@@ -165,18 +165,18 @@ function validate_password_strength($password) {
 
 /**
  * ========================================
- * 财务数据处理函数 (Financial Data Functions)
- * 遵循宪法原则II: 精确财务数据处理
+ * 財務資料處理函式 (Financial Data Functions)
+ * 遵循憲法原則II: 精確財務資料處理
  * ========================================
  */
 
 /**
- * 格式化金额（分 -> 货币格式显示）
+ * 格式化金額（分 -> 貨幣格式顯示）
  *
- * @param int $cents 金额（单位：分）
- * @param string $currency 货币符号，默认NT$
- * @param int $decimals 小数位数，默认2
- * @return string 格式化后的金额字符串
+ * @param int $cents 金額（單位：分）
+ * @param string $currency 貨幣符號，預設NT$
+ * @param int $decimals 小數位數，預設2
+ * @return string 格式化後的金額字串
  *
  * @example
  * format_currency_cents(1000) // "NT$ 1,000.00"
@@ -188,12 +188,12 @@ function format_currency_cents($cents, $currency = 'NT$', $decimals = 2) {
 }
 
 /**
- * 格式化单价（从分转换为元显示）
+ * 格式化單價（從分轉換為元顯示）
  *
- * @param int $cents 单价（单位：分）
- * @param string $unit 单位，默认"元"
- * @param int $decimals 小数位数，默认2
- * @return string 格式化后的单价
+ * @param int $cents 單價（單位：分）
+ * @param string $unit 單位，預設"元"
+ * @param int $decimals 小數位數，預設2
+ * @return string 格式化後的單價
  *
  * @example
  * format_unit_price(1500, '元') // "15.00 元"
@@ -204,23 +204,23 @@ function format_unit_price($cents, $unit = '元', $decimals = 2) {
 }
 
 /**
- * 计算未折扣前的行金额（数量 × 单价）
+ * 計算未折扣前的行金額（數量 × 單價）
  *
- * @param float $qty 数量（支持小数，最多4位）
- * @param int $unit_price_cents 单价（分）
- * @return int 行原始金额（分）
+ * @param float $qty 數量（支援小數，最多4位）
+ * @param int $unit_price_cents 單價（分）
+ * @return int 行原始金額（分）
  */
 function calculate_line_gross($qty, $unit_price_cents) {
     return (int)round($qty * $unit_price_cents);
 }
 
 /**
- * 计算行小计（数量 × 单价 - 折扣）
+ * 計算行小計（數量 × 單價 - 折扣）
  *
- * @param float $qty 数量（支持小数，最多4位）
- * @param int $unit_price_cents 单价（分）
- * @param int $discount_cents 折扣金额（分）
- * @return int 小计（分）
+ * @param float $qty 數量（支援小數，最多4位）
+ * @param int $unit_price_cents 單價（分）
+ * @param int $discount_cents 折扣金額（分）
+ * @return int 小計（分）
  */
 function calculate_line_subtotal($qty, $unit_price_cents, $discount_cents = 0) {
     $gross = calculate_line_gross($qty, $unit_price_cents);
@@ -232,7 +232,7 @@ function calculate_line_subtotal($qty, $unit_price_cents, $discount_cents = 0) {
 }
 
 /**
- * 计算折扣百分比
+ * 計算折扣百分比
  *
  * @param int $discount_cents 折扣金額（分）
  * @param int $gross_cents 行原始金額（分）
@@ -246,22 +246,22 @@ function calculate_discount_percent($discount_cents, $gross_cents) {
 }
 
 /**
- * 计算行税额（小计 × 税率）
+ * 計算行稅額（小計 × 稅率）
  *
- * @param int $subtotal_cents 小计（分）
- * @param float $tax_rate 税率（百分比，如5表示5%）
- * @return int 税额（分）
+ * @param int $subtotal_cents 小計（分）
+ * @param float $tax_rate 稅率（百分比，如5表示5%）
+ * @return int 稅額（分）
  */
 function calculate_line_tax($subtotal_cents, $tax_rate) {
     return (int)round($subtotal_cents * ($tax_rate / 100));
 }
 
 /**
- * 计算行总计（小计 + 税额）
+ * 計算行總計（小計 + 稅額）
  *
- * @param int $subtotal_cents 小计（分）
- * @param int $tax_cents 税额（分）
- * @return int 总计（分）
+ * @param int $subtotal_cents 小計（分）
+ * @param int $tax_cents 稅額（分）
+ * @return int 總計（分）
  */
 function calculate_line_total($subtotal_cents, $tax_cents) {
     return $subtotal_cents + $tax_cents;
@@ -271,7 +271,7 @@ function calculate_line_total($subtotal_cents, $tax_cents) {
  * 簡潔金額顯示（無小數）
  *
  * @param int $cents 金額（分）
- * @param string $currency 货币符号
+ * @param string $currency 貨幣符號
  * @return string
  */
 function format_currency_cents_compact($cents, $currency = 'NT$') {
@@ -280,9 +280,9 @@ function format_currency_cents_compact($cents, $currency = 'NT$') {
 }
 
 /**
- * 计算报价单总计
+ * 計算報價單總計
  *
- * @param array $items 报价项目数组，每个元素包含line_subtotal_cents和line_tax_cents
+ * @param array $items 報價專案陣列，每個元素包含line_subtotal_cents和line_tax_cents
  * @return array ['subtotal' => int, 'tax' => int, 'total' => int]
  */
 function calculate_quote_total($items) {
@@ -308,20 +308,20 @@ function calculate_quote_total($items) {
 }
 
 /**
- * 将金额转换为分（用于存储）
+ * 將金額轉換為分（用於儲存）
  *
- * @param string|float $amount 金额字符串或数字
- * @return int 金额（分）
+ * @param string|float $amount 金額字串或數字
+ * @return int 金額（分）
  */
 function amount_to_cents($amount) {
-    // 移除货币符号和千位分隔符
+    // 移除貨幣符號和千位分隔符
     $amount = preg_replace('/[^\d.-]/', '', $amount);
-    // 转换为分
+    // 轉換為分
     return (int)round(floatval($amount) * 100);
 }
 
 /**
- * 格式化数量，避免多餘小數
+ * 格式化數量，避免多餘小數
  *
  * @param float $qty
  * @return string
@@ -335,45 +335,45 @@ function format_quantity($qty) {
 
 /**
  * ========================================
- * 数据验证函数 (Validation Functions)
+ * 資料驗證函式 (Validation Functions)
  * ========================================
  */
 
 /**
- * 验证邮箱格式
+ * 驗證郵箱格式
  *
- * @param string $email 邮箱地址
- * @return bool 验证结果
+ * @param string $email 郵箱地址
+ * @return bool 驗證結果
  */
 function is_valid_email($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 /**
- * 验证税务登记号格式（台湾统一编号：8位数字）
+ * 驗證稅務登記號格式（臺灣統一編號：8位數字）
  *
- * @param string $tax_id 税务登记号
- * @return bool 验证结果
+ * @param string $tax_id 稅務登記號
+ * @return bool 驗證結果
  */
 function is_valid_tax_id($tax_id) {
     return preg_match('/^\d{8}$/', $tax_id) === 1;
 }
 
 /**
- * 验证SKU格式
+ * 驗證SKU格式
  *
- * @param string $sku SKU编码
- * @return bool 验证结果
+ * @param string $sku SKU編碼
+ * @return bool 驗證結果
  */
 function is_valid_sku($sku) {
     return preg_match('/^[A-Za-z0-9_-]{1,100}$/', $sku) === 1;
 }
 
 /**
- * 取得 SKU 前綴
+ * 取得 SKU 字首
  *
  * @param string $type catalog type
- * @return string 前綴
+ * @return string 字首
  */
 function get_catalog_item_sku_prefix($type) {
     $type = $type === 'service' ? 'service' : 'product';
@@ -385,9 +385,9 @@ function get_catalog_item_sku_prefix($type) {
 }
 
 /**
- * 產生唯一 SKU（依類型 + 日期 + 流水號）
+ * 產生唯一 SKU（依型別 + 日期 + 流水號）
  *
- * @param string $type 類型（product/service）
+ * @param string $type 型別（product/service）
  * @return string 生成的 SKU
  */
 function generate_catalog_item_sku($type = 'product') {
@@ -413,22 +413,22 @@ function generate_catalog_item_sku($type = 'product') {
 }
 
 /**
- * 验证URL格式
+ * 驗證URL格式
  *
  * @param string $url URL地址
- * @return bool 验证结果
+ * @return bool 驗證結果
  */
 function is_valid_url($url) {
     return filter_var($url, FILTER_VALIDATE_URL) !== false;
 }
 
 /**
- * 清理并验证字符串长度
+ * 清理並驗證字串長度
  *
- * @param string $str 字符串
- * @param int $max_length 最大长度
- * @param int $min_length 最小长度，默认0
- * @return bool 验证结果
+ * @param string $str 字串
+ * @param int $max_length 最大長度
+ * @param int $min_length 最小長度，預設0
+ * @return bool 驗證結果
  */
 function validate_string_length($str, $max_length, $min_length = 0) {
     $length = mb_strlen($str, 'UTF-8');
@@ -437,37 +437,37 @@ function validate_string_length($str, $max_length, $min_length = 0) {
 
 /**
  * ========================================
- * 日期时间处理函数 (Date/Time Functions)
- * 遵循宪法原则II: UTC存储、Asia/Taipei显示
+ * 日期時間處理函式 (Date/Time Functions)
+ * 遵循憲法原則II: UTC儲存、Asia/Taipei顯示
  * ========================================
  */
 
 /**
- * 获取当前日期（UTC）
+ * 獲取當前日期（UTC）
  *
- * @param string $format 日期格式，默认Y-m-d
- * @return string 日期字符串
+ * @param string $format 日期格式，預設Y-m-d
+ * @return string 日期字串
  */
 function get_current_date_utc($format = 'Y-m-d') {
     return gmdate($format);
 }
 
 /**
- * 获取当前日期时间（UTC）
+ * 獲取當前日期時間（UTC）
  *
- * @param string $format 日期时间格式，默认Y-m-d H:i:s
- * @return string 日期时间字符串
+ * @param string $format 日期時間格式，預設Y-m-d H:i:s
+ * @return string 日期時間字串
  */
 function get_current_datetime_utc($format = 'Y-m-d H:i:s') {
     return gmdate($format);
 }
 
 /**
- * 格式化日期（显示时区）
+ * 格式化日期（顯示時區）
  *
- * @param string $date 日期字符串或日期时间
- * @param string $format 输出格式，默认Y-m-d
- * @return string 格式化后的日期
+ * @param string $date 日期字串或日期時間
+ * @param string $format 輸出格式，預設Y-m-d
+ * @return string 格式化後的日期
  */
 function format_date($date, $format = 'Y-m-d') {
     $display_tz = defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei';
@@ -477,26 +477,26 @@ function format_date($date, $format = 'Y-m-d') {
         $dt->setTimezone(new DateTimeZone($display_tz));
         return $dt->format($format);
     } catch (Exception $e) {
-        return $date; // 如果解析失败，返回原始值
+        return $date; // 如果解析失敗，返回原始值
     }
 }
 
 /**
- * 格式化日期时间（显示时区）
+ * 格式化日期時間（顯示時區）
  *
- * @param string $datetime 日期时间字符串
- * @param string $format 输出格式，默认Y-m-d H:i
- * @return string 格式化后的日期时间
+ * @param string $datetime 日期時間字串
+ * @param string $format 輸出格式，預設Y-m-d H:i
+ * @return string 格式化後的日期時間
  */
 function format_datetime($datetime, $format = 'Y-m-d H:i') {
     return format_date($datetime, $format);
 }
 
 /**
- * 将日期时间格式化为 ISO8601 UTC 字符串
+ * 將日期時間格式化為 ISO8601 UTC 字串
  *
- * @param string|null $datetime 原始日期时间
- * @return string|null ISO8601 字符串或 null
+ * @param string|null $datetime 原始日期時間
+ * @return string|null ISO8601 字串或 null
  */
 function format_iso8601_utc($datetime) {
     if (empty($datetime)) {
@@ -512,11 +512,11 @@ function format_iso8601_utc($datetime) {
 }
 
 /**
- * 计算日期差
+ * 計算日期差
  *
  * @param string $date1 日期1
  * @param string $date2 日期2
- * @return int 天数差
+ * @return int 天數差
  */
 function date_diff_days($date1, $date2) {
     $dt1 = new DateTime($date1, new DateTimeZone('UTC'));
@@ -527,17 +527,17 @@ function date_diff_days($date1, $date2) {
 
 /**
  * ========================================
- * 业务逻辑函数 (Business Logic Functions)
+ * 業務邏輯函式 (Business Logic Functions)
  * ========================================
  */
 
 /**
- * 生成分页HTML
+ * 生成分頁HTML
  *
- * @param int $current_page 当前页码
- * @param int $total_pages 总页数
- * @param string $base_url 基础URL
- * @return string HTML字符串
+ * @param int $current_page 當前頁碼
+ * @param int $total_pages 總頁數
+ * @param string $base_url 基礎URL
+ * @return string HTML字串
  */
 function generate_pagination($current_page, $total_pages, $base_url) {
     if ($total_pages <= 1) {
@@ -546,12 +546,12 @@ function generate_pagination($current_page, $total_pages, $base_url) {
 
     $html = '<nav class="pagination"><ul>';
 
-    // 上一页
+    // 上一頁
     if ($current_page > 1) {
-        $html .= '<li><a href="' . h($base_url) . '?page=' . ($current_page - 1) . '">上一页</a></li>';
+        $html .= '<li><a href="' . h($base_url) . '?page=' . ($current_page - 1) . '">上一頁</a></li>';
     }
 
-    // 页码
+    // 頁碼
     $start = max(1, $current_page - 2);
     $end = min($total_pages, $current_page + 2);
 
@@ -560,9 +560,9 @@ function generate_pagination($current_page, $total_pages, $base_url) {
         $html .= '<li' . $active . '><a href="' . h($base_url) . '?page=' . $i . '">' . $i . '</a></li>';
     }
 
-    // 下一页
+    // 下一頁
     if ($current_page < $total_pages) {
-        $html .= '<li><a href="' . h($base_url) . '?page=' . ($current_page + 1) . '">下一页</a></li>';
+        $html .= '<li><a href="' . h($base_url) . '?page=' . ($current_page + 1) . '">下一頁</a></li>';
     }
 
     $html .= '</ul></nav>';
@@ -570,18 +570,18 @@ function generate_pagination($current_page, $total_pages, $base_url) {
 }
 
 /**
- * 获取状态标签HTML
+ * 獲取狀態標籤HTML
  *
- * @param string $status 状态值
- * @return string HTML字符串
+ * @param string $status 狀態值
+ * @return string HTML字串
  */
 function get_status_badge($status) {
     $status_map = [
         'draft' => ['label' => '草稿', 'class' => 'badge-secondary'],
-        'sent' => ['label' => '已发送', 'class' => 'badge-info'],
+        'sent' => ['label' => '已傳送', 'class' => 'badge-info'],
         'accepted' => ['label' => '已接受', 'class' => 'badge-success'],
-        'rejected' => ['label' => '已拒绝', 'class' => 'badge-danger'],
-        'expired' => ['label' => '已过期', 'class' => 'badge-warning']
+        'rejected' => ['label' => '已拒絕', 'class' => 'badge-danger'],
+        'expired' => ['label' => '已過期', 'class' => 'badge-warning']
     ];
 
     $info = $status_map[$status] ?? ['label' => $status, 'class' => 'badge-secondary'];
@@ -590,18 +590,18 @@ function get_status_badge($status) {
 }
 
 /**
- * 获取状态中文标签
+ * 獲取狀態中文標籤
  *
- * @param string $status 状态值
- * @return string 中文标签
+ * @param string $status 狀態值
+ * @return string 中文標籤
  */
 function get_status_label($status) {
     $status_map = [
         'draft' => '草稿',
-        'sent' => '已发送',
+        'sent' => '已傳送',
         'accepted' => '已接受',
-        'rejected' => '已拒绝',
-        'expired' => '已过期'
+        'rejected' => '已拒絕',
+        'expired' => '已過期'
     ];
 
     return $status_map[$status] ?? $status;
@@ -609,17 +609,17 @@ function get_status_label($status) {
 
 /**
  * ========================================
- * 字符串处理函数 (String Functions)
+ * 字串處理函式 (String Functions)
  * ========================================
  */
 
 /**
- * 截断字符串（支持中文）
+ * 截斷字串（支援中文）
  *
- * @param string $str 原字符串
- * @param int $length 截断长度
- * @param string $suffix 后缀，默认"..."
- * @return string 截断后的字符串
+ * @param string $str 原字串
+ * @param int $length 截斷長度
+ * @param string $suffix 字尾，預設"..."
+ * @return string 截斷後的字串
  */
 function truncate_string($str, $length, $suffix = '...') {
     $str = trim($str);
@@ -630,11 +630,11 @@ function truncate_string($str, $length, $suffix = '...') {
 }
 
 /**
- * 生成随机字符串
+ * 生成隨機字串
  *
- * @param int $length 长度
- * @param string $charset 字符集，默认alphanumeric
- * @return string 随机字符串
+ * @param int $length 長度
+ * @param string $charset 字元集，預設alphanumeric
+ * @return string 隨機字串
  */
 function random_string($length = 32, $charset = 'alphanumeric') {
     switch ($charset) {
@@ -659,12 +659,12 @@ function random_string($length = 32, $charset = 'alphanumeric') {
 }
 
 /**
- * 清理字符串（移除特殊字符）
+ * 清理字串（移除特殊字元）
  *
- * @param string $str 原始字符串
- * @param bool $allow_spaces 是否允许空格，默认true
- * @param bool $allow_dashes 是否允许短横线和下划线，默认true
- * @return string 清理后的字符串
+ * @param string $str 原始字串
+ * @param bool $allow_spaces 是否允許空格，預設true
+ * @param bool $allow_dashes 是否允許短橫線和下劃線，預設true
+ * @return string 清理後的字串
  */
 function clean_string($str, $allow_spaces = true, $allow_dashes = true) {
     $pattern = '/[^a-zA-Z0-9';
@@ -677,16 +677,16 @@ function clean_string($str, $allow_spaces = true, $allow_dashes = true) {
 
 /**
  * ========================================
- * 数组处理函数 (Array Functions)
+ * 陣列處理函式 (Array Functions)
  * ========================================
  */
 
 /**
- * 过滤数组（移除空值）
+ * 過濾陣列（移除空值）
  *
- * @param array $array 原始数组
- * @param bool $remove_zero 是否移除0值，默认false
- * @return array 过滤后的数组
+ * @param array $array 原始陣列
+ * @param bool $remove_zero 是否移除0值，預設false
+ * @return array 過濾後的陣列
  */
 function filter_array($array, $remove_zero = false) {
     $filtered = [];
@@ -701,12 +701,12 @@ function filter_array($array, $remove_zero = false) {
 }
 
 /**
- * 从数组中提取指定键的值
+ * 從陣列中提取指定鍵的值
  *
- * @param array $array 原始数组
- * @param string|array $keys 要提取的键
- * @param mixed $default 默认值
- * @return array 提取的结果
+ * @param array $array 原始陣列
+ * @param string|array $keys 要提取的鍵
+ * @param mixed $default 預設值
+ * @return array 提取的結果
  */
 function array_extract($array, $keys, $default = null) {
     $result = [];
@@ -721,15 +721,15 @@ function array_extract($array, $keys, $default = null) {
 
 /**
  * ========================================
- * 调试辅助函数 (Debug Functions)
+ * 除錯輔助函式 (Debug Functions)
  * ========================================
  */
 
 /**
- * 调试输出（仅开发环境）
+ * 除錯輸出（僅開發環境）
  *
- * @param mixed $data 要输出的数据
- * @param bool $die 是否终止程序，默认false
+ * @param mixed $data 要輸出的資料
+ * @param bool $die 是否終止程式，預設false
  */
 function debug($data, $die = false) {
     if ($_SERVER['SERVER_NAME'] === 'localhost' || isset($_GET['debug'])) {
@@ -744,10 +744,10 @@ function debug($data, $die = false) {
 }
 
 /**
- * 记录调试日志
+ * 記錄除錯日誌
  *
- * @param string $message 日志消息
- * @param mixed $data 附加数据
+ * @param string $message 日誌訊息
+ * @param mixed $data 附加資料
  */
 function debug_log($message, $data = null) {
     if ($_SERVER['SERVER_NAME'] === 'localhost' || isset($_GET['debug'])) {
@@ -761,14 +761,14 @@ function debug_log($message, $data = null) {
 
 /**
  * ========================================
- * 页面辅助函数 (Page Helper Functions)
+ * 頁面輔助函式 (Page Helper Functions)
  * ========================================
  */
 
 /**
- * 生成CSRF令牌输入框HTML
+ * 生成CSRF令牌輸入框HTML
  *
- * @return string HTML字符串
+ * @return string HTML字串
  */
 function csrf_input() {
     $token = generate_csrf_token();
@@ -776,7 +776,7 @@ function csrf_input() {
 }
 
 /**
- * 检查当前页面是否为打印页
+ * 檢查當前頁面是否為列印頁
  *
  * @return bool
  */
@@ -785,9 +785,9 @@ function is_print_page() {
 }
 
 /**
- * 获取当前页面名称
+ * 獲取當前頁面名稱
  *
- * @return string 页面名称
+ * @return string 頁面名稱
  */
 function get_current_page() {
     $uri = $_SERVER['REQUEST_URI'];
@@ -801,18 +801,18 @@ function get_current_page() {
 
 /**
  * ========================================
- * 文件操作函数 (File Functions)
+ * 檔案操作函式 (File Functions)
  * ========================================
  */
 
 /**
- * 安全删除文件
+ * 安全刪除檔案
  *
- * @param string $file_path 文件路径
- * @return bool 删除结果
+ * @param string $file_path 檔案路徑
+ * @return bool 刪除結果
  */
 function safe_delete_file($file_path) {
-    // 检查文件路径是否在允许的目录内
+    // 檢查檔案路徑是否在允許的目錄內
     $allowed_dirs = [__DIR__ . '/../uploads'];
     $real_path = realpath($file_path);
 
@@ -826,21 +826,21 @@ function safe_delete_file($file_path) {
 }
 
 /**
- * 生成安全的文件名
+ * 生成安全的檔名
  *
- * @param string $original_name 原始文件名
- * @param string $prefix 前缀，默认''
- * @return string 安全文件名
+ * @param string $original_name 原始檔名
+ * @param string $prefix 字首，預設''
+ * @return string 安全檔名
  */
 function generate_safe_filename($original_name, $prefix = '') {
     $extension = pathinfo($original_name, PATHINFO_EXTENSION);
     $basename = pathinfo($original_name, PATHINFO_FILENAME);
 
-    // 清理文件名
+    // 清理檔名
     $basename = clean_string($basename, true, false);
     $basename = substr($basename, 0, 50);
 
-    // 生成时间戳
+    // 生成時間戳
     $timestamp = time();
 
     return $prefix . $timestamp . '_' . $basename . '.' . $extension;
@@ -852,7 +852,7 @@ function generate_safe_filename($original_name, $prefix = '') {
  * ========================================
  */
 
-// 税率选项
+// 稅率選項
 define('TAX_RATES', [
     0.00 => '0%',
     5.00 => '5%',
@@ -860,11 +860,11 @@ define('TAX_RATES', [
     10.00 => '10%'
 ]);
 
-// 单位选项
+// 單位選項
 define('PRODUCT_UNITS', [
     'pcs'   => '件',
     'piece' => '個',
-    'unit'  => '台',
+    'unit'  => '臺',
     'set'   => '組',
     'box'   => '盒',
     'pack'  => '包',
@@ -896,24 +896,24 @@ define('UNITS', array_merge(
     ]
 ));
 
-// 货币选项（预留多货币支持）
+// 貨幣選項（預留多貨幣支援）
 define('CURRENCIES', [
-    'TWD' => '新台币'
+    'TWD' => '新臺幣'
 ]);
 
 /**
  * ========================================
- * Customer 模型操作函数 (Customer Model Functions)
- * US2: 客户管理
+ * Customer 模型操作函式 (Customer Model Functions)
+ * US2: 客戶管理
  * ========================================
  */
 
 /**
- * 获取客户列表（分页）
+ * 獲取客戶列表（分頁）
  *
- * @param int $page 页码，默认1
- * @param int $limit 每页数量，默认20
- * @param string $search 搜索关键词
+ * @param int $page 頁碼，預設1
+ * @param int $limit 每頁數量，預設20
+ * @param string $search 搜尋關鍵詞
  * @return array ['data' => array, 'total' => int, 'pages' => int]
  */
 function get_customers($page = 1, $limit = 20, $search = '') {
@@ -932,12 +932,12 @@ function get_customers($page = 1, $limit = 20, $search = '') {
 
     $where_clause = implode(' AND ', $where_conditions);
 
-    // 获取总数
+    // 獲取總數
     $count_sql = "SELECT COUNT(*) as total FROM customers WHERE {$where_clause}";
     $total = dbQueryOne($count_sql, $params)['total'];
     $total_pages = ceil($total / $limit);
 
-    // 获取数据
+    // 獲取資料
     $sql = "
         SELECT id, name, tax_id, email, phone, billing_address, shipping_address, note, created_at
         FROM customers
@@ -959,10 +959,10 @@ function get_customers($page = 1, $limit = 20, $search = '') {
 }
 
 /**
- * 获取单个客户信息
+ * 獲取單個客戶資訊
  *
- * @param int $id 客户ID
- * @return array|null 客户信息或null
+ * @param int $id 客戶ID
+ * @return array|null 客戶資訊或null
  */
 function get_customer($id) {
     $org_id = get_current_org_id();
@@ -971,28 +971,28 @@ function get_customer($id) {
 }
 
 /**
- * 创建新客户
+ * 建立新客戶
  *
- * @param array $data 客户数据
+ * @param array $data 客戶資料
  * @return array ['success' => bool, 'id' => int, 'error' => string]
  */
 function create_customer($data) {
     try {
-        // 验证输入
+        // 驗證輸入
         $errors = [];
 
         if (empty($data['name'])) {
-            $errors[] = '客户名称不能为空';
+            $errors[] = '客戶名稱不能為空';
         } elseif (!validate_string_length($data['name'], 255, 1)) {
-            $errors[] = '客户名称长度不正确';
+            $errors[] = '客戶名稱長度不正確';
         }
 
         if (!empty($data['tax_id']) && !is_valid_tax_id($data['tax_id'])) {
-            $errors[] = '税务登记号格式不正确（应为8位数字）';
+            $errors[] = '稅務登記號格式不正確（應為8位數字）';
         }
 
         if (!empty($data['email']) && !is_valid_email($data['email'])) {
-            $errors[] = '邮箱格式不正确';
+            $errors[] = '郵箱格式不正確';
         }
 
         if (!empty($errors)) {
@@ -1025,42 +1025,42 @@ function create_customer($data) {
         return [
             'success' => true,
             'id' => $customer_id,
-            'message' => '客户创建成功'
+            'message' => '客戶建立成功'
         ];
 
     } catch (Exception $e) {
         error_log("Create customer error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '创建客户失败，请稍后再试'
+            'error' => '建立客戶失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 更新客户信息
+ * 更新客戶資訊
  *
- * @param int $id 客户ID
- * @param array $data 客户数据
+ * @param int $id 客戶ID
+ * @param array $data 客戶資料
  * @return array ['success' => bool, 'error' => string]
  */
 function update_customer($id, $data) {
     try {
-        // 验证输入
+        // 驗證輸入
         $errors = [];
 
         if (empty($data['name'])) {
-            $errors[] = '客户名称不能为空';
+            $errors[] = '客戶名稱不能為空';
         } elseif (!validate_string_length($data['name'], 255, 1)) {
-            $errors[] = '客户名称长度不正确';
+            $errors[] = '客戶名稱長度不正確';
         }
 
         if (!empty($data['tax_id']) && !is_valid_tax_id($data['tax_id'])) {
-            $errors[] = '税务登记号格式不正确（应为8位数字）';
+            $errors[] = '稅務登記號格式不正確（應為8位數字）';
         }
 
         if (!empty($data['email']) && !is_valid_email($data['email'])) {
-            $errors[] = '邮箱格式不正确';
+            $errors[] = '郵箱格式不正確';
         }
 
         if (!empty($errors)) {
@@ -1069,10 +1069,10 @@ function update_customer($id, $data) {
 
         $org_id = get_current_org_id();
 
-        // 检查客户是否存在
+        // 檢查客戶是否存在
         $exists = get_customer($id);
         if (!$exists) {
-            return ['success' => false, 'error' => '客户不存在'];
+            return ['success' => false, 'error' => '客戶不存在'];
         }
 
         $sql = "
@@ -1099,35 +1099,35 @@ function update_customer($id, $data) {
 
         return [
             'success' => true,
-            'message' => '客户信息更新成功'
+            'message' => '客戶資訊更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update customer error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新客户失败，请稍后再试'
+            'error' => '更新客戶失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 删除客户（软删除）
+ * 刪除客戶（軟刪除）
  *
- * @param int $id 客户ID
+ * @param int $id 客戶ID
  * @return array ['success' => bool, 'error' => string]
  */
 function delete_customer($id) {
     try {
         $org_id = get_current_org_id();
 
-        // 检查客户是否存在
+        // 檢查客戶是否存在
         $customer = get_customer($id);
         if (!$customer) {
-            return ['success' => false, 'error' => '客户不存在'];
+            return ['success' => false, 'error' => '客戶不存在'];
         }
 
-        // 检查是否有关联的报价单
+        // 檢查是否有關聯的報價單
         $has_quotes = dbQueryOne(
             "SELECT COUNT(*) as count FROM quotes WHERE customer_id = ? AND org_id = ?",
             [$id, $org_id]
@@ -1136,11 +1136,11 @@ function delete_customer($id) {
         if ($has_quotes['count'] > 0) {
             return [
                 'success' => false,
-                'error' => '该客户存在关联的报价单，无法删除'
+                'error' => '該客戶存在關聯的報價單，無法刪除'
             ];
         }
 
-        // 软删除（设置为不激活）
+        // 軟刪除（設定為不啟用）
         dbExecute(
             "UPDATE customers SET active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND org_id = ?",
             [$id, $org_id]
@@ -1148,22 +1148,22 @@ function delete_customer($id) {
 
         return [
             'success' => true,
-            'message' => '客户删除成功'
+            'message' => '客戶刪除成功'
         ];
 
     } catch (Exception $e) {
         error_log("Delete customer error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '删除客户失败，请稍后再试'
+            'error' => '刪除客戶失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 恢复客户（激活）
+ * 恢復客戶（啟用）
  *
- * @param int $id 客户ID
+ * @param int $id 客戶ID
  * @return array ['success' => bool, 'error' => string]
  */
 function restore_customer($id) {
@@ -1177,22 +1177,22 @@ function restore_customer($id) {
 
         return [
             'success' => true,
-            'message' => '客户恢复成功'
+            'message' => '客戶恢復成功'
         ];
 
     } catch (Exception $e) {
         error_log("Restore customer error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '恢复客户失败，请稍后再试'
+            'error' => '恢復客戶失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 获取客户列表（用于下拉选择）
+ * 獲取客戶列表（用於下拉選擇）
  *
- * @return array 客户列表
+ * @return array 客戶列表
  */
 function get_customer_list() {
     $org_id = get_current_org_id();
@@ -1202,19 +1202,19 @@ function get_customer_list() {
 
 /**
  * ========================================
- * CatalogItem 模型操作函数 (CatalogItem Model Functions)
- * US3: 产品/服务目录管理
+ * CatalogItem 模型操作函式 (CatalogItem Model Functions)
+ * US3: 產品/服務目錄管理
  * ========================================
  */
 
 /**
- * 获取产品/服务列表（分页）
+ * 獲取產品/服務列表（分頁）
  *
- * @param string $type 类型 (product|service)，为空时获取全部
- * @param int $page 页码，默认1
- * @param int $limit 每页数量，默认20
- * @param string $search 搜索关键词
- * @param int|null $category_id 分类ID
+ * @param string $type 型別 (product|service)，為空時獲取全部
+ * @param int $page 頁碼，預設1
+ * @param int $limit 每頁數量，預設20
+ * @param string $search 搜尋關鍵詞
+ * @param int|null $category_id 分類ID
  * @return array ['data' => array, 'total' => int, 'pages' => int]
  */
 function get_catalog_items($type = '', $page = 1, $limit = 20, $search = '', $category_id = null) {
@@ -1237,12 +1237,12 @@ function get_catalog_items($type = '', $page = 1, $limit = 20, $search = '', $ca
 
     $where_clause = implode(' AND ', $where_conditions);
 
-    // 获取总数
+    // 獲取總數
     $count_sql = "SELECT COUNT(*) as total FROM catalog_items WHERE {$where_clause}";
     $total = dbQueryOne($count_sql, $params)['total'];
     $total_pages = ceil($total / $limit);
 
-    // 获取数据
+    // 獲取資料
     $sql = "
         SELECT id, type, sku, name, unit, currency, unit_price_cents, tax_rate, category_id, created_at
         FROM catalog_items
@@ -1267,14 +1267,14 @@ function get_catalog_items($type = '', $page = 1, $limit = 20, $search = '', $ca
 
 /**
  * ========================================
- * Catalog Category 操作函数 (Catalog Category Model Functions)
+ * Catalog Category 操作函式 (Catalog Category Model Functions)
  * ========================================
  */
 
 /**
- * 获取单一分类
+ * 獲取單一分類
  *
- * @param int $id 分类ID
+ * @param int $id 分類ID
  * @return array|null
  */
 function get_catalog_category($id) {
@@ -1288,10 +1288,10 @@ function get_catalog_category($id) {
 }
 
 /**
- * 根据父级获取分类列表
+ * 根據父級獲取分類列表
  *
- * @param string $type 分类类型
- * @param int|null $parent_id 父分类ID
+ * @param string $type 分類型別
+ * @param int|null $parent_id 父分類ID
  * @return array
  */
 function get_catalog_categories($type = 'product', $parent_id = null) {
@@ -1312,10 +1312,10 @@ function get_catalog_categories($type = 'product', $parent_id = null) {
 }
 
 /**
- * 获取分类树
+ * 獲取分類樹
  *
- * @param string $type 分类类型
- * @param int|null $parent_id 父分类
+ * @param string $type 分類型別
+ * @param int|null $parent_id 父分類
  * @return array
  */
 function get_catalog_categories_tree($type = 'product', $parent_id = null) {
@@ -1331,9 +1331,9 @@ function get_catalog_categories_tree($type = 'product', $parent_id = null) {
 }
 
 /**
- * 扁平化分类列表（带层级）
+ * 扁平化分類列表（帶層級）
  *
- * @param string $type 分类类型
+ * @param string $type 分類型別
  * @param int|null $parent_id
  * @param array $acc
  * @return array
@@ -1350,7 +1350,7 @@ function get_catalog_category_flat_list($type = 'product', $parent_id = null, $a
 }
 
 /**
- * 获取分类路径（字符串）
+ * 獲取分類路徑（字串）
  *
  * @param int $category_id
  * @param string $separator
@@ -1376,7 +1376,7 @@ function get_catalog_category_path($category_id, $separator = ' / ') {
 }
 
 /**
- * 获取分类路径ID列表
+ * 獲取分類路徑ID列表
  *
  * @param int $category_id
  * @return array
@@ -1397,7 +1397,7 @@ function get_catalog_category_path_ids($category_id) {
 }
 
 /**
- * 批量获取分类路径
+ * 批次獲取分類路徑
  *
  * @param array $category_ids
  * @param string $separator
@@ -1419,7 +1419,7 @@ function get_catalog_category_paths($category_ids, $separator = ' / ') {
 }
 
 /**
- * 获取分类字典（id => [..]）
+ * 獲取分類字典（id => [..]）
  *
  * @param string $type
  * @return array
@@ -1434,7 +1434,7 @@ function get_catalog_category_map($type = 'product') {
 }
 
 /**
- * 获取分类的所有子孙ID
+ * 獲取分類的所有子孫ID
  *
  * @param int $category_id
  * @return array
@@ -1461,7 +1461,7 @@ function get_catalog_category_descendants($category_id) {
 }
 
 /**
- * 创建分类
+ * 建立分類
  *
  * @param array $data
  * @return array
@@ -1473,14 +1473,14 @@ function create_catalog_category($data) {
         $type = $data['type'] ?? 'product';
 
         if (!in_array($type, ['product', 'service'], true)) {
-            $errors[] = '分类类型无效';
+            $errors[] = '分類型別無效';
         }
 
         $name = trim($data['name'] ?? '');
         if (empty($name)) {
-            $errors[] = '分类名称不能为空';
+            $errors[] = '分類名稱不能為空';
         } elseif (!validate_string_length($name, 100, 1)) {
-            $errors[] = '分类名称长度需在1-100字符之间';
+            $errors[] = '分類名稱長度需在1-100字元之間';
         }
 
         $sort_order = isset($data['sort_order']) ? intval($data['sort_order']) : 0;
@@ -1490,19 +1490,19 @@ function create_catalog_category($data) {
         if ($parent_id) {
             $parent = get_catalog_category($parent_id);
             if (!$parent) {
-                $errors[] = '父级分类不存在';
+                $errors[] = '父級分類不存在';
             } elseif ($parent['type'] !== $type) {
-                $errors[] = '父级分类类型不一致';
+                $errors[] = '父級分類型別不一致';
             } else {
                 $level = (int)$parent['level'] + 1;
                 if ($level > 3) {
-                    $errors[] = '分类最多支持三级结构';
+                    $errors[] = '分類最多支援三級結構';
                 }
             }
         }
 
         if (empty($errors)) {
-            // 检查重复名称
+            // 檢查重複名稱
             $params = [$org_id, $type];
             $sql = "SELECT id FROM catalog_categories WHERE org_id = ? AND type = ?";
             if ($parent_id) {
@@ -1516,7 +1516,7 @@ function create_catalog_category($data) {
 
             $exists = dbQueryOne($sql, $params);
             if ($exists) {
-                $errors[] = '相同层级下已存在同名分类';
+                $errors[] = '相同層級下已存在同名分類';
             }
         }
 
@@ -1531,20 +1531,20 @@ function create_catalog_category($data) {
 
         return [
             'success' => true,
-            'message' => '分类创建成功'
+            'message' => '分類建立成功'
         ];
 
     } catch (Exception $e) {
         error_log("Create catalog category error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '创建分类失败，请稍后再试'
+            'error' => '建立分類失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 更新分类
+ * 更新分類
  *
  * @param int $id
  * @param array $data
@@ -1554,20 +1554,20 @@ function update_catalog_category($id, $data) {
     try {
         $category = get_catalog_category($id);
         if (!$category) {
-            return ['success' => false, 'error' => '分类不存在'];
+            return ['success' => false, 'error' => '分類不存在'];
         }
 
         $name = trim($data['name'] ?? '');
         if (empty($name)) {
-            return ['success' => false, 'error' => '分类名称不能为空'];
+            return ['success' => false, 'error' => '分類名稱不能為空'];
         }
         if (!validate_string_length($name, 100, 1)) {
-            return ['success' => false, 'error' => '分类名称长度需在1-100字符之间'];
+            return ['success' => false, 'error' => '分類名稱長度需在1-100字元之間'];
         }
 
         $sort_order = isset($data['sort_order']) ? intval($data['sort_order']) : (int)$category['sort_order'];
 
-        // 检查同层级重复名称
+        // 檢查同層級重複名稱
         $params = [$category['org_id'], $category['type']];
         $sql = "SELECT id FROM catalog_categories WHERE org_id = ? AND type = ?";
         if ($category['parent_id']) {
@@ -1582,7 +1582,7 @@ function update_catalog_category($id, $data) {
 
         $exists = dbQueryOne($sql, $params);
         if ($exists) {
-            return ['success' => false, 'error' => '相同层级下已存在同名分类'];
+            return ['success' => false, 'error' => '相同層級下已存在同名分類'];
         }
 
         dbExecute(
@@ -1592,20 +1592,20 @@ function update_catalog_category($id, $data) {
 
         return [
             'success' => true,
-            'message' => '分类更新成功'
+            'message' => '分類更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update catalog category error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新分类失败，请稍后再试'
+            'error' => '更新分類失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 删除分类
+ * 刪除分類
  *
  * @param int $id
  * @return array
@@ -1614,7 +1614,7 @@ function delete_catalog_category($id) {
     try {
         $category = get_catalog_category($id);
         if (!$category) {
-            return ['success' => false, 'error' => '分类不存在'];
+            return ['success' => false, 'error' => '分類不存在'];
         }
 
         $org_id = $category['org_id'];
@@ -1636,23 +1636,23 @@ function delete_catalog_category($id) {
 
         return [
             'success' => true,
-            'message' => '分类已删除'
+            'message' => '分類已刪除'
         ];
 
     } catch (Exception $e) {
         error_log("Delete catalog category error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '删除分类失败，请稍后再试'
+            'error' => '刪除分類失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 获取单个产品/服务信息
+ * 獲取單個產品/服務資訊
  *
- * @param int $id 产品/服务ID
- * @return array|null 产品/服务信息或null
+ * @param int $id 產品/服務ID
+ * @return array|null 產品/服務資訊或null
  */
 function get_catalog_item($id) {
     $org_id = get_current_org_id();
@@ -1661,18 +1661,18 @@ function get_catalog_item($id) {
 }
 
 /**
- * 创建新产品/服务
+ * 建立新產品/服務
  *
- * @param array $data 产品/服务数据
+ * @param array $data 產品/服務資料
  * @return array ['success' => bool, 'id' => int, 'error' => string]
  */
 function create_catalog_item($data) {
     try {
-        // 验证输入
+        // 驗證輸入
         $errors = [];
         $data['type'] = $data['type'] ?? 'product';
         if (!in_array($data['type'], ['product', 'service'])) {
-            $errors[] = '类型必须为 product 或 service';
+            $errors[] = '型別必須為 product 或 service';
         }
 
         $auto_generated_sku = false;
@@ -1684,23 +1684,23 @@ function create_catalog_item($data) {
         $data['sku'] = trim($data['sku'] ?? '');
 
         if (empty($data['sku'])) {
-            $errors[] = 'SKU不能为空';
+            $errors[] = 'SKU不能為空';
         } elseif (!is_valid_sku($data['sku'])) {
-            $errors[] = 'SKU格式不正确（只允许字母、数字、-和_）';
+            $errors[] = 'SKU格式不正確（只允許字母、數字、-和_）';
         }
 
         if (empty($data['name'])) {
-            $errors[] = '名称不能为空';
+            $errors[] = '名稱不能為空';
         } elseif (!validate_string_length($data['name'], 255, 1)) {
-            $errors[] = '名称长度不正确';
+            $errors[] = '名稱長度不正確';
         }
 
         if (!isset($data['unit_price_cents']) || $data['unit_price_cents'] < 0) {
-            $errors[] = '单价必须为非负整数';
+            $errors[] = '單價必須為非負整數';
         }
 
         if (!empty($data['tax_rate']) && ($data['tax_rate'] < 0 || $data['tax_rate'] > 100)) {
-            $errors[] = '税率必须在 0-100 之间';
+            $errors[] = '稅率必須在 0-100 之間';
         }
 
         $category_id = isset($data['category_id']) && intval($data['category_id']) > 0 ? intval($data['category_id']) : null;
@@ -1708,9 +1708,9 @@ function create_catalog_item($data) {
         if ($category_id) {
             $category = get_catalog_category($category_id);
             if (!$category) {
-                $errors[] = '选择的分类不存在';
+                $errors[] = '選擇的分類不存在';
             } elseif ($category['type'] !== $data['type']) {
-                $errors[] = '分类类型与产品类型不一致';
+                $errors[] = '分類型別與產品型別不一致';
             }
         }
 
@@ -1730,8 +1730,8 @@ function create_catalog_item($data) {
 
         if (!is_sku_unique($data['sku'])) {
             $message = $auto_generated_sku
-                ? '系统尝试自动生成 SKU 但仍遇到冲突，请稍后再试。'
-                : 'SKU已存在，请使用其他SKU';
+                ? '系統嘗試自動生成 SKU 但仍遇到衝突，請稍後再試。'
+                : 'SKU已存在，請使用其他SKU';
             return ['success' => false, 'error' => $message];
         }
 
@@ -1760,48 +1760,48 @@ function create_catalog_item($data) {
         return [
             'success' => true,
             'id' => $catalog_item_id,
-            'message' => '产品/服务创建成功'
+            'message' => '產品/服務建立成功'
         ];
 
     } catch (Exception $e) {
         error_log("Create catalog item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '创建产品/服务失败，请稍后再试'
+            'error' => '建立產品/服務失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 更新产品/服务信息
+ * 更新產品/服務資訊
  *
- * @param int $id 产品/服务ID
- * @param array $data 产品/服务数据
+ * @param int $id 產品/服務ID
+ * @param array $data 產品/服務資料
  * @return array ['success' => bool, 'error' => string]
  */
 function update_catalog_item($id, $data) {
     try {
-        // 验证输入
+        // 驗證輸入
         $errors = [];
 
         if (empty($data['sku'])) {
-            $errors[] = 'SKU不能为空';
+            $errors[] = 'SKU不能為空';
         } elseif (!is_valid_sku($data['sku'])) {
-            $errors[] = 'SKU格式不正确（只允许字母、数字、-和_）';
+            $errors[] = 'SKU格式不正確（只允許字母、數字、-和_）';
         }
 
         if (empty($data['name'])) {
-            $errors[] = '名称不能为空';
+            $errors[] = '名稱不能為空';
         } elseif (!validate_string_length($data['name'], 255, 1)) {
-            $errors[] = '名称长度不正确';
+            $errors[] = '名稱長度不正確';
         }
 
         if (!isset($data['unit_price_cents']) || $data['unit_price_cents'] < 0) {
-            $errors[] = '单价必须为非负整数';
+            $errors[] = '單價必須為非負整數';
         }
 
         if (!empty($data['tax_rate']) && ($data['tax_rate'] < 0 || $data['tax_rate'] > 100)) {
-            $errors[] = '税率必须在 0-100 之间';
+            $errors[] = '稅率必須在 0-100 之間';
         }
 
         $category_id = isset($data['category_id']) && intval($data['category_id']) > 0 ? intval($data['category_id']) : null;
@@ -1812,29 +1812,29 @@ function update_catalog_item($id, $data) {
 
         $org_id = get_current_org_id();
 
-        // 检查产品/服务是否存在
+        // 檢查產品/服務是否存在
         $exists = get_catalog_item($id);
         if (!$exists) {
-            return ['success' => false, 'error' => '产品/服务不存在'];
+            return ['success' => false, 'error' => '產品/服務不存在'];
         }
 
-        // 检查SKU唯一性（排除当前记录）
+        // 檢查SKU唯一性（排除當前記錄）
         $sku_exists = dbQueryOne(
             "SELECT id FROM catalog_items WHERE org_id = ? AND sku = ? AND id != ?",
             [$org_id, $data['sku'], $id]
         );
 
         if ($sku_exists) {
-            return ['success' => false, 'error' => 'SKU已存在，请使用其他SKU'];
+            return ['success' => false, 'error' => 'SKU已存在，請使用其他SKU'];
         }
 
         if ($category_id) {
             $category = get_catalog_category($category_id);
             if (!$category) {
-                return ['success' => false, 'error' => '选择的分类不存在'];
+                return ['success' => false, 'error' => '選擇的分類不存在'];
             }
             if ($category['type'] !== $exists['type']) {
-                return ['success' => false, 'error' => '分类类型与产品类型不一致'];
+                return ['success' => false, 'error' => '分類型別與產品型別不一致'];
             }
         }
 
@@ -1862,35 +1862,35 @@ function update_catalog_item($id, $data) {
 
         return [
             'success' => true,
-            'message' => '产品/服务信息更新成功'
+            'message' => '產品/服務資訊更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update catalog item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新产品/服务失败，请稍后再试'
+            'error' => '更新產品/服務失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 删除产品/服务（软删除）
+ * 刪除產品/服務（軟刪除）
  *
- * @param int $id 产品/服务ID
+ * @param int $id 產品/服務ID
  * @return array ['success' => bool, 'error' => string]
  */
 function delete_catalog_item($id) {
     try {
         $org_id = get_current_org_id();
 
-        // 检查产品/服务是否存在
+        // 檢查產品/服務是否存在
         $catalog_item = get_catalog_item($id);
         if (!$catalog_item) {
-            return ['success' => false, 'error' => '产品/服务不存在'];
+            return ['success' => false, 'error' => '產品/服務不存在'];
         }
 
-        // 检查是否有关联的报价单项目
+        // 檢查是否有關聯的報價單專案
         $has_quote_items = dbQueryOne(
             "SELECT COUNT(*) as count FROM quote_items WHERE catalog_item_id = ?",
             [$id]
@@ -1899,11 +1899,11 @@ function delete_catalog_item($id) {
         if ($has_quote_items['count'] > 0) {
             return [
                 'success' => false,
-                'error' => '该产品/服务存在关联的报价单项目，无法删除'
+                'error' => '該產品/服務存在關聯的報價單專案，無法刪除'
             ];
         }
 
-        // 软删除（设置为不激活）
+        // 軟刪除（設定為不啟用）
         dbExecute(
             "UPDATE catalog_items SET active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND org_id = ?",
             [$id, $org_id]
@@ -1911,22 +1911,22 @@ function delete_catalog_item($id) {
 
         return [
             'success' => true,
-            'message' => '产品/服务删除成功'
+            'message' => '產品/服務刪除成功'
         ];
 
     } catch (Exception $e) {
         error_log("Delete catalog item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '删除产品/服务失败，请稍后再试'
+            'error' => '刪除產品/服務失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 恢复产品/服务（激活）
+ * 恢復產品/服務（啟用）
  *
- * @param int $id 产品/服务ID
+ * @param int $id 產品/服務ID
  * @return array ['success' => bool, 'error' => string]
  */
 function restore_catalog_item($id) {
@@ -1940,23 +1940,23 @@ function restore_catalog_item($id) {
 
         return [
             'success' => true,
-            'message' => '产品/服务恢复成功'
+            'message' => '產品/服務恢復成功'
         ];
 
     } catch (Exception $e) {
         error_log("Restore catalog item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '恢复产品/服务失败，请稍后再试'
+            'error' => '恢復產品/服務失敗，請稍後再試'
         ];
     }
 }
 
 /**
- * 获取产品/服务列表（用于下拉选择）
+ * 獲取產品/服務列表（用於下拉選擇）
  *
- * @param string $type 类型 (product|service)，为空时获取全部
- * @return array 产品/服务列表
+ * @param string $type 型別 (product|service)，為空時獲取全部
+ * @return array 產品/服務列表
  */
 function get_catalog_item_list($type = '') {
     $org_id = get_current_org_id();
@@ -1978,10 +1978,10 @@ function get_catalog_item_list($type = '') {
 }
 
 /**
- * 检查SKU是否唯一
+ * 檢查SKU是否唯一
  *
- * @param string $sku SKU编码
- * @param int $exclude_id 排除的ID（用于编辑时）
+ * @param string $sku SKU編碼
+ * @param int $exclude_id 排除的ID（用於編輯時）
  * @return bool 是否唯一
  */
 function is_sku_unique($sku, $exclude_id = 0) {
@@ -1999,30 +1999,30 @@ function is_sku_unique($sku, $exclude_id = 0) {
 }
 
 /**
- * 根据类型获取产品或服务统计
+ * 根據型別獲取產品或服務統計
  *
- * @return array 统计信息
+ * @return array 統計資訊
  */
 function get_catalog_stats() {
     $org_id = get_current_org_id();
 
     $stats = [];
 
-    // 产品数量
+    // 產品數量
     $product_count = dbQueryOne(
         "SELECT COUNT(*) as count FROM catalog_items WHERE org_id = ? AND type = 'product' AND active = 1",
         [$org_id]
     );
     $stats['products'] = $product_count['count'];
 
-    // 服务数量
+    // 服務數量
     $service_count = dbQueryOne(
         "SELECT COUNT(*) as count FROM catalog_items WHERE org_id = ? AND type = 'service' AND active = 1",
         [$org_id]
     );
     $stats['services'] = $service_count['count'];
 
-    // 总数
+    // 總數
     $stats['total'] = $stats['products'] + $stats['services'];
 
     return $stats;
@@ -2030,18 +2030,18 @@ function get_catalog_stats() {
 
 /**
  * ========================================
- * Quote 模型操作函数 (Quote Model Functions)
- * US4: 报价单创建与管理
+ * Quote 模型操作函式 (Quote Model Functions)
+ * US4: 報價單建立與管理
  * ========================================
  */
 
 /**
- * 获取报价单列表（分页）
+ * 獲取報價單列表（分頁）
  *
- * @param int $page 页码，默认1
- * @param int $limit 每页数量，默认20
- * @param string $search 搜索关键词
- * @param string $status 状态筛选
+ * @param int $page 頁碼，預設1
+ * @param int $limit 每頁數量，預設20
+ * @param string $search 搜尋關鍵詞
+ * @param string $status 狀態篩選
  * @return array ['data' => array, 'total' => int, 'pages' => int]
  */
 function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
@@ -2064,7 +2064,7 @@ function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
 
     $where_clause = implode(' AND ', $where_conditions);
 
-    // 获取总数
+    // 獲取總數
     $count_sql = "
         SELECT COUNT(*) as total
         FROM quotes q
@@ -2074,7 +2074,7 @@ function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
     $total = dbQueryOne($count_sql, $params)['total'];
     $total_pages = ceil($total / $limit);
 
-    // 获取数据
+    // 獲取資料
     $sql = "
         SELECT
             q.id, q.quote_number, q.status, q.issue_date, q.valid_until,
@@ -2101,10 +2101,10 @@ function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
 }
 
 /**
- * 获取单个报价单信息（不包含明细）
+ * 獲取單個報價單資訊（不包含明細）
  *
- * @param int $id 报价单ID
- * @return array|null 报价单信息或null
+ * @param int $id 報價單ID
+ * @return array|null 報價單資訊或null
  */
 function get_quote($id) {
     $org_id = get_current_org_id();
@@ -2117,7 +2117,7 @@ function get_quote($id) {
     $quote = dbQueryOne($sql, [$id, $org_id]);
 
     if ($quote) {
-        // 获取报价单明细
+        // 獲取報價單明細
         $quote['items'] = get_quote_items($id);
     }
 
@@ -2125,10 +2125,10 @@ function get_quote($id) {
 }
 
 /**
- * 获取报价单明细
+ * 獲取報價單明細
  *
- * @param int $quote_id 报价单ID
- * @return array 明细列表
+ * @param int $quote_id 報價單ID
+ * @return array 明細列表
  */
 function get_quote_items($quote_id) {
     $sql = "
@@ -2199,35 +2199,35 @@ function get_quote_items($quote_id) {
 }
 
 /**
- * 创建新报价单（使用事务）
+ * 建立新報價單（使用事務）
  *
- * @param array $data 报价单数据
- * @param array $items 报价项目数组
+ * @param array $data 報價單資料
+ * @param array $items 報價專案陣列
  * @return array ['success' => bool, 'id' => int, 'error' => string]
  */
 function create_quote($data, $items) {
     try {
-        // 验证输入
+        // 驗證輸入
         $errors = [];
 
         if (empty($data['customer_id'])) {
-            $errors[] = '请选择客户';
+            $errors[] = '請選擇客戶';
         }
 
         if (empty($items) || !is_array($items)) {
-            $errors[] = '请添加报价项目';
+            $errors[] = '請新增報價專案';
         }
 
         if (!empty($errors)) {
             return ['success' => false, 'error' => implode('；', $errors)];
         }
 
-        // 开始事务
+        // 開始事務
         $pdo = getDB()->getConnection();
         $pdo->beginTransaction();
 
         try {
-            // 1. 生成报价单编号
+            // 1. 生成報價單編號
             $quote_number = generate_quote_number($pdo);
             if (!$quote_number['success']) {
                 throw new Exception($quote_number['error']);
@@ -2236,7 +2236,7 @@ function create_quote($data, $items) {
             $org_id = get_current_org_id();
             $quote_number_str = $quote_number['quote_number'];
 
-            // 2. 插入报价单主记录
+            // 2. 插入報價單主記錄
             $sql = "
                 INSERT INTO quotes (
                     org_id, customer_id, quote_number, status,
@@ -2255,15 +2255,15 @@ function create_quote($data, $items) {
                 $data['issue_date'] ?? get_current_date_utc(),
                 $data['valid_until'] ?? null,
                 $note,
-                0, // 临时值，稍后更新
-                0, // 临时值，稍后更新
-                0  // 临时值，稍后更新
+                0, // 臨時值，稍後更新
+                0, // 臨時值，稍後更新
+                0  // 臨時值，稍後更新
             ];
 
             dbExecute($sql, $params);
             $quote_id = dbLastInsertId();
 
-            // 3. 插入报价单明细并计算总额
+            // 3. 插入報價單明細並計算總額
             $total_subtotal = 0;
             $total_tax = 0;
             $total_amount = 0;
@@ -2274,21 +2274,21 @@ function create_quote($data, $items) {
                     continue;
                 }
 
-                // 获取目录项信息
+                // 獲取目錄項資訊
                 $catalog_item = get_catalog_item($item['catalog_item_id']);
                 if (!$catalog_item) {
-                    throw new Exception('目录项不存在');
+                    throw new Exception('目錄項不存在');
                 }
 
                 $quantity = floatval($item['qty'] ?? ($item['quantity'] ?? 0));
                 if ($quantity <= 0) {
-                    throw new Exception('请填写有效的数量');
+                    throw new Exception('請填寫有效的數量');
                 }
 
-                $description = trim($item['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名项目');
+                $description = trim($item['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名專案');
                 $unit = trim($item['unit'] ?? '') ?: ($catalog_item['unit'] ?? null);
 
-                // 计算行金额
+                // 計算行金額
                 $unit_price_cents = intval($item['unit_price_cents'] ?? $catalog_item['unit_price_cents']);
                 $tax_rate = isset($item['tax_rate']) && $item['tax_rate'] !== ''
                     ? floatval($item['tax_rate'])
@@ -2297,10 +2297,10 @@ function create_quote($data, $items) {
                         : get_default_tax_rate());
 
                 if ($unit_price_cents < 0) {
-                    throw new Exception('单价必须为非负数');
+                    throw new Exception('單價必須為非負數');
                 }
                 if ($tax_rate < 0 || $tax_rate > 100) {
-                    throw new Exception('税率必须在 0-100 之间');
+                    throw new Exception('稅率必須在 0-100 之間');
                 }
 
                 $discount_cents = 0;
@@ -2312,14 +2312,14 @@ function create_quote($data, $items) {
 
                 $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
                 if ($discount_cents > $gross_cents) {
-                    throw new Exception('折扣金额不能超过行金额');
+                    throw new Exception('折扣金額不能超過行金額');
                 }
 
                 $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
                 $line_tax_cents = calculate_line_tax($line_subtotal_cents, $tax_rate);
                 $line_total_cents = calculate_line_total($line_subtotal_cents, $line_tax_cents);
 
-                // 插入明细
+                // 插入明細
                 $item_sql = "
                     INSERT INTO quote_items (
                         quote_id, catalog_item_id, description, qty, unit,
@@ -2349,7 +2349,7 @@ function create_quote($data, $items) {
                 $line_order++;
             }
 
-            // 4. 更新报价单总额
+            // 4. 更新報價單總額
             $update_sql = "
                 UPDATE quotes
                 SET subtotal_cents = ?, tax_cents = ?, total_cents = ?
@@ -2357,18 +2357,18 @@ function create_quote($data, $items) {
             ";
             dbExecute($update_sql, [$total_subtotal, $total_tax, $total_amount, $quote_id]);
 
-            // 提交事务
+            // 提交事務
             $pdo->commit();
 
             return [
                 'success' => true,
                 'id' => $quote_id,
                 'quote_number' => $quote_number_str,
-                'message' => '报价单创建成功'
+                'message' => '報價單建立成功'
             ];
 
         } catch (Exception $e) {
-            // 回滚事务
+            // 回滾事務
             $pdo->rollBack();
             throw $e;
         }
@@ -2377,15 +2377,15 @@ function create_quote($data, $items) {
         error_log("Create quote error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '创建报价单失败：' . $e->getMessage()
+            'error' => '建立報價單失敗：' . $e->getMessage()
         ];
     }
 }
 
 /**
- * 生成报价单编号（使用存储过程）
+ * 生成報價單編號（使用儲存過程）
  *
- * @param PDO $pdo 数据库连接
+ * @param PDO $pdo 資料庫連線
  * @return array ['success' => bool, 'quote_number' => string, 'error' => string]
  */
 function generate_quote_number($pdo = null) {
@@ -2396,7 +2396,7 @@ function generate_quote_number($pdo = null) {
             $pdo = getDB()->getConnection();
         }
 
-        // 调用存储过程并获取输出参数
+        // 呼叫儲存過程並獲取輸出引數
         $stmt = $pdo->prepare("CALL next_quote_number(?, @out_quote_number)");
         $stmt->execute([$org_id]);
         $stmt->closeCursor();
@@ -2405,7 +2405,7 @@ function generate_quote_number($pdo = null) {
         $result = $result_stmt ? $result_stmt->fetch(PDO::FETCH_ASSOC) : null;
 
         if (!$result || empty($result['quote_number'])) {
-            return ['success' => false, 'error' => '生成报价单编号失败'];
+            return ['success' => false, 'error' => '生成報價單編號失敗'];
         }
 
         return [
@@ -2415,15 +2415,15 @@ function generate_quote_number($pdo = null) {
 
     } catch (Exception $e) {
         error_log("Generate quote number error: " . $e->getMessage());
-        return ['success' => false, 'error' => '生成报价单编号失败'];
+        return ['success' => false, 'error' => '生成報價單編號失敗'];
     }
 }
 
 /**
- * 更新报价单状态
+ * 更新報價單狀態
  *
- * @param int $id 报价单ID
- * @param string $status 新状态
+ * @param int $id 報價單ID
+ * @param string $status 新狀態
  * @return array ['success' => bool, 'error' => string]
  */
 function update_quote_status($id, $status) {
@@ -2432,16 +2432,16 @@ function update_quote_status($id, $status) {
         $valid_statuses = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
 
         if (!in_array($status, $valid_statuses)) {
-            return ['success' => false, 'error' => '无效的状态值'];
+            return ['success' => false, 'error' => '無效的狀態值'];
         }
 
-        // 检查报价单是否存在
+        // 檢查報價單是否存在
         $quote = get_quote($id);
         if (!$quote) {
-            return ['success' => false, 'error' => '报价单不存在'];
+            return ['success' => false, 'error' => '報價單不存在'];
         }
 
-        // 更新状态
+        // 更新狀態
         $sql = "
             UPDATE quotes
             SET status = ?, updated_at = CURRENT_TIMESTAMP
@@ -2451,35 +2451,35 @@ function update_quote_status($id, $status) {
 
         return [
             'success' => true,
-            'message' => '状态更新成功'
+            'message' => '狀態更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update quote status error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新状态失败'
+            'error' => '更新狀態失敗'
         ];
     }
 }
 
 /**
- * 删除报价单（软删除）
+ * 刪除報價單（軟刪除）
  *
- * @param int $id 报价单ID
+ * @param int $id 報價單ID
  * @return array ['success' => bool, 'error' => string]
  */
 function delete_quote($id) {
     try {
         $org_id = get_current_org_id();
 
-        // 检查报价单是否存在
+        // 檢查報價單是否存在
         $quote = get_quote($id);
         if (!$quote) {
-            return ['success' => false, 'error' => '报价单不存在'];
+            return ['success' => false, 'error' => '報價單不存在'];
         }
 
-        // 软删除
+        // 軟刪除
         $sql = "
             UPDATE quotes
             SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
@@ -2489,22 +2489,22 @@ function delete_quote($id) {
 
         return [
             'success' => true,
-            'message' => '报价单删除成功'
+            'message' => '報價單刪除成功'
         ];
 
     } catch (Exception $e) {
         error_log("Delete quote error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '删除报价单失败'
+            'error' => '刪除報價單失敗'
         ];
     }
 }
 
 /**
- * 获取报价单列表（用于下拉选择）
+ * 獲取報價單列表（用於下拉選擇）
  *
- * @return array 报价单列表
+ * @return array 報價單列表
  */
 function get_quote_list() {
     $org_id = get_current_org_id();
@@ -2520,45 +2520,45 @@ function get_quote_list() {
 
 /**
  * ========================================
- * QuoteItem 模型操作函数 (QuoteItem Model Functions)
+ * QuoteItem 模型操作函式 (QuoteItem Model Functions)
  * ========================================
  */
 
 /**
- * 更新报价项目
+ * 更新報價專案
  *
- * @param int $id 报价项目ID
- * @param array $data 项目数据
+ * @param int $id 報價專案ID
+ * @param array $data 專案資料
  * @return array ['success' => bool, 'error' => string]
  */
 function update_quote_item($id, $data) {
     try {
-        // 获取当前项目信息
+        // 獲取當前專案資訊
         $current_item = dbQueryOne("SELECT * FROM quote_items WHERE id = ?", [$id]);
         if (!$current_item) {
-            return ['success' => false, 'error' => '项目不存在'];
+            return ['success' => false, 'error' => '專案不存在'];
         }
 
         $quantity_raw = $data['quantity'] ?? ($data['qty'] ?? null);
         if (!is_numeric($quantity_raw)) {
-            return ['success' => false, 'error' => '数量格式不正确'];
+            return ['success' => false, 'error' => '數量格式不正確'];
         }
-        // 重新计算金额
+        // 重新計算金額
         $quantity = floatval($quantity_raw);
         if ($quantity <= 0) {
-            return ['success' => false, 'error' => '数量必须大于 0'];
+            return ['success' => false, 'error' => '數量必須大於 0'];
         }
 
         $unit_price_cents = null;
         if (isset($data['unit_price_cents']) && $data['unit_price_cents'] !== '') {
             if (!is_numeric($data['unit_price_cents'])) {
-                return ['success' => false, 'error' => '单价格式不正确'];
+                return ['success' => false, 'error' => '單價格式不正確'];
             }
             $unit_price_cents = intval($data['unit_price_cents']);
         } elseif (isset($data['unit_price']) && $data['unit_price'] !== '') {
             $normalized_price = preg_replace('/[^\d.-]/', '', (string)$data['unit_price']);
             if ($normalized_price === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_price)) {
-                return ['success' => false, 'error' => '单价格式不正确'];
+                return ['success' => false, 'error' => '單價格式不正確'];
             }
             $unit_price_cents = amount_to_cents($normalized_price);
         }
@@ -2568,28 +2568,28 @@ function update_quote_item($id, $data) {
         }
 
         if ($unit_price_cents < 0) {
-            return ['success' => false, 'error' => '单价必须为非负数'];
+            return ['success' => false, 'error' => '單價必須為非負數'];
         }
 
         $tax_rate_raw = $data['tax_rate'] ?? null;
         if (!is_numeric($tax_rate_raw)) {
-            return ['success' => false, 'error' => '税率格式不正确'];
+            return ['success' => false, 'error' => '稅率格式不正確'];
         }
         $tax_rate = floatval($tax_rate_raw);
         if ($tax_rate < 0 || $tax_rate > 100) {
-            return ['success' => false, 'error' => '税率必须在 0-100 之间'];
+            return ['success' => false, 'error' => '稅率必須在 0-100 之間'];
         }
 
         $discount_cents = 0;
         if (isset($data['discount_cents']) && $data['discount_cents'] !== '') {
             if (!is_numeric($data['discount_cents'])) {
-                return ['success' => false, 'error' => '折扣金额格式不正确'];
+                return ['success' => false, 'error' => '折扣金額格式不正確'];
             }
             $discount_cents = intval($data['discount_cents']);
         } elseif (isset($data['discount']) && $data['discount'] !== '') {
             $normalized_discount = preg_replace('/[^\d.-]/', '', (string)$data['discount']);
             if ($normalized_discount === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_discount)) {
-                return ['success' => false, 'error' => '折扣金额格式不正确'];
+                return ['success' => false, 'error' => '折扣金額格式不正確'];
             }
             $discount_cents = amount_to_cents($normalized_discount);
         }
@@ -2600,7 +2600,7 @@ function update_quote_item($id, $data) {
 
         $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
         if ($discount_cents > $gross_cents) {
-            return ['success' => false, 'error' => '折扣金额不能超过该行金额'];
+            return ['success' => false, 'error' => '折扣金額不能超過該行金額'];
         }
 
         $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
@@ -2609,15 +2609,15 @@ function update_quote_item($id, $data) {
 
         $description = trim($data['description'] ?? $current_item['description']);
         if ($description !== '' && !validate_string_length($description, 500)) {
-            return ['success' => false, 'error' => '项目描述长度超过限制'];
+            return ['success' => false, 'error' => '專案描述長度超過限制'];
         }
 
         $unit = trim($data['unit'] ?? ($current_item['unit'] ?? ''));
         if ($unit !== '' && !validate_string_length($unit, 20)) {
-            return ['success' => false, 'error' => '单位长度超过限制'];
+            return ['success' => false, 'error' => '單位長度超過限制'];
         }
 
-        // 更新项目
+        // 更新專案
         $sql = "
             UPDATE quote_items
             SET description = ?, unit = ?, qty = ?, unit_price_cents = ?, discount_cents = ?, tax_rate = ?,
@@ -2637,61 +2637,61 @@ function update_quote_item($id, $data) {
             $id
         ]);
 
-        // 重新计算报价单总额
+        // 重新計算報價單總額
         recalculate_quote_total($current_item['quote_id']);
 
         return [
             'success' => true,
-            'message' => '项目更新成功'
+            'message' => '專案更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update quote item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新项目失败'
+            'error' => '更新專案失敗'
         ];
     }
 }
 
 /**
- * 删除报价项目
+ * 刪除報價專案
  *
- * @param int $id 报价项目ID
+ * @param int $id 報價專案ID
  * @return array ['success' => bool, 'error' => string]
  */
 function delete_quote_item($id) {
     try {
-        // 获取项目信息
+        // 獲取專案資訊
         $item = dbQueryOne("SELECT quote_id FROM quote_items WHERE id = ?", [$id]);
         if (!$item) {
-            return ['success' => false, 'error' => '项目不存在'];
+            return ['success' => false, 'error' => '專案不存在'];
         }
 
-        // 删除项目
+        // 刪除專案
         dbExecute("DELETE FROM quote_items WHERE id = ?", [$id]);
 
-        // 重新计算报价单总额
+        // 重新計算報價單總額
         recalculate_quote_total($item['quote_id']);
 
         return [
             'success' => true,
-            'message' => '项目删除成功'
+            'message' => '專案刪除成功'
         ];
 
     } catch (Exception $e) {
         error_log("Delete quote item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '删除项目失败'
+            'error' => '刪除專案失敗'
         ];
     }
 }
 
 /**
- * 重新计算报价单总额
+ * 重新計算報價單總額
  *
- * @param int $quote_id 报价单ID
+ * @param int $quote_id 報價單ID
  */
 function recalculate_quote_total($quote_id) {
     $sql = "
@@ -2726,27 +2726,27 @@ function get_next_quote_item_order($quote_id) {
 }
 
 /**
- * 添加报价项目
+ * 新增報價專案
  *
- * @param int $quote_id 报价单ID
- * @param array $item_data 项目数据
+ * @param int $quote_id 報價單ID
+ * @param array $item_data 專案資料
  * @return array ['success' => bool, 'id' => int, 'error' => string]
  */
 function add_quote_item($quote_id, $item_data) {
     try {
-        // 验证数据
+        // 驗證資料
         $quantity = floatval($item_data['qty'] ?? ($item_data['quantity'] ?? 0));
         if (empty($item_data['catalog_item_id']) || $quantity <= 0) {
-            return ['success' => false, 'error' => '缺少必要参数'];
+            return ['success' => false, 'error' => '缺少必要引數'];
         }
 
-        // 获取目录项信息
+        // 獲取目錄項資訊
         $catalog_item = get_catalog_item($item_data['catalog_item_id']);
         if (!$catalog_item) {
-            return ['success' => false, 'error' => '目录项不存在'];
+            return ['success' => false, 'error' => '目錄項不存在'];
         }
 
-        // 计算金额
+        // 計算金額
         $unit_price_cents = $item_data['unit_price_cents'] ?? $catalog_item['unit_price_cents'];
         if (!is_numeric($unit_price_cents)) {
             $unit_price_cents = $catalog_item['unit_price_cents'];
@@ -2768,7 +2768,7 @@ function add_quote_item($quote_id, $item_data) {
             $discount_cents = 0;
         }
 
-        $description = trim($item_data['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名项目');
+        $description = trim($item_data['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名專案');
         $unit = trim($catalog_item['unit'] ?? '');
         if ($unit === '') {
             $unit = ($catalog_item['type'] ?? '') === 'service' ? 'time' : 'pcs';
@@ -2776,7 +2776,7 @@ function add_quote_item($quote_id, $item_data) {
 
         $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
         if ($discount_cents > $gross_cents) {
-            return ['success' => false, 'error' => '折扣金额不能超过行小计'];
+            return ['success' => false, 'error' => '折扣金額不能超過行小計'];
         }
 
         $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
@@ -2785,7 +2785,7 @@ function add_quote_item($quote_id, $item_data) {
 
         $line_order = get_next_quote_item_order($quote_id);
 
-        // 插入项目
+        // 插入專案
         $sql = "
             INSERT INTO quote_items (
                 quote_id, catalog_item_id, description, qty, unit,
@@ -2810,26 +2810,26 @@ function add_quote_item($quote_id, $item_data) {
 
         $item_id = dbLastInsertId();
 
-        // 重新计算报价单总额
+        // 重新計算報價單總額
         recalculate_quote_total($quote_id);
 
         return [
             'success' => true,
             'id' => $item_id,
-            'message' => '项目添加成功'
+            'message' => '專案新增成功'
         ];
 
     } catch (Exception $e) {
         error_log("Add quote item error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '添加项目失败'
+            'error' => '新增專案失敗'
         ];
     }
 }
 
 /**
- * 以一組明細取代現有報價項目（草稿編輯用）
+ * 以一組明細取代現有報價專案（草稿編輯用）
  *
  * @param int $quote_id
  * @param array $items
@@ -2841,7 +2841,7 @@ function replace_quote_items($quote_id, $items) {
 
     try {
         if (empty($items) || !is_array($items)) {
-            throw new Exception('请至少添加一条报价项目');
+            throw new Exception('請至少新增一條報價專案');
         }
 
         $line_order = 1;
@@ -2854,32 +2854,32 @@ function replace_quote_items($quote_id, $items) {
         foreach ($items as $item) {
             $quantity = floatval($item['qty'] ?? 0);
             if ($quantity <= 0) {
-                throw new Exception('数量必须大于0');
+                throw new Exception('數量必須大於0');
             }
 
             $catalog_item_id = intval($item['catalog_item_id'] ?? 0);
             $catalog_item = get_catalog_item($catalog_item_id);
             if (!$catalog_item) {
-                throw new Exception('所选產品/服务不存在');
+                throw new Exception('所選產品/服務不存在');
             }
 
             $unit_price_cents = isset($item['unit_price_cents']) && $item['unit_price_cents'] !== ''
                 ? intval($item['unit_price_cents'])
                 : intval($catalog_item['unit_price_cents']);
             if ($unit_price_cents < 0) {
-                throw new Exception('单价必须为非负数');
+                throw new Exception('單價必須為非負數');
             }
 
             $tax_rate = isset($item['tax_rate']) && $item['tax_rate'] !== ''
                 ? floatval($item['tax_rate'])
                 : floatval($catalog_item['tax_rate']);
             if ($tax_rate < 0 || $tax_rate > 100) {
-                throw new Exception('税率必须在 0-100 之间');
+                throw new Exception('稅率必須在 0-100 之間');
             }
 
             $description = trim($item['description'] ?? '');
             if ($description === '') {
-                $description = $catalog_item['name'] ?? '未命名项目';
+                $description = $catalog_item['name'] ?? '未命名專案';
             }
 
             $unit = trim($catalog_item['unit'] ?? '');
@@ -2890,7 +2890,7 @@ function replace_quote_items($quote_id, $items) {
             $discount_cents = max(0, intval($item['discount_cents'] ?? 0));
             $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
             if ($discount_cents > $gross_cents) {
-                throw new Exception('折扣金额不能超过行金额');
+                throw new Exception('折扣金額不能超過行金額');
             }
 
             $line_subtotal_cents = calculate_line_subtotal($quantity, $unit_price_cents, $discount_cents);
@@ -2927,7 +2927,7 @@ function replace_quote_items($quote_id, $items) {
         }
 
         if ($line_order === 1) {
-            throw new Exception('请至少添加一条报价项目');
+            throw new Exception('請至少新增一條報價專案');
         }
 
         dbExecute(
@@ -2948,24 +2948,24 @@ function replace_quote_items($quote_id, $items) {
 }
 
 /**
- * 处理报价单编辑提交（草稿专用）
+ * 處理報價單編輯提交（草稿專用）
  *
- * @param array $quote 当前报价单资料（需包含id与status）
- * @param array $post_data 表单提交数据
+ * @param array $quote 當前報價單資料（需包含id與status）
+ * @param array $post_data 表單提交資料
  * @return array ['success' => bool, 'error' => string]
  */
 function process_quote_edit($quote, $post_data) {
     if (empty($quote) || !isset($quote['id'])) {
-        return ['success' => false, 'error' => '报价单不存在'];
+        return ['success' => false, 'error' => '報價單不存在'];
     }
 
     if (($quote['status'] ?? '') !== 'draft') {
-        return ['success' => false, 'error' => '仅草稿状态可编辑明细'];
+        return ['success' => false, 'error' => '僅草稿狀態可編輯明細'];
     }
 
     $items_input = $post_data['items'] ?? [];
     if (!is_array($items_input)) {
-        return ['success' => false, 'error' => '提交的明细格式不正确'];
+        return ['success' => false, 'error' => '提交的明細格式不正確'];
     }
 
     $normalized_items = [];
@@ -2981,7 +2981,7 @@ function process_quote_edit($quote, $post_data) {
         $description = trim($item['description'] ?? '');
         $unit = trim($item['unit'] ?? '');
 
-        // 判断是否为空行（完全未填写且无目录项）
+        // 判斷是否為空行（完全未填寫且無目錄項）
         $has_any_value = $catalog_item_id > 0
             || ($qty !== null && $qty > 0)
             || $description !== ''
@@ -2991,51 +2991,51 @@ function process_quote_edit($quote, $post_data) {
         }
 
         if ($catalog_item_id <= 0) {
-            return ['success' => false, 'error' => sprintf('第 %d 行未选择产品或服务', $index + 1)];
+            return ['success' => false, 'error' => sprintf('第 %d 行未選擇產品或服務', $index + 1)];
         }
 
         if ($qty === null || $qty <= 0) {
-            return ['success' => false, 'error' => sprintf('第 %d 行数量必须大于 0', $index + 1)];
+            return ['success' => false, 'error' => sprintf('第 %d 行數量必須大於 0', $index + 1)];
         }
 
         if ($description !== '' && !validate_string_length($description, 500)) {
-            return ['success' => false, 'error' => sprintf('第 %d 行描述长度超过限制', $index + 1)];
+            return ['success' => false, 'error' => sprintf('第 %d 行描述長度超過限制', $index + 1)];
         }
 
         if ($unit !== '' && !validate_string_length($unit, 20)) {
-            return ['success' => false, 'error' => sprintf('第 %d 行单位长度超过限制', $index + 1)];
+            return ['success' => false, 'error' => sprintf('第 %d 行單位長度超過限制', $index + 1)];
         }
 
-        // 单价（优先接收以分为单位的数值，若无则尝试由元转换）
+        // 單價（優先接收以分為單位的數值，若無則嘗試由元轉換）
         $unit_price_cents = null;
         if (isset($item['unit_price_cents']) && $item['unit_price_cents'] !== '') {
             if (!is_numeric($item['unit_price_cents'])) {
-                return ['success' => false, 'error' => sprintf('第 %d 行单价格式不正确', $index + 1)];
+                return ['success' => false, 'error' => sprintf('第 %d 行單價格式不正確', $index + 1)];
             }
             $unit_price_cents = intval($item['unit_price_cents']);
         } elseif (isset($item['unit_price']) && $item['unit_price'] !== '') {
             $normalized_price = preg_replace('/[^\d.-]/', '', (string)$item['unit_price']);
             if ($normalized_price === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_price)) {
-                return ['success' => false, 'error' => sprintf('第 %d 行单价格式不正确', $index + 1)];
+                return ['success' => false, 'error' => sprintf('第 %d 行單價格式不正確', $index + 1)];
             }
             $unit_price_cents = amount_to_cents($normalized_price);
         }
 
         if ($unit_price_cents !== null && $unit_price_cents < 0) {
-            return ['success' => false, 'error' => sprintf('第 %d 行单价必须为非负数', $index + 1)];
+            return ['success' => false, 'error' => sprintf('第 %d 行單價必須為非負數', $index + 1)];
         }
 
-        // 折扣金额
+        // 折扣金額
         $discount_cents = 0;
         if (isset($item['discount_cents']) && $item['discount_cents'] !== '') {
             if (!is_numeric($item['discount_cents'])) {
-                return ['success' => false, 'error' => sprintf('第 %d 行折扣金额格式不正确', $index + 1)];
+                return ['success' => false, 'error' => sprintf('第 %d 行折扣金額格式不正確', $index + 1)];
             }
             $discount_cents = intval($item['discount_cents']);
         } elseif (isset($item['discount']) && $item['discount'] !== '') {
             $normalized_discount = preg_replace('/[^\d.-]/', '', (string)$item['discount']);
             if ($normalized_discount === '' || !preg_match('/^-?\d+(\.\d+)?$/', $normalized_discount)) {
-                return ['success' => false, 'error' => sprintf('第 %d 行折扣金额格式不正确', $index + 1)];
+                return ['success' => false, 'error' => sprintf('第 %d 行折扣金額格式不正確', $index + 1)];
             }
             $discount_cents = amount_to_cents($normalized_discount);
         }
@@ -3044,13 +3044,13 @@ function process_quote_edit($quote, $post_data) {
             $discount_cents = 0;
         }
 
-        // 税率
+        // 稅率
         $tax_rate_set = false;
         $tax_rate_value = null;
         if (isset($item['tax_rate']) && $item['tax_rate'] !== '') {
             $tax_rate_value = floatval($item['tax_rate']);
             if ($tax_rate_value < 0 || $tax_rate_value > 100) {
-                return ['success' => false, 'error' => sprintf('第 %d 行税率必须在 0-100 之间', $index + 1)];
+                return ['success' => false, 'error' => sprintf('第 %d 行稅率必須在 0-100 之間', $index + 1)];
             }
             $tax_rate_set = true;
         }
@@ -3081,7 +3081,7 @@ function process_quote_edit($quote, $post_data) {
     }
 
     if (empty($normalized_items)) {
-        return ['success' => false, 'error' => '请至少保留一条有效的报价项目'];
+        return ['success' => false, 'error' => '請至少保留一條有效的報價專案'];
     }
 
     return replace_quote_items($quote['id'], $normalized_items);
@@ -3089,22 +3089,22 @@ function process_quote_edit($quote, $post_data) {
 
 /**
  * ========================================
- * Settings 模型操作函数 (Settings Model Functions)
- * US5: 设置管理
+ * Settings 模型操作函式 (Settings Model Functions)
+ * US5: 設定管理
  * ========================================
  */
 
 /**
- * 获取系统设置
+ * 獲取系統設定
  *
- * @return array|null 设置信息或null
+ * @return array|null 設定資訊或null
  */
 function get_settings() {
     $org_id = get_current_org_id();
     $sql = "SELECT * FROM settings WHERE org_id = ?";
     $settings = dbQueryOne($sql, [$org_id]);
 
-    // 如果没有设置，创建默认设置
+    // 如果沒有設定，建立預設設定
     if (!$settings) {
         $default_settings = [
             'company_name' => '',
@@ -3117,7 +3117,7 @@ function get_settings() {
             'timezone' => defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei'
         ];
 
-        // 插入默认设置
+        // 插入預設設定
         $insert_sql = "
             INSERT INTO settings (
                 org_id, company_name, company_address, company_contact,
@@ -3126,7 +3126,7 @@ function get_settings() {
         ";
         dbExecute($insert_sql, array_merge([$org_id], array_values($default_settings)));
 
-        // 返回刚插入的设置
+        // 返回剛插入的設定
         return array_merge(['id' => dbLastInsertId(), 'org_id' => $org_id], $default_settings);
     }
 
@@ -3134,9 +3134,9 @@ function get_settings() {
 }
 
 /**
- * 更新系统设置
+ * 更新系統設定
  *
- * @param array $data 设置数据
+ * @param array $data 設定資料
  * @return array ['success' => bool, 'error' => string]
  */
 function update_settings($data) {
@@ -3146,23 +3146,23 @@ function update_settings($data) {
         $errors = [];
 
         if (!empty($data['company_name']) && !validate_string_length($data['company_name'], 255)) {
-            $errors[] = '公司名称长度不正确';
+            $errors[] = '公司名稱長度不正確';
         }
 
         if (!empty($data['company_address']) && !validate_string_length($data['company_address'], 2000)) {
-            $errors[] = '公司地址长度不能超过2000个字符';
+            $errors[] = '公司地址長度不能超過2000個字元';
         }
 
         if (!empty($data['company_contact']) && !validate_string_length($data['company_contact'], 50)) {
-            $errors[] = '联系电话长度不能超过50个字符';
+            $errors[] = '聯絡電話長度不能超過50個字元';
         }
 
         if (!empty($data['company_tax_id']) && !validate_string_length($data['company_tax_id'], 50)) {
-            $errors[] = '统一编号长度不能超过50个字符';
+            $errors[] = '統一編號長度不能超過50個字元';
         }
 
         if (!empty($data['print_terms']) && !validate_string_length($data['print_terms'], 5000)) {
-            $errors[] = '打印条款长度不能超过5000个字符';
+            $errors[] = '列印條款長度不能超過5000個字元';
         }
 
         if (!empty($errors)) {
@@ -3218,22 +3218,22 @@ function update_settings($data) {
 
         return [
             'success' => true,
-            'message' => '设置更新成功'
+            'message' => '設定更新成功'
         ];
 
     } catch (Exception $e) {
         error_log("Update settings error: " . $e->getMessage());
         return [
             'success' => false,
-            'error' => '更新设置失败'
+            'error' => '更新設定失敗'
         ];
     }
 }
 
 /**
- * 获取公司信息（用于打印）
+ * 獲取公司資訊（用於列印）
  *
- * @return array 公司信息
+ * @return array 公司資訊
  */
 function get_company_info() {
     $settings = get_settings();
@@ -3246,9 +3246,9 @@ function get_company_info() {
 }
 
 /**
- * 获取报价单编号前缀
+ * 獲取報價單編號字首
  *
- * @return string 前缀
+ * @return string 字首
  */
 function get_quote_prefix() {
     $settings = get_settings();
@@ -3256,9 +3256,9 @@ function get_quote_prefix() {
 }
 
 /**
- * 获取默认税率
+ * 獲取預設稅率
  *
- * @return float 默认税率
+ * @return float 預設稅率
  */
 function get_default_tax_rate() {
     $settings = get_settings();
@@ -3266,9 +3266,9 @@ function get_default_tax_rate() {
 }
 
 /**
- * 获取打印条款
+ * 獲取列印條款
  *
- * @return string 条款文字
+ * @return string 條款文字
  */
 function get_print_terms() {
     $settings = get_settings();
@@ -3460,4 +3460,4 @@ function redirect_to_init_if_needed() {
     exit;
 }
 
-// 文件末尾不需要关闭PHP标签，避免非预期输出
+// 檔案末尾不需要關閉PHP標籤，避免非預期輸出

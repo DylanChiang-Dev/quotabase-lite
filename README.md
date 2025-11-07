@@ -1,167 +1,167 @@
-# Quotabase-Lite 集成报价管理系统
+# Quotabase-Lite 整合報價管理系統
 
-> 专为中小企业设计的简洁、高效、可信赖的报价管理解决方案
+> 專為中小企業設計的簡潔、高效、可信賴的報價管理解決方案
 
-## 🌟 项目概述
+## 🌟 專案概述
 
-Quotabase-Lite 是一个专为中小企业设计的 iOS 风格报价单管理系统，采用 **零框架、零 Composer** 的极简架构，提供完整的报价管理功能。
+Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系統，採用 **零框架、零 Composer** 的極簡架構，提供完整的報價管理功能。
 
 ### ✨ 核心特性
 
-- 🎨 **iOS 风格界面** - 现代化设计，底部 Tab 导航，Dark Mode 支持
-- 💰 **精确财务处理** - 金额以分存储，避免浮点精度问题
-- 🔒 **安全可靠** - XSS 防护、CSRF 验证、PDO 预处理、事务安全
-- 📊 **完整业务流** - 客户管理、产品/服务目录、报价单创建、状态跟踪
-- 🖨️ **专业打印** - A4 格式，支持 PDF 导出，表头固定
-- 📤 **数据导出** - 支持 CSV/JSON 格式导出
-- ⚡ **高性能** - P95 响应时间 ≤ 200ms，支持 10+ 并发用户
+- 🎨 **iOS 風格介面** - 現代化設計，底部 Tab 導航，Dark Mode 支援
+- 💰 **精確財務處理** - 金額以分儲存，避免浮點精度問題
+- 🔒 **安全可靠** - XSS 防護、CSRF 驗證、PDO 預處理、事務安全
+- 📊 **完整業務流** - 客戶管理、產品/服務目錄、報價單建立、狀態跟蹤
+- 🖨️ **專業列印** - A4 格式，支援 PDF 匯出，表頭固定
+- 📤 **資料匯出** - 支援 CSV/JSON 格式匯出
+- ⚡ **高效能** - P95 響應時間 ≤ 200ms，支援 10+ 併發使用者
 
-## 🏗️ 技术架构
+## 🏗️ 技術架構
 
-### 技术栈
+### 技術棧
 
-- **后端**: PHP 8.3 (零框架)
-- **数据库**: MySQL 8.0+ / MariaDB 10.6+
+- **後端**: PHP 8.3 (零框架)
+- **資料庫**: MySQL 8.0+ / MariaDB 10.6+
 - **前端**: HTML/CSS/JavaScript (原生)
-- **部署**: 宝塔面板 (aaPanel/BT)
-- **Web 服务器**: Nginx / Apache
+- **部署**: 寶塔面板 (aaPanel/BT)
+- **Web 伺服器**: Nginx / Apache
 
-## 🚀 快速开始
+## 🚀 快速開始
 
-### 环境要求
+### 環境要求
 
 - **PHP**: 8.3 或更高版本
 - **MySQL**: 8.0+ / MariaDB: 10.6+
-- **Web 服务器**: Nginx 或 Apache
+- **Web 伺服器**: Nginx 或 Apache
 
-### 安装步骤
+### 安裝步驟
 
-1. **克隆项目**
+1. **克隆專案**
    ```bash
    git clone <repository-url>
    cd quotabase-lite
    ```
 
-2. **创建数据库**
+2. **建立資料庫**
    ```bash
    mysql -u root -p
    CREATE DATABASE quotabase_lite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    EXIT;
    ```
-   > 数据库只需创建为空的 `quotabase_lite`，数据表稍后会通过初始化精灵自动生成。
+   > 資料庫只需建立為空的 `quotabase_lite`，資料表稍後會透過初始化精靈自動生成。
 
-3. **配置并初始化应用**
-   - 直接访问 `https://你的域名/init.php`，系统会先引导你输入数据库连接信息并自动生成 `config.php`，随后进入初始化精灵完成建表与导入预设资料。
-   - 若服务器无法写入 `config.php`，可退回手动方式：
+3. **配置並初始化應用**
+   - 直接訪問 `https://你的域名/init.php`，系統會先引導你輸入資料庫連線資訊並自動生成 `config.php`，隨後進入初始化精靈完成建表與匯入預設資料。
+   - 若伺服器無法寫入 `config.php`，可退回手動方式：
      ```bash
      cp config.php.sample config.php
-     # 编辑 config.php 配置数据库连接、加密密钥等信息
+     # 編輯 config.php 配置資料庫連線、加密金鑰等資訊
      ```
-   - 偏好命令行时可执行：
+   - 偏好命令列時可執行：
      ```bash
-     php init.php install   # 建立 / 更新数据表
-     php init.php init      # 导入默认数据
+     php init.php install   # 建立 / 更新資料表
+     php init.php init      # 匯入預設資料
      ```
-   - 若仍需手动导入完整 Schema，可使用 `mysql -u root -p quotabase_lite < schema.sql`（该操作将重建数据库结构）。
-   - 初次启动会建立默认管理员帐号：`admin` / `Admin1234`（可通过环境变量 `DEFAULT_ADMIN_PASSWORD` 自定义），请尽快在「设置 → 账号与安全」页面更改密码。
+   - 若仍需手動匯入完整 Schema，可使用 `mysql -u root -p quotabase_lite < schema.sql`（該操作將重建資料庫結構）。
+   - 初次啟動會建立預設管理員帳號：`admin` / `Admin1234`（可透過環境變數 `DEFAULT_ADMIN_PASSWORD` 自定義），請儘快在「設定 → 賬號與安全」頁面更改密碼。
 
-4. **设置权限**
+4. **設定許可權**
    ```bash
    chown -R www:www /path/to/quotabase-lite
    chmod -R 755 /path/to/quotabase-lite
    ```
 
-### 使用 Docker 快速启动
+### 使用 Docker 快速啟動
 
-1. 确保已复制配置文件
+1. 確保已複製配置檔案
    ```bash
    cp config.php.sample config.php
    ```
-   > 若使用 docker compose，`DB_HOST` 将自动指向 `db` 容器，其余账号密码可沿用 `docker-compose.yml` 中的环境变量。
+   > 若使用 docker compose，`DB_HOST` 將自動指向 `db` 容器，其餘賬號密碼可沿用 `docker-compose.yml` 中的環境變數。
 
-2. 构建并启动容器
+2. 構建並啟動容器
    ```bash
    docker compose up -d --build
    ```
 
-3. 初始化数据库（第一次执行）
+3. 初始化資料庫（第一次執行）
    ```bash
    docker compose exec app php init.php install
    docker compose exec app php init.php init
    ```
-   > 亦可直接访问 `http://localhost:8080/init.php`，使用前端初始化精灵完成同样流程。
+   > 亦可直接訪問 `http://localhost:8080/init.php`，使用前端初始化精靈完成同樣流程。
 
-4. 访问应用
-   - 应用：http://localhost:8080
-   - MySQL：`localhost:3306`（用户 `quotabase_user` / 密码 `strong_password`）
+4. 訪問應用
+   - 應用：http://localhost:8080
+   - MySQL：`localhost:3306`（使用者 `quotabase_user` / 密碼 `strong_password`）
 
-5. 停止服务
+5. 停止服務
    ```bash
    docker compose down
    ```
 
-开发过程中代码会透过 volume 映射到容器内，修改后直接刷新浏览器即可；如需查看记录，可执行 `docker compose logs -f app`。
+開發過程中程式碼會透過 volume 對映到容器內，修改後直接重新整理瀏覽器即可；如需檢視記錄，可執行 `docker compose logs -f app`。
 
-## 🔄 升级指南
+## 🔄 升級指南
 
-### 新增报价折扣栏位（v2.1.0+）
+### 新增報價折扣欄位（v2.1.0+）
 
-已上线环境需先执行数据库 ALTER：
+已上線環境需先執行資料庫 ALTER：
 
 ```bash
-# 本地环境
+# 本地環境
 mysql -u <db_user> -p<db_password> quotabase_lite < database/migrations/20251106_quote_items_discount.sql
 
-# Docker 环境（先 docker cp 迁移文件至 /tmp 或其它可访问目录）
+# Docker 環境（先 docker cp 遷移檔案至 /tmp 或其它可訪問目錄）
 docker compose cp database/migrations/20251106_quote_items_discount.sql db:/tmp/quote_discount.sql
 docker compose exec db mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /tmp/quote_discount.sql
 ```
 
-执行完成后即可在报价编辑页使用折扣功能。
+執行完成後即可在報價編輯頁使用折扣功能。
 
-> 自 v2.1.0 起，也可以在服务器上执行 `php init.php install` 或通过初始化精灵补齐 `discount_cents` 字段，适合无法离线执行 SQL 时使用。
+> 自 v2.1.0 起，也可以在伺服器上執行 `php init.php install` 或透過初始化精靈補齊 `discount_cents` 欄位，適合無法離線執行 SQL 時使用。
 
 ## 📖 使用指南
 
 ### 首次使用
 
-1. 登录系统
-2. 设置公司信息
-3. 创建客户
-4. 添加产品/服务
-5. 前往「设置 → 账号与安全」修改管理员密码或新增团队帐号
-6. 创建报价单
+1. 登入系統
+2. 設定公司資訊
+3. 建立客戶
+4. 新增產品/服務
+5. 前往「設定 → 賬號與安全」修改管理員密碼或新增團隊帳號
+6. 建立報價單
 
-## 📦 更新日志
+## 📦 更新日誌
 
 ### v2.0.1 (2025-11-06)
 
-- ✅ 系统设置栏位与资料库结构对齐，新增时区与联系方式支持
-- ✅ 报价单编号流程引用最新设定前缀并修正存储过程调用
-- ✅ 打印版面启用自动列印并补齐 Noto Sans TC 字体
-- ✅ CSV / JSON 匯出遵循契约格式，时间戳改用 ISO 8601 UTC
+- ✅ 系統設定欄位與資料庫結構對齊，新增時區與聯絡方式支援
+- ✅ 報價單編號流程引用最新設定字首並修正儲存過程呼叫
+- ✅ 列印版面啟用自動列印並補齊 Noto Sans TC 字型
+- ✅ CSV / JSON 匯出遵循契約格式，時間戳改用 ISO 8601 UTC
 
 ### v0.1.0 (2025-11-05)
 
-- ✨ 初始版本发布
-- ✨ 完整的报价管理功能
-- ✨ iOS 风格界面设计
-- ✨ Dark Mode 支持
-- ✨ A4 格式打印输出
-- ✨ 数据导出功能
-- ✨ 安全特性完整实现
+- ✨ 初始版本釋出
+- ✨ 完整的報價管理功能
+- ✨ iOS 風格介面設計
+- ✨ Dark Mode 支援
+- ✨ A4 格式列印輸出
+- ✨ 資料匯出功能
+- ✨ 安全特性完整實現
 
-## 📄 许可证
+## 📄 許可證
 
 MIT License
 
-## 📞 支持
+## 📞 支援
 
-- 项目类型: 单体 Web 应用
-- 部署环境: Linux + 宝塔面板
-- 技术栈: PHP 8.3 + MySQL + Nginx
+- 專案型別: 單體 Web 應用
+- 部署環境: Linux + 寶塔面板
+- 技術棧: PHP 8.3 + MySQL + Nginx
 
-**快速链接**:
-- 📖 [完整文档](specs/002-integrated-quote-system/)
-- 🎯 [任务清单](specs/002-integrated-quote-system/tasks.md)
-- 🚀 [快速开始](specs/002-integrated-quote-system/quickstart.md)
+**快速連結**:
+- 📖 [完整文件](specs/002-integrated-quote-system/)
+- 🎯 [任務清單](specs/002-integrated-quote-system/tasks.md)
+- 🚀 [快速開始](specs/002-integrated-quote-system/quickstart.md)

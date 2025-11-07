@@ -18,7 +18,7 @@ description: "Mobile UI polish tasks"
 ## Phase 2: 核心調整
 
 - [X] T201 為 `.page-header`、`.card` 等區塊新增手機專用間距 / 字級 (`@media (max-width: 768px)`)
-- [X] T202 優化底部導航 (`.bottom-tabs`)：加大圖示、避免因安全區域造成遮擋
+- [X] T202 最佳化底部導航 (`.bottom-tabs`)：加大圖示、避免因安全區域造成遮擋
 - [X] T203 調整表單元素（`input`, `.form-group`）在手機上的堆疊與觸控尺寸
 
 ## Phase 3: 驗證

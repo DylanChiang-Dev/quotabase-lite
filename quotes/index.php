@@ -1,43 +1,43 @@
 <?php
 /**
- * 报价列表页面
+ * 報價列表頁面
  * Quote List Page
  *
  * @version v2.0.0
- * @description 报价单列表页面，支持分页和状态筛选
- * @遵循宪法原则I: 安全优先开发 - XSS防护、CSRF验证、PDO预处理
+ * @description 報價單列表頁面，支援分頁和狀態篩選
+ * @遵循憲法原則I: 安全優先開發 - XSS防護、CSRF驗證、PDO預處理
  */
 
-// 防止直接访问
+// 防止直接訪問
 define('QUOTABASE_SYSTEM', true);
 
-// 加载配置和依赖
+// 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
-// 检查登录
+// 檢查登入
 if (!is_logged_in()) {
     header('Location: /login.php');
     exit;
 }
 
-// 获取查询参数
+// 獲取查詢引數
 $page = max(1, intval($_GET['page'] ?? 1));
 $limit = 20;
 $search = trim($_GET['search'] ?? '');
 $status = trim($_GET['status'] ?? '');
 $status_filters = [
-    '' => '所有状态',
+    '' => '所有狀態',
     'draft' => '草稿',
-    'sent' => '已发送',
+    'sent' => '已傳送',
     'accepted' => '已接受',
-    'rejected' => '已拒绝',
-    'expired' => '已过期'
+    'rejected' => '已拒絕',
+    'expired' => '已過期'
 ];
 
-// 获取报价单列表
+// 獲取報價單列表
 try {
     $result = get_quotes($page, $limit, $search, $status);
     $quotes = $result['data'];
@@ -57,7 +57,7 @@ try {
     $total = 0;
     $total_pages = 0;
     $current_page = 1;
-    $error = '加载报价单列表失败';
+    $error = '載入報價單列表失敗';
     $error_debug = [
         'code' => $error_code,
         'message' => $e->getMessage(),
@@ -66,13 +66,13 @@ try {
     ];
 }
 
-// 页面开始
-html_start('报价管理');
+// 頁面開始
+html_start('報價管理');
 
-// 输出头部
-page_header('报价管理', [
-    ['label' => '首页', 'url' => '/'],
-    ['label' => '报价管理', 'url' => '/quotes/']
+// 輸出頭部
+page_header('報價管理', [
+    ['label' => '首頁', 'url' => '/'],
+    ['label' => '報價管理', 'url' => '/quotes/']
 ]);
 
 ?>
@@ -83,11 +83,11 @@ page_header('报价管理', [
             <span class="alert-message"><?php echo h($error); ?></span>
         </div>
         <script>
-            console.group('[QB] 报价单列表加载失败');
+            console.group('[QB] 報價單列表載入失敗');
             console.error('提示：', <?php echo json_encode($error, JSON_UNESCAPED_UNICODE); ?>);
             <?php if (isset($error_debug)): ?>
-            console.error('详细：', <?php echo json_encode($error_debug, JSON_UNESCAPED_UNICODE); ?>);
-            console.error('如需反馈给 Codex，请复制以上 code 与 message。');
+            console.error('詳細：', <?php echo json_encode($error_debug, JSON_UNESCAPED_UNICODE); ?>);
+            console.error('如需反饋給 Codex，請複製以上 code 與 message。');
             debugger;
             <?php endif; ?>
             console.groupEnd();
@@ -106,21 +106,21 @@ page_header('报价管理', [
         </div>
     <?php endif; ?>
 
-    <?php card_start('报价单列表'); ?>
+    <?php card_start('報價單列表'); ?>
 
-    <!-- 工具栏 -->
+    <!-- 工具欄 -->
     <div class="list-toolbar">
         <form method="GET" action="/quotes/index.php" class="list-search">
             <input
                 type="text"
                 name="search"
-                placeholder="搜索报价单号或客户名称..."
+                placeholder="搜尋報價單號或客戶名稱..."
                 value="<?php echo h($search); ?>"
             >
-            <button type="submit" class="btn btn-secondary btn-compact">搜索</button>
+            <button type="submit" class="btn btn-secondary btn-compact">搜尋</button>
         </form>
 
-        <div class="list-filters" role="toolbar" aria-label="报价状态筛选">
+        <div class="list-filters" role="toolbar" aria-label="報價狀態篩選">
             <?php foreach ($status_filters as $value => $label): ?>
                 <?php
                     $query = [];
@@ -144,47 +144,47 @@ page_header('报价管理', [
         </div>
 
         <div class="list-actions">
-            <a href="/quotes/new.php" class="btn btn-primary btn-compact list-primary-action">新建报价单</a>
+            <a href="/quotes/new.php" class="btn btn-primary btn-compact list-primary-action">新建報價單</a>
         </div>
     </div>
 
-    <!-- 统计信息 -->
+    <!-- 統計資訊 -->
     <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: var(--border-radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; gap: 24px; align-items: center;">
             <div>
                 <div style="font-size: 24px; font-weight: 600; color: var(--primary-color);">
                     <?php echo number_format($total); ?>
                 </div>
-                <div style="font-size: 14px; color: var(--text-tertiary);">报价单总数</div>
+                <div style="font-size: 14px; color: var(--text-tertiary);">報價單總數</div>
             </div>
             <?php if (!empty($status)): ?>
                 <div style="font-size: 14px; color: var(--text-secondary);">
-                    状态: <?php echo get_status_label($status); ?>
+                    狀態: <?php echo get_status_label($status); ?>
                 </div>
             <?php endif; ?>
             <?php if (!empty($search)): ?>
                 <div style="font-size: 14px; color: var(--text-secondary);">
-                    搜索: "<?php echo h($search); ?>"
+                    搜尋: "<?php echo h($search); ?>"
                 </div>
             <?php endif; ?>
         </div>
         <div style="font-size: 14px; color: var(--text-tertiary);">
-            第 <?php echo $current_page; ?> 页，共 <?php echo $total_pages; ?> 页
+            第 <?php echo $current_page; ?> 頁，共 <?php echo $total_pages; ?> 頁
         </div>
     </div>
 
-    <!-- 报价单列表 -->
+    <!-- 報價單列表 -->
     <?php if (empty($quotes)): ?>
         <div style="text-align: center; padding: 48px 24px; color: var(--text-tertiary);">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin: 0 auto 16px; color: var(--text-tertiary); opacity: 0.5;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <?php if (!empty($search) || !empty($status)): ?>
-                <div style="font-size: 16px;">未找到匹配的报价单</div>
-                <div style="font-size: 14px; margin-top: 4px;">请尝试调整筛选条件</div>
+                <div style="font-size: 16px;">未找到匹配的報價單</div>
+                <div style="font-size: 14px; margin-top: 4px;">請嘗試調整篩選條件</div>
             <?php else: ?>
-                <div style="font-size: 16px;">暂无报价单</div>
-                <div style="font-size: 14px; margin-top: 4px;">点击上方按钮创建第一个报价单</div>
+                <div style="font-size: 16px;">暫無報價單</div>
+                <div style="font-size: 14px; margin-top: 4px;">點選上方按鈕建立第一個報價單</div>
             <?php endif; ?>
         </div>
     <?php else: ?>
@@ -192,11 +192,11 @@ page_header('报价管理', [
             <table class="quotes-table">
                 <thead>
                     <tr>
-                        <th class="col-number">报价单号</th>
-                        <th class="col-customer">客户</th>
-                        <th class="col-status">状态</th>
-                        <th class="col-date">开票日期</th>
-                        <th class="col-total">总金额</th>
+                        <th class="col-number">報價單號</th>
+                        <th class="col-customer">客戶</th>
+                        <th class="col-status">狀態</th>
+                        <th class="col-date">開票日期</th>
+                        <th class="col-total">總金額</th>
                         <th class="col-actions">操作</th>
                     </tr>
                 </thead>
@@ -230,9 +230,9 @@ page_header('报价管理', [
                                     <a
                                         href="/quotes/view.php?id=<?php echo $quote['id']; ?>"
                                         class="btn btn-sm btn-outline"
-                                        title="查看详情"
+                                        title="檢視詳情"
                                     >
-                                        查看
+                                        檢視
                                     </a>
                                 </div>
                             </td>
@@ -243,7 +243,7 @@ page_header('报价管理', [
         </div>
     <?php endif; ?>
 
-    <!-- 分页 -->
+    <!-- 分頁 -->
     <?php if ($total_pages > 1): ?>
         <div style="margin-top: 24px; display: flex; justify-content: center;">
             <?php
@@ -265,9 +265,9 @@ page_header('报价管理', [
 </div>
 
 <?php
-// 输出底部导航
+// 輸出底部導航
 bottom_tab_navigation();
 
-// 页面结束
+// 頁面結束
 html_end();
 ?>

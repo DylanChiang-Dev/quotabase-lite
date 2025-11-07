@@ -6,7 +6,7 @@
 
 ## GET /customers/index.php
 
-获取客户列表，支持分页和筛选。
+獲取客戶列表，支援分頁和篩選。
 
 ### Query Parameters
 
@@ -51,7 +51,7 @@
 {
   "success": false,
   "error": "UNAUTHORIZED",
-  "message": "请先登录"
+  "message": "請先登入"
 }
 ```
 
@@ -59,7 +59,7 @@
 
 ## POST /customers/new.php
 
-创建新客户。
+建立新客戶。
 
 ### Request
 
@@ -81,7 +81,7 @@
 ```json
 {
   "success": true,
-  "message": "客户创建成功",
+  "message": "客戶建立成功",
   "data": {
     "id": "integer (1-9223372036854775807)",
     "name": "string (1-255 chars)",
@@ -100,30 +100,30 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "name": ["客户名称不能为空"],
-    "email": ["邮箱格式不正确"]
+    "name": ["客戶名稱不能為空"],
+    "email": ["郵箱格式不正確"]
   }
 }
 ```
 
 ### Validation Rules
 
-- name: 必填，1-255 个字符，不能为空白
-- tax_id: 可选，0-50 个字符
-- email: 可选，0-255 个字符，必须为有效邮箱格式
-- phone: 可选，0-50 个字符
-- billing_address: 可选，0-1000 个字符
-- shipping_address: 可选，0-1000 个字符
-- note: 可选，0-1000 个字符
-- csrf_token: 必填，64 位十六进制字符串
+- name: 必填，1-255 個字元，不能為空白
+- tax_id: 可選，0-50 個字元
+- email: 可選，0-255 個字元，必須為有效郵箱格式
+- phone: 可選，0-50 個字元
+- billing_address: 可選，0-1000 個字元
+- shipping_address: 可選，0-1000 個字元
+- note: 可選，0-1000 個字元
+- csrf_token: 必填，64 位十六進位制字串
 
 ---
 
 ## GET /customers/edit.php?id={id}
 
-获取客户编辑表单数据。
+獲取客戶編輯表單資料。
 
 ### Path Parameters
 
@@ -158,7 +158,7 @@
 {
   "success": false,
   "error": "CUSTOMER_NOT_FOUND",
-  "message": "客户不存在"
+  "message": "客戶不存在"
 }
 ```
 
@@ -166,7 +166,7 @@
 
 ## POST /customers/edit.php?id={id}
 
-更新客户信息。
+更新客戶資訊。
 
 ### Path Parameters
 
@@ -196,7 +196,7 @@
 ```json
 {
   "success": true,
-  "message": "客户信息更新成功"
+  "message": "客戶資訊更新成功"
 }
 ```
 
@@ -206,9 +206,9 @@
 {
   "success": false,
   "error": "VALIDATION_ERROR",
-  "message": "输入数据验证失败",
+  "message": "輸入資料驗證失敗",
   "errors": {
-    "name": ["客户名称不能为空"]
+    "name": ["客戶名稱不能為空"]
   }
 }
 ```
@@ -219,7 +219,7 @@
 {
   "success": false,
   "error": "CUSTOMER_NOT_FOUND",
-  "message": "客户不存在"
+  "message": "客戶不存在"
 }
 ```
 
@@ -227,7 +227,7 @@
 
 ## GET /customers/view.php?id={id}
 
-查看客户详细信息。
+檢視客戶詳細資訊。
 
 ### Path Parameters
 
@@ -264,6 +264,6 @@
 {
   "success": false,
   "error": "CUSTOMER_NOT_FOUND",
-  "message": "客户不存在"
+  "message": "客戶不存在"
 }
 ```

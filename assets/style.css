@@ -1,19 +1,19 @@
 /**
  * Quotabase-Lite iOS Style
- * iOS风格样式表
+ * iOS風格樣式表
  *
  * @version v2.0.0
- * @description iOS风格界面样式，支持Dark Mode和Safe-Area
- * @遵循宪法原则V: iOS风格用户体验
- * @遵循宪法原则VI: 打印优化输出
+ * @description iOS風格介面樣式，支援Dark Mode和Safe-Area
+ * @遵循憲法原則V: iOS風格使用者體驗
+ * @遵循憲法原則VI: 列印最佳化輸出
  */
 
 /* ========================================
-   CSS变量定义 (CSS Variables)
+   CSS變數定義 (CSS Variables)
    ======================================== */
 
 :root {
-  /* 主色调 */
+  /* 主色調 */
   --primary-color: #007AFF;
   --primary-color-hover: #0056CC;
   --primary-color-light: #E6F2FF;
@@ -23,17 +23,17 @@
   --bg-secondary: #F2F2F7;
   --bg-tertiary: #E5E5EA;
 
-  /* 文字颜色 */
+  /* 文字顏色 */
   --text-primary: #000000;
   --text-secondary: #3C3C43;
   --text-tertiary: #8E8E93;
   --text-light: #FFFFFF;
 
-  /* 边框色 */
+  /* 邊框色 */
   --border-color: #C6C6C8;
   --border-light: #E5E5EA;
 
-  /* 状态色 */
+  /* 狀態色 */
   --success-color: #34C759;
   --warning-color: #FF9500;
   --danger-color: #FF3B30;
@@ -43,7 +43,7 @@
   --card-bg: #FFFFFF;
   --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 
-  /* 字体 */
+  /* 字型 */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --font-size-xs: 12px;
   --font-size-sm: 14px;
@@ -53,31 +53,31 @@
   --font-size-2xl: 24px;
   --font-size-3xl: 30px;
 
-  /* 间距 */
+  /* 間距 */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  /* 圆角 */
+  /* 圓角 */
   --border-radius-sm: 6px;
   --border-radius-md: 10px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
 
-  /* 过渡 */
+  /* 過渡 */
   --transition: all 0.3s ease;
   color-scheme: light dark;
 }
 
 /* ========================================
    Dark Mode (深色模式)
-   @遵循宪法原则V: Dark Mode支持
+   @遵循憲法原則V: Dark Mode支援
    ======================================== */
 
 :root[data-theme='dark'] {
-  /* 主色调 - 暗色模式调整 */
+  /* 主色調 - 暗色模式調整 */
   --primary-color: #0A84FF;
   --primary-color-hover: #409CFF;
   --primary-color-light: #1C1C1E;
@@ -87,13 +87,13 @@
   --bg-secondary: #2C2C2E;
   --bg-tertiary: #3A3A3C;
 
-  /* 文字颜色 - 暗色模式 */
+  /* 文字顏色 - 暗色模式 */
   --text-primary: #FFFFFF;
   --text-secondary: #EBEBF5;
   --text-tertiary: #8E8E93;
   --text-light: #FFFFFF;
 
-  /* 边框色 - 暗色模式 */
+  /* 邊框色 - 暗色模式 */
   --border-color: #545458;
   --border-light: #38383A;
 
@@ -129,7 +129,7 @@
 }
 
 /* ========================================
-   基础样式 (Base Styles)
+   基礎樣式 (Base Styles)
    ======================================== */
 
 * {
@@ -153,14 +153,14 @@ body {
   overflow-x: hidden;
 }
 
-/* 防止横向滚动 */
+/* 防止橫向滾動 */
 body {
   position: relative;
   min-height: 100vh;
-  padding-bottom: 70px; /* 为底部导航留出空间 */
+  padding-bottom: 70px; /* 為底部導航留出空間 */
 }
 
-/* 打印页面的基础样式 */
+/* 列印頁面的基礎樣式 */
 @media print {
   body {
     background: white;
@@ -170,7 +170,7 @@ body {
 }
 
 /* ========================================
-   应用容器 (App Container)
+   應用容器 (App Container)
    ======================================== */
 
 .app-container {
@@ -183,7 +183,7 @@ body {
 }
 
 /* ========================================
-   页首 (Page Header)
+   頁首 (Page Header)
    ======================================== */
 
 .page-header {
@@ -331,7 +331,7 @@ body {
 }
 
 /* ========================================
-   主要内容区域 (Main Content)
+   主要內容區域 (Main Content)
    ======================================== */
 
 .main-content {
@@ -349,7 +349,7 @@ body {
 }
 
 /* ========================================
-   卡片样式 (Card Styles)
+   卡片樣式 (Card Styles)
    ======================================== */
 
 .card {
@@ -407,7 +407,7 @@ body {
 }
 
 /* ========================================
-   表单样式 (Form Styles)
+   表單樣式 (Form Styles)
    ======================================== */
 
 .form-group {
@@ -503,7 +503,7 @@ select.form-control {
 }
 
 /* ========================================
-   按钮样式 (Button Styles)
+   按鈕樣式 (Button Styles)
    ======================================== */
 
 .btn {
@@ -519,7 +519,7 @@ select.form-control {
   cursor: pointer;
   transition: var(--transition);
   text-decoration: none;
-  min-height: 44px; /* iOS推荐最小点击区域 */
+  min-height: 44px; /* iOS推薦最小點選區域 */
   gap: var(--spacing-sm);
 }
 
@@ -695,7 +695,7 @@ select.form-control {
 }
 
 /* ========================================
-   分类管理样式 (Category Management)
+   分類管理樣式 (Category Management)
    ======================================== */
 
 .category-management-grid {
@@ -839,7 +839,7 @@ select.form-control {
 
 /* ========================================
    Quote Edit Layout
-   @遵循宪法原则IV: 响应式友好表单
+   @遵循憲法原則IV: 響應式友好表單
    ======================================== */
 
 .info-grid {
@@ -1164,9 +1164,9 @@ select.form-control {
 }
 
 /* ========================================
-   底部Tab导航
-   @遵循宪法原则V: iOS风格用户体验
-   @遵循宪法原则V: Safe-Area适配
+   底部Tab導航
+   @遵循憲法原則V: iOS風格使用者體驗
+   @遵循憲法原則V: Safe-Area適配
    ======================================== */
 
 .bottom-tabs {
@@ -1241,7 +1241,7 @@ select.form-control {
   }
 }
 
-/* 打印页隐藏底部导航 */
+/* 列印頁隱藏底部導航 */
 @media print {
   .bottom-tabs {
     display: none !important;
@@ -1253,7 +1253,7 @@ select.form-control {
 }
 
 /* ========================================
-   徽章样式 (Badge Styles)
+   徽章樣式 (Badge Styles)
    ======================================== */
 
 .badge {
@@ -1358,7 +1358,7 @@ select.form-control {
 }
 
 /* ========================================
-   面包屑导航 (Breadcrumb)
+   麵包屑導航 (Breadcrumb)
    ======================================== */
 
 .breadcrumb {
@@ -1405,7 +1405,7 @@ select.form-control {
 }
 
 /* ========================================
-   分页样式 (Pagination)
+   分頁樣式 (Pagination)
    ======================================== */
 
 .pagination {
@@ -1432,7 +1432,7 @@ select.form-control {
   text-decoration: none;
   color: var(--text-primary);
   transition: var(--transition);
-  min-width: 44px; /* iOS推荐最小点击区域 */
+  min-width: 44px; /* iOS推薦最小點選區域 */
   text-align: center;
 }
 
@@ -1454,7 +1454,7 @@ select.form-control {
 }
 
 /* ========================================
-   空状态 (Empty State)
+   空狀態 (Empty State)
    ======================================== */
 
 .empty-state {
@@ -1475,7 +1475,7 @@ select.form-control {
 }
 
 /* ========================================
-   加载指示器 (Loading Indicator)
+   載入指示器 (Loading Indicator)
    ======================================== */
 
 .loading-indicator {
@@ -1504,7 +1504,7 @@ select.form-control {
 }
 
 /* ========================================
-   对话框 (Modal)
+   對話方塊 (Modal)
    ======================================== */
 
 .modal {
@@ -1545,7 +1545,7 @@ select.form-control {
 }
 
 /* ========================================
-   页脚 (Page Footer)
+   頁尾 (Page Footer)
    ======================================== */
 
 .page-footer {
@@ -1556,7 +1556,7 @@ select.form-control {
 }
 
 /* ========================================
-   表格样式 (Table Styles)
+   表格樣式 (Table Styles)
    ======================================== */
 
 .table {
@@ -1703,7 +1703,7 @@ select.form-control {
 }
 
 /* ========================================
-   实用工具类 (Utility Classes)
+   實用工具類 (Utility Classes)
    ======================================== */
 
 .text-center { text-align: center; }
@@ -1758,7 +1758,7 @@ select.form-control {
 .cursor-not-allowed { cursor: not-allowed; }
 
 /* ========================================
-   响应式设计 (Responsive Design)
+   響應式設計 (Responsive Design)
    ======================================== */
 
 @media (max-width: 768px) {
@@ -1995,8 +1995,8 @@ select.form-control {
 }
 
 /* ========================================
-   打印样式
-   @遵循宪法原则VI: 打印优化输出
+   列印樣式
+   @遵循憲法原則VI: 列印最佳化輸出
    ======================================== */
 
 @media print {
@@ -2005,7 +2005,7 @@ select.form-control {
     margin: 15mm;
   }
 
-  /* 隐藏不需要打印的元素 */
+  /* 隱藏不需要列印的元素 */
   .bottom-tabs,
   .page-header,
   .page-footer,
@@ -2016,7 +2016,7 @@ select.form-control {
     display: none !important;
   }
 
-  /* 主体内容样式 */
+  /* 主體內容樣式 */
   body {
     background: white !important;
     color: black !important;
@@ -2046,7 +2046,7 @@ select.form-control {
     font-weight: bold;
   }
 
-  /* 表格打印样式 */
+  /* 表格列印樣式 */
   .table {
     width: 100%;
     border-collapse: collapse;
@@ -2065,7 +2065,7 @@ select.form-control {
     font-weight: bold;
   }
 
-  /* 表头固定 */
+  /* 表頭固定 */
   thead {
     display: table-header-group;
   }
@@ -2078,7 +2078,7 @@ select.form-control {
     page-break-inside: avoid;
   }
 
-  /* 金额格式化 */
+  /* 金額格式化 */
   .text-right {
     text-align: right;
   }
@@ -2087,7 +2087,7 @@ select.form-control {
     text-align: center;
   }
 
-  /* 分页控制 */
+  /* 分頁控制 */
   .page-break {
     page-break-before: always;
   }
@@ -2098,16 +2098,16 @@ select.form-control {
 }
 
 /* ========================================
-   可访问性 (Accessibility)
+   可訪問性 (Accessibility)
    ======================================== */
 
-/* 焦点样式 */
+/* 焦點樣式 */
 *:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* 减少动画（用户偏好） */
+/* 減少動畫（使用者偏好） */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2119,7 +2119,7 @@ select.form-control {
   }
 }
 
-/* 高对比度支持 */
+/* 高對比度支援 */
 @media (prefers-contrast: high) {
   :root {
     --border-color: #000000;
