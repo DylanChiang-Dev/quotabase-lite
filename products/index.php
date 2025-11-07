@@ -16,6 +16,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
+require_once __DIR__ . '/../partials/catalog-import-ui.php';
 
 // 检查登录
 if (!is_logged_in()) {
@@ -95,6 +96,7 @@ page_header('产品管理', [
         </form>
 
         <div class="list-actions">
+            <?php render_catalog_import_ui('product'); ?>
             <a href="/products/new.php" class="btn btn-primary btn-compact list-primary-action">新建产品</a>
         </div>
     </div>
