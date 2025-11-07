@@ -1924,6 +1924,99 @@ function delete_catalog_item($id) {
 }
 
 /**
+ * 批量刪除產品/服務（軟刪除）
+ *
+ * @param array $ids 產品/服務ID陣列
+ * @param string $type 型別限制（product|service）
+ * @return array 統計結果
+ */
+function bulk_delete_catalog_items(array $ids, string $type = 'product') {
+    $type = $type === 'service' ? 'service' : 'product';
+
+    $normalized_ids = [];
+    foreach ($ids as $value) {
+        $id = intval($value);
+        if ($id > 0) {
+            $normalized_ids[$id] = true; // 使用鍵值避免重複
+        }
+    }
+
+    $target_ids = array_keys($normalized_ids);
+
+    if (empty($target_ids)) {
+        return [
+            'success' => false,
+            'deleted_count' => 0,
+            'skipped_count' => 0,
+            'error_count' => 0,
+            'skipped' => [],
+            'errors' => [],
+            'message' => '請選擇要刪除的項目'
+        ];
+    }
+
+    $deleted = [];
+    $skipped = [];
+    $errors = [];
+
+    foreach ($target_ids as $id) {
+        $item = get_catalog_item($id);
+        if (!$item) {
+            $skipped[] = [
+                'id' => $id,
+                'reason' => '項目不存在或已停用'
+            ];
+            continue;
+        }
+
+        if ($item['type'] !== $type) {
+            $skipped[] = [
+                'id' => $id,
+                'reason' => '項目型別不符'
+            ];
+            continue;
+        }
+
+        $result = delete_catalog_item($id);
+        if ($result['success']) {
+            $deleted[] = $id;
+            continue;
+        }
+
+        $errors[] = [
+            'id' => $id,
+            'message' => $result['error'] ?? '刪除失敗'
+        ];
+    }
+
+    $deleted_count = count($deleted);
+    $skipped_count = count($skipped);
+    $error_count = count($errors);
+
+    $message_parts = [];
+    if ($deleted_count > 0) {
+        $message_parts[] = '成功刪除 ' . $deleted_count . ' 筆';
+    }
+    if ($skipped_count > 0) {
+        $message_parts[] = '跳過 ' . $skipped_count . ' 筆';
+    }
+    if ($error_count > 0) {
+        $message_parts[] = '失敗 ' . $error_count . ' 筆（請檢查是否仍被報價單引用）';
+    }
+
+    return [
+        'success' => $deleted_count > 0 && $error_count === 0,
+        'partial' => $deleted_count > 0 && ($skipped_count > 0 || $error_count > 0),
+        'deleted_count' => $deleted_count,
+        'skipped_count' => $skipped_count,
+        'error_count' => $error_count,
+        'skipped' => $skipped,
+        'errors' => $errors,
+        'message' => !empty($message_parts) ? implode('，', $message_parts) : '沒有刪除任何項目'
+    ];
+}
+
+/**
  * 恢復產品/服務（啟用）
  *
  * @param int $id 產品/服務ID

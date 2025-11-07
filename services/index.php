@@ -24,9 +24,11 @@ if (!is_logged_in()) {
     exit;
 }
 
+$bulk_csrf_token = generate_csrf_token();
+
 // 獲取查詢引數
 $page = max(1, intval($_GET['page'] ?? 1));
-$limit = 20;
+$limit = 100;
 $search = trim($_GET['search'] ?? '');
 $offset = ($page - 1) * $limit;
 
@@ -59,7 +61,8 @@ page_header('服務管理', [
 
 ?>
 
-<div class="main-content">
+<div class="main-content" data-catalog-bulk-root data-bulk-type="service" data-bulk-endpoint="/api/catalog/bulk-delete.php">
+    <input type="hidden" data-catalog-bulk-token value="<?php echo h($bulk_csrf_token); ?>">
     <?php if (isset($error)): ?>
         <div class="alert alert-danger">
             <span class="alert-message"><?php echo h($error); ?></span>
@@ -96,6 +99,8 @@ page_header('服務管理', [
         </form>
 
         <div class="list-actions">
+            <button type="button" class="btn btn-danger btn-compact" data-bulk-delete-btn disabled>批量刪除</button>
+            <span class="bulk-selection-indicator" data-selected-count hidden style="font-size: 13px; color: var(--text-secondary); margin-left: 8px;">已選擇 0 項</span>
             <?php render_catalog_import_ui('service'); ?>
             <a href="/services/new.php" class="btn btn-primary btn-compact list-primary-action">新建服務</a>
         </div>
@@ -140,6 +145,9 @@ page_header('服務管理', [
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="background: var(--bg-secondary); border-bottom: 2px solid var(--border-color);">
                     <tr>
+                        <th style="padding: 12px; text-align: left; width: 48px;">
+                            <input type="checkbox" data-catalog-select-all aria-label="全選服務">
+                        </th>
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary); width: 26%;">分類</th>
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">服務名稱</th>
                         <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-secondary);">單位</th>
@@ -150,6 +158,9 @@ page_header('服務管理', [
                 <tbody>
                     <?php foreach ($services as $service): ?>
                         <tr style="border-bottom: 1px solid var(--border-color); hover: var(--bg-secondary);">
+                            <td style="padding: 16px 12px;">
+                                <input type="checkbox" value="<?php echo h($service['id']); ?>" data-catalog-select aria-label="選擇服務 #<?php echo h($service['sku']); ?>">
+                            </td>
                             <td style="padding: 16px 12px;">
                                 <?php
                                 $path = '';
@@ -207,6 +218,7 @@ page_header('服務管理', [
 </div>
 
 <?php
+echo '<script src="/assets/js/catalog-bulk-actions.js"></script>';
 // 輸出底部導航
 bottom_tab_navigation();
 
