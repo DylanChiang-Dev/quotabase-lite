@@ -157,12 +157,12 @@ page_header('编辑产品', [
                     ?>
 
                     <?php
-                    // 單位固定為個
-                    $selected_unit = $product['unit'] ?? 'piece';
+                    // 設定產品單位
+                    $selected_unit = $product['unit'] ?? 'pcs';
                     form_field('unit', '計量單位', 'select', PRODUCT_UNITS, [
                         'required' => true,
                         'selected' => $selected_unit,
-                        'help' => '產品統一以「個」為單位'
+                        'help' => '產品常用單位：件、組、盒、包、台等'
                     ]);
                     ?>
 

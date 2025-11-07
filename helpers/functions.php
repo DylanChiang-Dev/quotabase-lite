@@ -862,24 +862,33 @@ define('TAX_RATES', [
 
 // 单位选项
 define('PRODUCT_UNITS', [
-    'piece' => '個'
+    'pcs'   => '件',
+    'piece' => '個',
+    'unit'  => '台',
+    'set'   => '組',
+    'box'   => '盒',
+    'pack'  => '包',
+    'bag'   => '袋',
+    'bottle'=> '瓶',
+    'case'  => '箱',
+    'pair'  => '雙',
+    'roll'  => '卷',
+    'sheet' => '張'
 ]);
 
 define('SERVICE_UNITS', [
-    'time' => '次',
-    'hour' => '時',
-    'day' => '日',
-    'week' => '週',
+    'time'  => '次',
+    'hour'  => '時',
+    'day'   => '日',
+    'week'  => '週',
     'month' => '月',
-    'year' => '年'
+    'year'  => '年'
 ]);
 
 define('UNITS', array_merge(
     PRODUCT_UNITS,
     SERVICE_UNITS,
     [
-        'pcs' => '個',
-        'unit' => '個',
         'times' => '次',
         'hours' => '時',
         'days' => '日',
@@ -2163,11 +2172,16 @@ function get_quote_items($quote_id) {
         $gross_cents = calculate_line_gross($item['qty'], $item['unit_price_cents']);
         $item['gross_cents'] = $gross_cents;
         $item['discount_percent'] = calculate_discount_percent($item['discount_cents'], $gross_cents);
-        if (empty($item['description'])) {
-            $item['description'] = $item['catalog_name'] ?? '';
+        if (!empty($item['catalog_unit'])) {
+            $item['unit'] = $item['catalog_unit'];
+        } elseif (empty($item['unit'])) {
+            $item['unit'] = ($item['catalog_type'] ?? '') === 'service' ? 'time' : '';
         }
         if (empty($item['unit'])) {
-            $item['unit'] = $item['catalog_unit'] ?? '';
+            $item['unit'] = 'pcs';
+        }
+        if (empty($item['description'])) {
+            $item['description'] = $item['catalog_name'] ?? '';
         }
         $item['item_name'] = $item['description'];
         unset($item['catalog_unit']);
@@ -2755,7 +2769,10 @@ function add_quote_item($quote_id, $item_data) {
         }
 
         $description = trim($item_data['description'] ?? '') ?: ($catalog_item['name'] ?? '未命名项目');
-        $unit = trim($item_data['unit'] ?? '') ?: ($catalog_item['unit'] ?? null);
+        $unit = trim($catalog_item['unit'] ?? '');
+        if ($unit === '') {
+            $unit = ($catalog_item['type'] ?? '') === 'service' ? 'time' : 'pcs';
+        }
 
         $gross_cents = calculate_line_gross($quantity, $unit_price_cents);
         if ($discount_cents > $gross_cents) {
@@ -2865,9 +2882,9 @@ function replace_quote_items($quote_id, $items) {
                 $description = $catalog_item['name'] ?? '未命名项目';
             }
 
-            $unit = trim($item['unit'] ?? '');
+            $unit = trim($catalog_item['unit'] ?? '');
             if ($unit === '') {
-                $unit = $catalog_item['unit'] ?? '';
+                $unit = ($catalog_item['type'] ?? '') === 'service' ? 'time' : 'pcs';
             }
 
             $discount_cents = max(0, intval($item['discount_cents'] ?? 0));

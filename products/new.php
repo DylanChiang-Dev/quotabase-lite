@@ -111,15 +111,15 @@ page_header('新建产品', [
                 ]);
                 ?>
 
-<?php
-// 单位選擇（產品固定為個）
-$selected_unit = $_POST['unit'] ?? 'piece';
-form_field('unit', '計量單位', 'select', PRODUCT_UNITS, [
-    'required' => true,
-    'selected' => $selected_unit,
-    'help' => '產品統一以「個」為單位'
-]);
-?>
+                <?php
+                // 設定產品單位
+                $selected_unit = $_POST['unit'] ?? 'pcs';
+                form_field('unit', '計量單位', 'select', PRODUCT_UNITS, [
+                    'required' => true,
+                    'selected' => $selected_unit,
+                    'help' => '產品常用單位：件、組、盒、包、台等'
+                ]);
+                ?>
 
                 <?php
                 // 货币选择

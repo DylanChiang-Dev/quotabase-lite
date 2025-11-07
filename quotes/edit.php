@@ -144,8 +144,14 @@ if ($form_items_override !== null) {
         }
 
         $unit = trim($item['unit'] ?? '');
-        if ($unit === '' && $catalog_item) {
-            $unit = $catalog_item['unit'] ?? '';
+        if ($catalog_item) {
+            $unit = $catalog_item['unit'] ?? $unit;
+            if (empty($unit)) {
+                $unit = $catalog_item['type'] === 'service' ? 'time' : 'pcs';
+            }
+        }
+        if ($unit === '') {
+            $unit = 'pcs';
         }
 
         $initial_items[] = [
@@ -233,6 +239,7 @@ $catalog_options_html = ob_get_clean();
 $catalog_map_json = json_encode($catalog_map, JSON_UNESCAPED_UNICODE);
 $initial_items_json = json_encode($initial_items, JSON_UNESCAPED_UNICODE);
 $default_tax_rate_json = json_encode($default_tax_rate);
+$unit_labels_json = json_encode(UNITS, JSON_UNESCAPED_UNICODE);
 
 html_start('编辑报价单');
 
@@ -340,18 +347,25 @@ page_header('编辑报价单', [
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($quote['items'] as $item): ?>
-                                <?php
-                                $discount_cents = (int)($item['discount_cents'] ?? 0);
-                                $discount_percent = $item['discount_percent'] ?? calculate_discount_percent($discount_cents, calculate_line_gross($item['qty'], $item['unit_price_cents']));
-                                ?>
+                    <?php foreach ($quote['items'] as $item): ?>
+                        <?php
+                        $discount_cents = (int)($item['discount_cents'] ?? 0);
+                        $discount_percent = $item['discount_percent'] ?? calculate_discount_percent($discount_cents, calculate_line_gross($item['qty'], $item['unit_price_cents']));
+                        $unit_code = $item['unit'] ?? '';
+                        $unit_label = UNITS[$unit_code] ?? $unit_code;
+                        ?>
                                 <tr>
                                     <td class="monospace"><?php echo h($item['sku'] ?? ''); ?></td>
                                     <td>
                                         <div class="table-text-strong"><?php echo h($item['description']); ?></div>
                                         <small class="text-muted"><?php echo h($item['catalog_name'] ?? ''); ?></small>
                                     </td>
-                                    <td class="text-right"><?php echo h(number_format((float)$item['qty'], 4, '.', '')); ?></td>
+                                    <td class="text-right">
+                                        <?php echo h(number_format((float)$item['qty'], 4, '.', '')); ?>
+                                        <?php if ($unit_label): ?>
+                                            <span class="text-muted"><?php echo h($unit_label); ?></span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="text-right"><?php echo format_currency_cents($item['unit_price_cents']); ?></td>
                                     <td class="text-right"><?php echo $discount_cents > 0 ? format_currency_cents($discount_cents) : '—'; ?></td>
                                     <td class="text-right"><?php echo $discount_cents > 0 ? h(number_format($discount_percent, 2)) . '%' : '—'; ?></td>
@@ -431,7 +445,8 @@ page_header('编辑报价单', [
         </div>
         <div class="quote-item-field quote-item-field--sm">
             <label>单位</label>
-            <input type="text" name="items[__INDEX__][unit]" class="unit-input" maxlength="20" placeholder="例如：件">
+            <input type="hidden" name="items[__INDEX__][unit]" class="unit-input" value="pcs">
+            <div class="unit-display" data-role="unit-label">—</div>
         </div>
         <div class="quote-item-field quote-item-field--sm">
             <label>单价 (NT$)</label>
@@ -487,6 +502,8 @@ page_header('编辑报价单', [
     const catalogItems = <?php echo $catalog_map_json; ?>;
     const initialItems = <?php echo $initial_items_json; ?>;
     const defaultTaxRate = <?php echo $default_tax_rate_json; ?>;
+    const unitLabels = <?php echo $unit_labels_json; ?>;
+    const defaultUnit = "pcs";
     const container = document.getElementById('quote-items-container');
     const addButton = document.getElementById('add-quote-item-btn');
     const form = document.getElementById('quote-items-form');
@@ -515,6 +532,18 @@ page_header('编辑报价单', [
         return wrapper.firstElementChild;
     }
 
+    function applyUnit(row, unitCode) {
+        const hidden = row.querySelector('.unit-input');
+        const labelEl = row.querySelector('[data-role="unit-label"]');
+        const normalized = unitLabels[unitCode] ? unitCode : defaultUnit;
+        if (hidden) {
+            hidden.value = normalized;
+        }
+        if (labelEl) {
+            labelEl.textContent = unitLabels[normalized] || normalized;
+        }
+    }
+
     function handleCatalogChange(row) {
         const select = row.querySelector('.catalog-select');
         const catalogId = select.value;
@@ -530,10 +559,7 @@ page_header('编辑报价单', [
             descriptionInput.value = data.name || '';
         }
 
-        const unitInput = row.querySelector('.unit-input');
-        if (unitInput.dataset.userEdited !== 'true') {
-            unitInput.value = data.unit || '';
-        }
+        applyUnit(row, data.unit || defaultUnit);
 
         const unitPriceInput = row.querySelector('.unit-price-input');
         const unitPriceCentsInput = row.querySelector('.unit-price-cents-input');
@@ -573,9 +599,7 @@ page_header('编辑报价单', [
         const qtyInput = row.querySelector('.qty-input');
         qtyInput.value = data.qty !== undefined && data.qty !== null ? data.qty : '';
 
-        const unitInput = row.querySelector('.unit-input');
-        unitInput.value = data.unit || '';
-        unitInput.dataset.userEdited = 'false';
+        applyUnit(row, data.unit || defaultUnit);
 
         const unitPriceInput = row.querySelector('.unit-price-input');
         const unitPriceCentsInput = row.querySelector('.unit-price-cents-input');
@@ -686,14 +710,12 @@ page_header('编辑报价单', [
 
     function attachRowEvents(row) {
         const descriptionInput = row.querySelector('.description-input');
-        const unitInput = row.querySelector('.unit-input');
         const unitPriceInput = row.querySelector('.unit-price-input');
         const taxRateInput = row.querySelector('.tax-rate-input');
         const discountInput = row.querySelector('.discount-input');
         const qtyInput = row.querySelector('.qty-input');
 
         descriptionInput.addEventListener('input', () => { descriptionInput.dataset.userEdited = 'true'; });
-        unitInput.addEventListener('input', () => { unitInput.dataset.userEdited = 'true'; });
 
         unitPriceInput.addEventListener('input', () => {
             unitPriceInput.dataset.userEdited = 'true';
@@ -757,9 +779,16 @@ page_header('编辑报价单', [
         const row = createRowElement(index);
         container.appendChild(row);
         attachRowEvents(row);
-        if (data) {
-            applyDataToRow(row, data);
-        }
+        const rowData = Object.assign({
+            catalog_item_id: '',
+            description: '',
+            qty: '',
+            unit: defaultUnit,
+            unit_price_cents: null,
+            tax_rate: defaultTaxRate,
+            discount_cents: null
+        }, data || {});
+        applyDataToRow(row, rowData);
         calculateRow(row);
         updateTotals();
     }
