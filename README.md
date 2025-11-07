@@ -6,6 +6,17 @@
 
 Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系統，採用 **零框架、零 Composer** 的極簡架構，提供完整的報價管理功能。
 
+## 🤝 開源共建
+
+Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與修改。若你想貢獻程式碼或文件，請依循以下流程：
+
+1. 先在 GitHub Issue 中描述問題、需求或提案，方便討論與追蹤。
+2. 建立分支實作並撰寫必要測試／手動驗證步驟，提交 Pull Request。
+3. Commit 訊息建議遵循 Conventional Commits，內容以繁體中文撰寫，保持 SRP/KISS/DRY/YAGNI 原則。
+4. PR 說明需包含變更範圍、測試方式與可能影響，方便維護者審閱。
+
+我們歡迎任何改善（包括文件、翻譯、UI/UX、效能、安全等領域），也希望共建者在貢獻前先閱讀 `.spec-workflow` 相關流程，確保與現有架構一致。
+
 ### ✨ 核心特性
 
 - 🎨 **iOS 風格介面** - 現代化設計，底部 Tab 導航，Dark Mode 支援
@@ -71,6 +82,20 @@ Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系
    chmod -R 755 /path/to/quotabase-lite
    ```
 
+## 🛠️ 部署指南
+
+1. **伺服器就緒**：確保系統具備 PHP 8.3、MySQL 8+/MariaDB 10.6+、Nginx/Apache 以及 `php-cli`。
+2. **拉取程式碼**：在 `/var/www/quotabase-lite`（或自訂目錄）執行 `git clone`，並設定所有者為 Web 服務帳號（如 `www-data`）。
+3. **建立配置**：複製 `config.php.sample` 為 `config.php`，填入資料庫憑證、加密金鑰、SMTP 等生產環境參數；秘密資訊建議改從環境變數讀取。
+4. **初始化資料庫**：
+   ```bash
+   php init.php install   # 建表或同步結構
+   php init.php init      # 匯入預設資料與管理員
+   ```
+   亦可透過 `https://your-domain/init.php` 的初始化精靈完成上述流程。
+5. **設定 Web Server**：Nginx 範例可參考 `docker/nginx` 配置，將根目錄指向專案根並允許 `index.php`。部署完成後建議封鎖 `init.php`。
+6. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull` 並執行 `php init.php install` 以套用新結構。
+
 ### 使用 Docker 快速啟動
 
 1. 確保已複製配置檔案
@@ -101,6 +126,11 @@ Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系
    ```
 
 開發過程中程式碼會透過 volume 對映到容器內，修改後直接重新整理瀏覽器即可；如需檢視記錄，可執行 `docker compose logs -f app`。
+
+### 預設管理員帳號
+
+- 帳號：`admin`
+- 密碼：`Admin1234`（可用環境變數 `DEFAULT_ADMIN_PASSWORD` 覆寫；上線後務必於「設定 → 帳號與安全」立即修改）
 
 ## 🔄 升級指南
 

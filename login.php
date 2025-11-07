@@ -283,9 +283,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
 
             <div class="demo-info">
-                <strong>演示賬號</strong>
-                使用者名稱: admin<br>
-                密碼: admin123
+                <strong>預設管理員</strong>
+                使用者名稱：admin<br>
+                密碼：<?php echo h(getenv('DEFAULT_ADMIN_PASSWORD') ?: 'Admin1234'); ?><br>
+                （請於登入後至「設定 → 帳號與安全」立即更改）
             </div>
         </form>
 
