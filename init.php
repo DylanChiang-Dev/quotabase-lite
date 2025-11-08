@@ -45,10 +45,13 @@ function handle_config_file_setup($configPath) {
         'db_pass' => '',
         'timezone' => getenv('DEFAULT_TIMEZONE') ?: 'Asia/Taipei',
         'encryption_key' => '',
+        'receipt_secret' => '',
+        'receipt_secret_version' => getenv('RECEIPT_SECRET_VERSION') ?: 'v1',
     ];
 
     $formData = $defaults;
     $formData['encryption_key'] = generate_setup_encryption_key();
+    $formData['receipt_secret'] = generate_receipt_secret_key();
 
     $errors = [];
     $generalError = '';
@@ -80,6 +83,19 @@ function handle_config_file_setup($configPath) {
                     $formData['encryption_key'] = generate_setup_encryption_key();
                 } elseif (!preg_match('/^[a-f0-9]{32,}$/i', $formData['encryption_key'])) {
                     $errors['encryption_key'] = '加密金鑰必須為至少32位的十六進位字串（例如 64 個字元）。';
+                }
+
+                $formData['receipt_secret'] = trim($_POST['receipt_secret'] ?? '');
+                $formData['receipt_secret_version'] = trim($_POST['receipt_secret_version'] ?? '') ?: 'v1';
+
+                if ($formData['receipt_secret'] === '') {
+                    $formData['receipt_secret'] = generate_receipt_secret_key();
+                } elseif (!preg_match('/^[a-f0-9]{64,}$/i', $formData['receipt_secret'])) {
+                    $errors['receipt_secret'] = 'server secret 至少需64位十六進位字串。';
+                }
+
+                if (!preg_match('/^[A-Za-z0-9._-]{1,32}$/', $formData['receipt_secret_version'])) {
+                    $errors['receipt_secret_version'] = 'secret 版本僅能包含英數、點、底線或連字號，且長度不超過32字元。';
                 }
 
                 if (empty($errors)) {
@@ -337,6 +353,26 @@ function handle_config_file_setup($configPath) {
                         <div class="note">若無特別需求，可直接使用系統產生的隨機金鑰。</div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="receipt_secret_version">收據 server secret 版本 <span>預設 v1，可自行定義</span></label>
+                        <input type="text" id="receipt_secret_version" name="receipt_secret_version" value="<?php echo htmlspecialchars($formData['receipt_secret_version'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                        <?php if (isset($errors['receipt_secret_version'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['receipt_secret_version'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="receipt_secret">收據 server secret <span>至少64位十六進位字串</span></label>
+                        <div style="display:flex; gap:12px;">
+                            <input type="text" id="receipt_secret" name="receipt_secret" value="<?php echo htmlspecialchars($formData['receipt_secret'], ENT_QUOTES, 'UTF-8'); ?>" style="flex:1;">
+                            <button type="button" class="btn-secondary" id="generateReceiptSecretBtn">重新產生</button>
+                        </div>
+                        <?php if (isset($errors['receipt_secret'])): ?>
+                            <div class="error-message"><?php echo htmlspecialchars($errors['receipt_secret'], ENT_QUOTES, 'UTF-8'); ?></div>
+                        <?php endif; ?>
+                        <div class="note">此 secret 用於 HMAC token，請妥善保存於安全位置並定期輪換。</div>
+                    </div>
+
                     <div class="btn-row">
                         <button type="submit" class="btn-primary">建立設定檔並繼續</button>
                     </div>
@@ -352,27 +388,34 @@ function handle_config_file_setup($configPath) {
             (function() {
                 const generateKeyBtn = document.getElementById('generateKeyBtn');
                 const keyField = document.getElementById('encryption_key');
+                const receiptSecretBtn = document.getElementById('generateReceiptSecretBtn');
+                const receiptSecretField = document.getElementById('receipt_secret');
 
-                function generateKey() {
+                function randomHex(byteLength) {
                     if (window.crypto && window.crypto.getRandomValues) {
-                        const bytes = new Uint8Array(32);
+                        const bytes = new Uint8Array(byteLength);
                         window.crypto.getRandomValues(bytes);
-                        let key = '';
+                        let value = '';
                         bytes.forEach(function(byte) {
-                            key += ('0' + byte.toString(16)).slice(-2);
+                            value += ('0' + byte.toString(16)).slice(-2);
                         });
-                        keyField.value = key;
-                    } else {
-                        alert('瀏覽器不支援自動產生金鑰，請手動輸入。');
+                        return value;
                     }
+                    return '<?php echo bin2hex(random_bytes(32)); ?>';
                 }
 
-                if (generateKeyBtn) {
-                    generateKeyBtn.addEventListener('click', function(event) {
+                function handleGenerate(button, target, bytes) {
+                    if (!button || !target) {
+                        return;
+                    }
+                    button.addEventListener('click', function(event) {
                         event.preventDefault();
-                        generateKey();
+                        target.value = randomHex(bytes);
                     });
                 }
+
+                handleGenerate(generateKeyBtn, keyField, 32);
+                handleGenerate(receiptSecretBtn, receiptSecretField, 48);
             })();
         </script>
     </body>
@@ -393,6 +436,10 @@ function config_setup_verify_csrf_token($token) {
 
 function generate_setup_encryption_key() {
     return bin2hex(random_bytes(32));
+}
+
+function generate_receipt_secret_key() {
+    return bin2hex(random_bytes(48));
 }
 
 function config_setup_test_connection(array $formData) {
@@ -436,6 +483,8 @@ function config_setup_write_config($targetPath, $samplePath, array $formData) {
     $content = config_setup_replace_define($content, 'DEFAULT_TIMEZONE', $timezoneLiteral, true);
     $content = config_setup_replace_define($content, 'DISPLAY_TIMEZONE', $timezoneLiteral, true);
     $content = config_setup_replace_define($content, 'ENCRYPTION_KEY', var_export($formData['encryption_key'], true));
+    $content = config_setup_replace_define($content, 'RECEIPT_SERVER_SECRET', var_export($formData['receipt_secret'], true));
+    $content = config_setup_replace_define($content, 'RECEIPT_SECRET_VERSION', var_export($formData['receipt_secret_version'], true));
 
     if ($content === null) {
         return [false, '產生設定檔內容時發生錯誤。'];
@@ -495,6 +544,12 @@ define('APP_NAME', 'Quotabase-Lite');
 define('APP_VERSION', '2.0.0');
 define('DEFAULT_ORG_ID', 1);
 define('DEFAULT_PAGE_SIZE', 20);
+
+define('RECEIPT_SERVER_SECRET', 'change_me_to_secure_value');
+define('RECEIPT_SECRET_VERSION', 'v1');
+define('RECEIPT_STORAGE_PATH', __DIR__ . '/storage/receipts');
+define('RECEIPT_RETENTION_YEARS', 5);
+define('RECEIPT_STAMP_PATH', __DIR__ . '/assets/stamps/company-stamp.png');
 
 $serverName = $_SERVER['SERVER_NAME'] ?? '';
 $isCli = php_sapi_name() === 'cli';
@@ -748,6 +803,9 @@ function get_schema_status() {
         'quote_sequences' => 'quote_sequences（年度序號）',
         'settings' => 'settings（系統設定）',
         'users' => 'users（使用者）',
+        'receipt_consents' => 'receipt_consents（電子同意）',
+        'receipts' => 'receipts（個人收據）',
+        'receipt_verifications' => 'receipt_verifications（收據查驗）',
     ];
 
     foreach ($requiredTables as $table => $label) {
@@ -984,6 +1042,70 @@ function install_database_schema() {
                 INDEX idx_users_status (status),
                 INDEX idx_users_role (role)
             ) ENGINE=InnoDB COMMENT='系統使用者'",
+
+            "CREATE TABLE IF NOT EXISTS receipt_consents (
+                id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+                customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID',
+                method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
+                counterparty_ip VARCHAR(45) NULL COMMENT '相對人IP',
+                recorded_ip VARCHAR(45) NULL COMMENT '記錄者IP',
+                user_agent VARCHAR(255) NULL COMMENT '記錄者UA',
+                evidence_ref VARCHAR(255) NULL COMMENT '佐證資訊（如郵件ID）',
+                notes TEXT NULL COMMENT '備註',
+                consented_at DATETIME NOT NULL COMMENT '相對人同意時間',
+                recorded_by BIGINT UNSIGNED NULL COMMENT '紀錄者使用者ID',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+                INDEX idx_receipt_consents_quote (quote_id),
+                INDEX idx_receipt_consents_customer (customer_id),
+                INDEX idx_receipt_consents_method (method),
+                CONSTRAINT fk_receipt_consents_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+                CONSTRAINT fk_receipt_consents_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
+                CONSTRAINT fk_receipt_consents_user FOREIGN KEY (recorded_by) REFERENCES users(id)
+            ) ENGINE=InnoDB COMMENT='電子同意紀錄'",
+
+            "CREATE TABLE IF NOT EXISTS receipts (
+                id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+                consent_id BIGINT UNSIGNED NULL COMMENT '電子同意紀錄ID',
+                serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+                pdf_path VARCHAR(255) NOT NULL COMMENT 'PDF 檔案相對路徑',
+                amount_cents BIGINT UNSIGNED NOT NULL COMMENT '總金額（分）',
+                currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '幣別',
+                issued_on DATE NOT NULL COMMENT '開立日期',
+                hash_full CHAR(64) NOT NULL COMMENT 'SHA-256 雜湊',
+                hash_short CHAR(20) NOT NULL COMMENT 'hash_short（Base32）',
+                qr_payload TEXT NOT NULL COMMENT 'QR 原始字串',
+                qr_token VARCHAR(128) NOT NULL COMMENT 'HMAC token',
+                qr_secret_version VARCHAR(32) NOT NULL COMMENT 'Secret 版本',
+                status ENUM('issued', 'revoked') NOT NULL DEFAULT 'issued' COMMENT '狀態',
+                expires_at DATE NOT NULL COMMENT '保存期限（issued_on + 5 年）',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+                UNIQUE KEY uq_receipts_quote (quote_id),
+                UNIQUE KEY uq_receipts_serial (org_id, serial),
+                INDEX idx_receipts_org (org_id),
+                INDEX idx_receipts_status (status),
+                CONSTRAINT fk_receipts_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+                CONSTRAINT fk_receipts_consent FOREIGN KEY (consent_id) REFERENCES receipt_consents(id)
+            ) ENGINE=InnoDB COMMENT='個人收據紀錄'",
+
+            "CREATE TABLE IF NOT EXISTS receipt_verifications (
+                id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+                receipt_id BIGINT UNSIGNED NOT NULL COMMENT '收據ID',
+                serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+                status ENUM('passed', 'failed', 'expired') NOT NULL COMMENT '查驗狀態',
+                failure_reason VARCHAR(50) NULL COMMENT '失敗原因代碼',
+                ip_address VARCHAR(45) NULL COMMENT '查驗IP',
+                user_agent VARCHAR(255) NULL COMMENT '查驗來源 UA',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                INDEX idx_receipt_verifications_receipt (receipt_id),
+                INDEX idx_receipt_verifications_serial (serial),
+                CONSTRAINT fk_receipt_verifications_receipt FOREIGN KEY (receipt_id) REFERENCES receipts(id)
+            ) ENGINE=InnoDB COMMENT='收據查驗紀錄'",
         ];
 
         foreach ($tableStatements as $sql) {
@@ -1104,6 +1226,18 @@ function ensure_schema_upgrades(PDO $pdo) {
         $pdo->exec("ALTER TABLE settings
             ADD COLUMN company_tax_id VARCHAR(50) NULL COMMENT '公司統一編號' AFTER company_contact");
     }
+
+    if (!table_exists($pdo, 'receipt_consents')) {
+        create_receipt_consents_table($pdo);
+    }
+
+    if (!table_exists($pdo, 'receipts')) {
+        create_receipts_table($pdo);
+    }
+
+    if (!table_exists($pdo, 'receipt_verifications')) {
+        create_receipt_verifications_table($pdo);
+    }
 }
 
 function create_users_table(PDO $pdo) {
@@ -1126,6 +1260,88 @@ function create_users_table(PDO $pdo) {
             INDEX idx_users_status (status),
             INDEX idx_users_role (role)
         ) ENGINE=InnoDB COMMENT='系統使用者'
+    ";
+
+    $pdo->exec($sql);
+}
+
+function create_receipt_consents_table(PDO $pdo) {
+    $sql = "
+        CREATE TABLE receipt_consents (
+            id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+            quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+            customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID',
+            method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
+            counterparty_ip VARCHAR(45) NULL COMMENT '相對人IP',
+            recorded_ip VARCHAR(45) NULL COMMENT '記錄者IP',
+            user_agent VARCHAR(255) NULL COMMENT '記錄者UA',
+            evidence_ref VARCHAR(255) NULL COMMENT '佐證資訊（如郵件ID）',
+            notes TEXT NULL COMMENT '備註',
+            consented_at DATETIME NOT NULL COMMENT '相對人同意時間',
+            recorded_by BIGINT UNSIGNED NULL COMMENT '紀錄者使用者ID',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+            INDEX idx_receipt_consents_quote (quote_id),
+            INDEX idx_receipt_consents_customer (customer_id),
+            INDEX idx_receipt_consents_method (method),
+            CONSTRAINT fk_receipt_consents_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+            CONSTRAINT fk_receipt_consents_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
+            CONSTRAINT fk_receipt_consents_user FOREIGN KEY (recorded_by) REFERENCES users(id)
+        ) ENGINE=InnoDB COMMENT='電子同意紀錄'
+    ";
+
+    $pdo->exec($sql);
+}
+
+function create_receipts_table(PDO $pdo) {
+    $sql = "
+        CREATE TABLE receipts (
+            id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+            quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+            consent_id BIGINT UNSIGNED NULL COMMENT '電子同意紀錄ID',
+            serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+            pdf_path VARCHAR(255) NOT NULL COMMENT 'PDF 檔案相對路徑',
+            amount_cents BIGINT UNSIGNED NOT NULL COMMENT '總金額（分）',
+            currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '幣別',
+            issued_on DATE NOT NULL COMMENT '開立日期',
+            hash_full CHAR(64) NOT NULL COMMENT 'SHA-256 雜湊',
+            hash_short CHAR(20) NOT NULL COMMENT 'hash_short（Base32）',
+            qr_payload TEXT NOT NULL COMMENT 'QR 原始字串',
+            qr_token VARCHAR(128) NOT NULL COMMENT 'HMAC token',
+            qr_secret_version VARCHAR(32) NOT NULL COMMENT 'Secret 版本',
+            status ENUM('issued', 'revoked') NOT NULL DEFAULT 'issued' COMMENT '狀態',
+            expires_at DATE NOT NULL COMMENT '保存期限（issued_on + 5 年）',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+            UNIQUE KEY uq_receipts_quote (quote_id),
+            UNIQUE KEY uq_receipts_serial (org_id, serial),
+            INDEX idx_receipts_org (org_id),
+            INDEX idx_receipts_status (status),
+            CONSTRAINT fk_receipts_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+            CONSTRAINT fk_receipts_consent FOREIGN KEY (consent_id) REFERENCES receipt_consents(id)
+        ) ENGINE=InnoDB COMMENT='個人收據紀錄'
+    ";
+
+    $pdo->exec($sql);
+}
+
+function create_receipt_verifications_table(PDO $pdo) {
+    $sql = "
+        CREATE TABLE receipt_verifications (
+            id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+            receipt_id BIGINT UNSIGNED NOT NULL COMMENT '收據ID',
+            serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+            status ENUM('passed', 'failed', 'expired') NOT NULL COMMENT '查驗狀態',
+            failure_reason VARCHAR(50) NULL COMMENT '失敗原因代碼',
+            ip_address VARCHAR(45) NULL COMMENT '查驗IP',
+            user_agent VARCHAR(255) NULL COMMENT '查驗來源 UA',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+            INDEX idx_receipt_verifications_receipt (receipt_id),
+            INDEX idx_receipt_verifications_serial (serial),
+            CONSTRAINT fk_receipt_verifications_receipt FOREIGN KEY (receipt_id) REFERENCES receipts(id)
+        ) ENGINE=InnoDB COMMENT='收據查驗紀錄'
     ";
 
     $pdo->exec($sql);

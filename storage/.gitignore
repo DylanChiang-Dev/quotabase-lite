@@ -1,0 +1,7 @@
+# Ignore generated storage artifacts by default
+*
+!.gitignore
+!receipts/
+!receipts/.gitignore
+!temp/
+!temp/.gitignore

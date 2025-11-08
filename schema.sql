@@ -2,7 +2,7 @@
 -- Quotabase-Lite Database Schema
 -- 資料庫結構檔案
 -- 版本: v2.0.0
--- 描述: 整合報價管理系統 - 7個核心實體
+-- 描述: 整合報價管理系統 - 10個核心實體
 -- ========================================
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -207,6 +207,85 @@ CREATE TABLE users (
 ) ENGINE=InnoDB COMMENT='系統使用者';
 
 -- ========================================
+-- 9. Receipt Consents (電子同意紀錄)
+-- 儲存相對人電子同意證據
+-- ========================================
+
+CREATE TABLE receipt_consents (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+    quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+    customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID',
+    method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
+    counterparty_ip VARCHAR(45) NULL COMMENT '相對人IP',
+    recorded_ip VARCHAR(45) NULL COMMENT '記錄者IP',
+    user_agent VARCHAR(255) NULL COMMENT '記錄者UA',
+    evidence_ref VARCHAR(255) NULL COMMENT '佐證資訊（如郵件ID）',
+    notes TEXT NULL COMMENT '備註',
+    consented_at DATETIME NOT NULL COMMENT '相對人同意時間',
+    recorded_by BIGINT UNSIGNED NULL COMMENT '紀錄者使用者ID',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    INDEX idx_receipt_consents_quote (quote_id),
+    INDEX idx_receipt_consents_customer (customer_id),
+    INDEX idx_receipt_consents_method (method),
+    CONSTRAINT fk_receipt_consents_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+    CONSTRAINT fk_receipt_consents_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
+    CONSTRAINT fk_receipt_consents_user FOREIGN KEY (recorded_by) REFERENCES users(id)
+) ENGINE=InnoDB COMMENT='電子同意紀錄';
+
+-- ========================================
+-- 10. Receipts (個人收據)
+-- 儲存個人收據 PDF 與稽核資料
+-- ========================================
+
+CREATE TABLE receipts (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+    quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+    consent_id BIGINT UNSIGNED NULL COMMENT '電子同意紀錄ID',
+    serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+    pdf_path VARCHAR(255) NOT NULL COMMENT 'PDF 檔案相對路徑',
+    amount_cents BIGINT UNSIGNED NOT NULL COMMENT '總金額（分）',
+    currency VARCHAR(3) NOT NULL DEFAULT 'TWD' COMMENT '幣別',
+    issued_on DATE NOT NULL COMMENT '開立日期',
+    hash_full CHAR(64) NOT NULL COMMENT 'SHA-256 雜湊',
+    hash_short CHAR(20) NOT NULL COMMENT 'hash_short（Base32）',
+    qr_payload TEXT NOT NULL COMMENT 'QR 原始字串',
+    qr_token VARCHAR(128) NOT NULL COMMENT 'HMAC token',
+    qr_secret_version VARCHAR(32) NOT NULL COMMENT 'Secret 版本',
+    status ENUM('issued', 'revoked') NOT NULL DEFAULT 'issued' COMMENT '狀態',
+    expires_at DATE NOT NULL COMMENT '保存期限（issued_on + 5 年）',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    UNIQUE KEY uq_receipts_quote (quote_id),
+    UNIQUE KEY uq_receipts_serial (org_id, serial),
+    INDEX idx_receipts_org (org_id),
+    INDEX idx_receipts_status (status),
+    CONSTRAINT fk_receipts_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+    CONSTRAINT fk_receipts_consent FOREIGN KEY (consent_id) REFERENCES receipt_consents(id)
+) ENGINE=InnoDB COMMENT='個人收據紀錄';
+
+-- ========================================
+-- 11. Receipt Verifications (收據查驗紀錄)
+-- 保存查驗歷程供稽核
+-- ========================================
+
+CREATE TABLE receipt_verifications (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    receipt_id BIGINT UNSIGNED NOT NULL COMMENT '收據ID',
+    serial VARCHAR(100) NOT NULL COMMENT '收據序號',
+    status ENUM('passed', 'failed', 'expired') NOT NULL COMMENT '查驗狀態',
+    failure_reason VARCHAR(50) NULL COMMENT '失敗原因代碼',
+    ip_address VARCHAR(45) NULL COMMENT '查驗IP',
+    user_agent VARCHAR(255) NULL COMMENT '查驗來源 UA',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    INDEX idx_receipt_verifications_receipt (receipt_id),
+    INDEX idx_receipt_verifications_serial (serial),
+    CONSTRAINT fk_receipt_verifications_receipt FOREIGN KEY (receipt_id) REFERENCES receipts(id)
+) ENGINE=InnoDB COMMENT='收據查驗紀錄';
+
+-- ========================================
 -- 外部索引鍵約束 (Foreign Key Constraints)
 -- ========================================
 
@@ -323,6 +402,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Quote Sequences: 1 個索引 (org_id+year UNIQUE)
 -- Settings: 1 個索引 (org_id UNIQUE)
 -- Users: 4 個索引 (username UNIQUE, email UNIQUE, org_id, status)
+-- Receipt Consents: 3 個索引 (quote_id, customer_id, method)
+-- Receipts: 4 個索引 (quote_id UNIQUE, org_id+serial UNIQUE, org_id, status)
+-- Receipt Verifications: 2 個索引 (receipt_id, serial)
 
 -- ========================================
 -- 資料型別說明 (Data Type Justification)

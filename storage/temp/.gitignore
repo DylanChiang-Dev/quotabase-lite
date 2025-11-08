@@ -1,0 +1,3 @@
+# Ignore temporary files (e.g., PDF/QR cache)
+*
+!.gitignore

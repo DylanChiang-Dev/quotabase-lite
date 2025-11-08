@@ -219,33 +219,44 @@ if ($error) {
 
         /* 金額匯總 */
         .amount-summary {
-            width: 400px;
+            width: 320px;
             margin-left: auto;
-            margin-bottom: 30px;
+            margin-bottom: 18px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 12px;
+            background: #fafafa;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
+            padding: 6px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .summary-row.no-border {
+            border-bottom: none;
         }
 
         .summary-row.total {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            border-bottom: 2px solid #000;
-            border-top: 2px solid #000;
-            padding-top: 15px;
-            padding-bottom: 15px;
+            border-bottom: none;
+            padding-top: 10px;
+            margin-top: 6px;
+            border-top: 1px solid #bbb;
         }
 
         .summary-label {
             font-weight: 600;
+            color: #555;
         }
 
         .summary-value {
             font-weight: 600;
+            color: #111;
         }
 
         .summary-value.negative {
@@ -336,20 +347,7 @@ if ($error) {
     </div>
 
     <div class="a4-container">
-        <!-- 公司抬頭 -->
-        <div class="company-header">
-            <?php if (!empty($company_info['name'])): ?>
-                <div class="company-name"><?php echo h($company_info['name']); ?></div>
-            <?php endif; ?>
-            <div class="company-details">
-                <?php if (!empty($company_info['address'])): ?>
-                    <div><?php echo h($company_info['address']); ?></div>
-                <?php endif; ?>
-                <?php if (!empty($company_info['contact'])): ?>
-                    <div><?php echo nl2br(h($company_info['contact'])); ?></div>
-                <?php endif; ?>
-            </div>
-        </div>
+        <!-- 公司抬頭（需求：隱藏公司資訊，因此不輸出） -->
 
         <!-- 報價單標題 -->
         <div class="quote-title">報價單 QUOTATION</div>
@@ -463,7 +461,7 @@ if ($error) {
                 <span class="summary-label">小計:</span>
                 <span class="summary-value"><?php echo format_currency_cents_compact($quote['subtotal_cents']); ?></span>
             </div>
-            <div class="summary-row">
+            <div class="summary-row no-border">
                 <span class="summary-label">稅額:</span>
                 <span class="summary-value"><?php echo format_currency_cents_compact($quote['tax_cents']); ?></span>
             </div>
@@ -509,14 +507,6 @@ if ($error) {
                 history.back();
             }
         }
-
-        // 頁面載入完成後自動列印
-        window.addEventListener('load', function() {
-            // 延遲 500ms 再列印，確保頁面渲染完成
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        });
     </script>
 </body>
 </html>
