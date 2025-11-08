@@ -4,7 +4,7 @@
 
 ## 🌟 專案概述
 
-Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系統，採用 **零框架、零 Composer** 的極簡架構，提供完整的報價管理功能。
+Quotabase-Lite 是一個專為中小企業設計的 iOS 風格報價單管理系統，採用 **零框架、僅少量 Composer 依賴** 的極簡架構，提供完整的報價與收據管理功能。
 
 ## 🤝 開源共建
 
@@ -24,6 +24,7 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
 - 🔒 **安全可靠** - XSS 防護、CSRF 驗證、PDO 預處理、事務安全
 - 📊 **完整業務流** - 客戶管理、產品/服務目錄、報價單建立、狀態跟蹤
 - 🖨️ **專業列印** - A4 格式列印頁，瀏覽器直接列印，表頭固定
+- 🧾 **個人收據** - 一鍵產出含 QR/hash 的個人收據列印頁，可供查驗與保存
 - 📤 **資料匯出** - 支援 CSV/JSON 格式匯出
 - ⚡ **高效能** - P95 響應時間 ≤ 200ms，支援 10+ 併發使用者
 
@@ -51,6 +52,11 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    ```bash
    git clone <repository-url>
    cd quotabase-lite
+   ```
+
+   安裝必要套件（需已安裝 Composer）：
+   ```bash
+   composer install --no-dev --prefer-dist
    ```
 
 2. **建立資料庫**
@@ -94,7 +100,7 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    ```
    亦可透過 `https://your-domain/init.php` 的初始化精靈完成上述流程。
 5. **設定 Web Server**：Nginx 範例可參考 `docker/nginx` 配置，將根目錄指向專案根並允許 `index.php`。部署完成後建議封鎖 `init.php`。
-6. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull` 並執行 `php init.php install` 以套用新結構。
+6. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull`、執行 `composer install` 並跑 `php init.php install` 以套用新結構。
 
 ### 使用 Docker 快速啟動
 
@@ -109,18 +115,23 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    docker compose up -d --build
    ```
 
-3. 初始化資料庫（第一次執行）
+3. 安裝 PHP 依賴
+   ```bash
+   docker compose exec app composer install --no-dev --prefer-dist
+   ```
+
+4. 初始化資料庫（第一次執行）
    ```bash
    docker compose exec app php init.php install
    docker compose exec app php init.php init
    ```
    > 亦可直接訪問 `http://localhost:8080/init.php`，使用前端初始化精靈完成同樣流程。
 
-4. 訪問應用
+5. 訪問應用
    - 應用：http://localhost:8080
    - MySQL：`localhost:3306`（使用者 `quotabase_user` / 密碼 `strong_password`）
 
-5. 停止服務
+6. 停止服務
    ```bash
    docker compose down
    ```
