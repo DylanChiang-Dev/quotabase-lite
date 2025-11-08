@@ -11,6 +11,7 @@ $qrImage = $data['qr_image'] ?? '';
 $hashShort = $data['hash_short'] ?? '';
 $stampImage = $data['stamp_image'] ?? null;
 $printTerms = $data['print_terms'] ?? '';
+$printTermsHtml = $data['print_terms_html'] ?? '';
 $consent = $data['consent'] ?? null;
 $amountUppercase = $data['amount_uppercase'] ?? '';
 $verifyUrl = $data['verify_url'] ?? '';
@@ -274,10 +275,10 @@ $verifyUrl = $data['verify_url'] ?? '';
         hash_short：<?php echo h($hashShort); ?>
     </div>
 
-    <?php if (!empty($printTerms)): ?>
+    <?php if (!empty($printTermsHtml)): ?>
         <div class="terms">
             <strong>備註／條款</strong><br>
-            <?php echo nl2br(h($printTerms)); ?>
+            <?php echo $printTermsHtml; ?>
         </div>
     <?php endif; ?>
 </div>

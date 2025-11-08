@@ -195,6 +195,7 @@ page_header('報價管理', [
                         <th class="col-number">報價單號</th>
                         <th class="col-customer">客戶</th>
                         <th class="col-status">狀態</th>
+                        <th class="col-consent">電子簽署</th>
                         <th class="col-date">開票日期</th>
                         <th class="col-total">總金額</th>
                         <th class="col-actions">操作</th>
@@ -211,6 +212,16 @@ page_header('報價管理', [
                             </td>
                             <td class="col-status">
                                 <?php echo get_status_badge($quote['status']); ?>
+                            </td>
+                            <td class="col-consent">
+                                <?php if (!empty($quote['latest_consent_at'])): ?>
+                                    <div style="font-size: 13px; color: var(--text-secondary);">
+                                        <strong style="display:block; color: var(--text-primary);">已簽署</strong>
+                                        <?php echo h(format_datetime($quote['latest_consent_at'])); ?>
+                                    </div>
+                                <?php else: ?>
+                                    <span style="font-size: 13px; color: var(--text-tertiary);">尚未簽署</span>
+                                <?php endif; ?>
                             </td>
                             <td class="col-date">
                                 <div class="quote-date"><?php echo format_date($quote['issue_date']); ?></div>

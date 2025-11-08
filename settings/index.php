@@ -14,6 +14,7 @@ define('QUOTABASE_SYSTEM', true);
 // 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
+require_once __DIR__ . '/../helpers/markdown.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
@@ -26,6 +27,7 @@ if (!is_logged_in()) {
 $error = '';
 $success = '';
 $settings = null;
+$print_terms_preview_html = '';
 
 // 獲取當前設定
 try {
@@ -61,6 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $result['error'];
         }
     }
+}
+
+if ($settings && !empty($settings['print_terms'])) {
+    $print_terms_preview_html = render_markdown_to_html($settings['print_terms']);
+} else {
+    $print_terms_preview_html = '';
 }
 
 // 頁面開始
@@ -201,9 +209,9 @@ page_header('系統設定', [
                     報價單號：Q-2025001<br>
                     客戶資訊將在此處顯示<br>
                     報價專案明細...<br>
-                    <?php if (!empty($settings['print_terms'])): ?>
+                    <?php if (!empty($print_terms_preview_html)): ?>
                         <br><strong>條款：</strong><br>
-                        <?php echo nl2br(h($settings['print_terms'])); ?>
+                        <?php echo $print_terms_preview_html; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -224,4 +232,3 @@ bottom_tab_navigation();
 
 // 頁面結束
 html_end();
-?>

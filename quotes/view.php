@@ -14,6 +14,7 @@ define('QUOTABASE_SYSTEM', true);
 // 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
+require_once __DIR__ . '/../helpers/quote_consent.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../partials/ui.php';
 
@@ -36,6 +37,11 @@ $quote = null;
 $consents = [];
 $latest_consent = null;
 $receipt_record = null;
+$latest_consent_token = null;
+$active_consent_token = null;
+$consent_public_url = '';
+$consent_input_id = null;
+$has_copy_button = false;
 
 // 獲取報價單資訊
 try {
@@ -55,6 +61,14 @@ if ($quote) {
     $consents = get_receipt_consents($quote_id);
     $latest_consent = $consents[0] ?? null;
     $receipt_record = get_receipt_by_quote($quote_id);
+    $latest_consent_token = get_latest_quote_consent_token($quote_id, (int)$quote['org_id']);
+    $active_consent_token = get_active_quote_consent_token($quote_id, (int)$quote['org_id']);
+    $consent_public_url = '';
+    if ($active_consent_token) {
+        $consent_public_url = quote_consent_token_url($active_consent_token);
+    } elseif ($latest_consent_token) {
+        $consent_public_url = quote_consent_token_url($latest_consent_token);
+    }
 }
 
 // 處理狀態更新
@@ -369,22 +383,77 @@ page_header('報價單詳情', [
 
         <!-- 狀態操作 -->
         <?php if ($quote['status'] === 'draft'): ?>
-            <div style="margin-bottom: 32px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
-                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">狀態操作</h4>
-                <form method="POST" action="/quotes/view.php?id=<?php echo $quote_id; ?>" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <div style="margin-bottom: 32px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md); display: flex; flex-direction: column; gap: 16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin:0;">狀態管理</h4>
+                        <p style="font-size:13px; color:var(--text-tertiary); margin:4px 0 0;">於此更新報價單狀態</p>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                        <span style="font-size:12px; color:var(--text-tertiary);">當前狀態</span>
+                        <span><?php echo get_status_badge($quote['status']); ?></span>
+                    </div>
+                </div>
+                <form method="POST" action="/quotes/view.php?id=<?php echo $quote_id; ?>" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
                     <?php echo csrf_input(); ?>
                     <input type="hidden" name="action" value="update_status">
-                    <select name="status" required style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary);">
+                    <span style="font-size:13px; color:var(--text-secondary); min-width:60px;">更新為：</span>
+                    <select name="status" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary); min-width: 220px;">
                         <option value="">選擇新狀態</option>
                         <option value="sent">標記為已傳送</option>
                         <option value="accepted">標記為已接受</option>
                         <option value="rejected">標記為已拒絕</option>
                         <option value="expired">標記為已過期</option>
                     </select>
-                    <button type="submit" class="btn btn-primary">更新狀態</button>
+                    <button type="submit" class="btn btn-primary" style="height:42px;">更新狀態</button>
                 </form>
             </div>
         <?php endif; ?>
+
+        <!-- 電子簽署連結 -->
+        <div style="margin-bottom: 32px; padding: 20px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin: 0; color: var(--text-primary);">電子簽署連結</h4>
+                    <p style="font-size: 13px; color: var(--text-tertiary); margin: 4px 0 0;">提供客戶線上確認或複製連結使用</p>
+                </div>
+                <?php if ($latest_consent_token): ?>
+                    <div style="text-align: right; font-size: 13px; color: var(--text-secondary);">
+                        <div>狀態：<?php echo h(quote_consent_status_label($latest_consent_token['status'])); ?></div>
+                        <div>建立：<?php echo h(format_datetime($latest_consent_token['created_at'])); ?></div>
+                        <?php if (!empty($latest_consent_token['expires_at'])): ?>
+                            <div>到期：<?php echo h(format_datetime($latest_consent_token['expires_at'])); ?></div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php if ($consent_public_url && $active_consent_token): ?>
+                <?php
+                    $consent_input_id = 'consent-link-' . $quote_id;
+                    $has_copy_button = true;
+                ?>
+                <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                    <input
+                        type="text"
+                        id="<?php echo h($consent_input_id); ?>"
+                        value="<?php echo h($consent_public_url); ?>"
+                        readonly
+                        style="flex:1; min-width: 260px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: var(--bg-primary); color: var(--text-primary); font-size: 14px;"
+                    >
+                    <button type="button" class="btn btn-secondary" data-copy-target="<?php echo h($consent_input_id); ?>">複製連結</button>
+                    <a href="<?php echo h($consent_public_url); ?>" target="_blank" class="btn btn-outline">預覽簽署頁</a>
+                </div>
+                <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">連結有效至 <?php echo h(format_datetime($active_consent_token['expires_at'] ?? '')); ?>，並僅能由客戶操作一次。</p>
+            <?php elseif ($latest_consent_token): ?>
+                <p style="font-size: 13px; color: var(--text-tertiary); margin-top: 16px;">
+                    目前 token 狀態為「<?php echo h(quote_consent_status_label($latest_consent_token['status'])); ?>」。如需新的簽署連結，請重新輸出報價單或重新整理列印頁以生成新 QR Code。
+                </p>
+            <?php else: ?>
+                <p style="font-size: 13px; color: var(--text-tertiary); margin-top: 16px;">
+                    尚未產生電子簽署 QR。請先開啟列印頁 / 匯出 PDF 以建立首次 token。
+                </p>
+            <?php endif; ?>
+        </div>
 
         <!-- 電子同意紀錄 -->
         <div style="margin-bottom: 32px; padding: 24px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
@@ -591,6 +660,43 @@ page_header('報價單詳情', [
                 <p style="font-size: 13px; color: var(--danger-color); margin-top: 8px;">請先新增電子同意紀錄。</p>
             <?php endif; ?>
         </div>
+
+        <?php if ($has_copy_button && $consent_input_id): ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const copyBtn = document.querySelector('[data-copy-target="<?php echo h($consent_input_id); ?>"]');
+                    if (!copyBtn) {
+                        return;
+                    }
+                    copyBtn.addEventListener('click', function () {
+                        const input = document.getElementById('<?php echo h($consent_input_id); ?>');
+                        if (!input) {
+                            return;
+                        }
+                        const original = copyBtn.textContent;
+                        const selectAndCopy = function () {
+                            input.select();
+                            document.execCommand('copy');
+                            copyBtn.textContent = '已複製';
+                            setTimeout(function () {
+                                copyBtn.textContent = original;
+                            }, 2000);
+                        };
+
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(input.value).then(function () {
+                                copyBtn.textContent = '已複製';
+                                setTimeout(function () {
+                                    copyBtn.textContent = original;
+                                }, 2000);
+                            }).catch(selectAndCopy);
+                        } else {
+                            selectAndCopy();
+                        }
+                    });
+                });
+            </script>
+        <?php endif; ?>
 
         <?php card_end(); ?>
     <?php endif; ?>

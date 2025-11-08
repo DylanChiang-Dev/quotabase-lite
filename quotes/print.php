@@ -15,6 +15,8 @@ define('QUOTABASE_SYSTEM', true);
 // 載入配置和依賴
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../helpers/functions.php';
+require_once __DIR__ . '/../helpers/quote_consent.php';
+require_once __DIR__ . '/../helpers/markdown.php';
 require_once __DIR__ . '/../db.php';
 
 // 取得報價單 ID
@@ -28,6 +30,11 @@ if ($quote_id <= 0) {
 
 $error = '';
 $quote = null;
+$consent_token = null;
+$consent_qr_image = '';
+$consent_url = '';
+$consent_url_display = '';
+$print_terms_html = '';
 
 // 取得報價單資訊
 try {
@@ -42,6 +49,14 @@ try {
     // 取得公司資訊
     $company_info = get_company_info();
     $print_terms = get_print_terms();
+    $print_terms_html = $print_terms !== '' ? render_markdown_to_html($print_terms) : '';
+
+    $consent_token = get_or_create_quote_consent_token($quote_id, (int)$quote['org_id']);
+if ($consent_token) {
+    $consent_url = quote_consent_token_url($consent_token);
+    $consent_url_display = quote_consent_display_token($consent_url);
+    $consent_qr_image = build_quote_consent_qr_image($consent_url);
+}
 
 } catch (Exception $e) {
     error_log("取得報價單錯誤: " . $e->getMessage());
@@ -111,7 +126,7 @@ if ($error) {
         .a4-container {
             max-width: 210mm;
             margin: 0 auto;
-            padding: 20mm;
+            padding: 10mm 20mm 20mm;
             background: #fff;
         }
 
@@ -149,8 +164,8 @@ if ($error) {
         .quote-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
-            gap: 40px;
+            margin-bottom: 24px;
+            gap: 32px;
         }
 
         .info-section {
@@ -160,7 +175,7 @@ if ($error) {
         .info-section h3 {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: #000;
             border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
@@ -168,15 +183,15 @@ if ($error) {
 
         .info-row {
             display: flex;
-            margin-bottom: 8px;
-            line-height: 1.8;
+            margin-bottom: 4px;
+            line-height: 1.4;
         }
 
         .info-label {
             font-weight: 600;
             margin-right: 10px;
             color: #555;
-            min-width: 80px;
+            min-width: 70px;
         }
 
         .info-value {
@@ -215,6 +230,16 @@ if ($error) {
         .quote-items-table td:nth-child(5),
         .quote-items-table td:nth-child(6) {
             text-align: right;
+        }
+
+        /* 金額與簽署排列 */
+        .summary-signature-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 24px;
         }
 
         /* 金額匯總 */
@@ -298,9 +323,74 @@ if ($error) {
 
         .print-terms-content {
             font-size: 13px;
-            line-height: 1.8;
+            line-height: 1.4;
             color: #666;
-            white-space: pre-line;
+            white-space: normal;
+        }
+
+        /* 電子簽署提示 */
+        .signature-consent {
+            flex: 1 1 240px;
+            max-width: 320px;
+            padding: 10px 12px;
+            border: 1px dashed #aaa;
+            font-size: 12px;
+            color: #333;
+            text-align: center;
+            background: #fcfcfc;
+            min-height: 165px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .signature-consent strong {
+            display: block;
+            color: #000;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+
+        .signature-consent-body {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+        }
+
+        .signature-consent-qr {
+            text-align: center;
+            flex: 0 0 110px;
+        }
+
+        .signature-consent-qr img {
+            width: 110px;
+            height: 110px;
+        }
+
+        .signature-consent-text {
+            font-size: 16px;
+            line-height: 1.25;
+            color: #333;
+            text-align: left;
+            max-width: 160px;
+        }
+
+        .signature-consent-link {
+            font-size: 12px;
+            color: #000;
+            margin-top: 6px;
+            word-break: break-all;
+            letter-spacing: 1px;
+        }
+
+        .summary-signature-group .amount-summary {
+            margin-left: 0;
+            flex: 1 1 240px;
+            max-width: 320px;
         }
 
         /* 頁尾 */
@@ -449,25 +539,45 @@ if ($error) {
             </tbody>
         </table>
 
-        <!-- 金額匯總 -->
-        <div class="amount-summary">
-            <?php if ($total_discount_cents > 0): ?>
+        <div class="summary-signature-group">
+            <div class="signature-consent avoid-break">
+                <strong>電子簽署提示</strong>
+                <?php if ($consent_qr_image && $consent_url): ?>
+                    <div class="signature-consent-body">
+                        <div class="signature-consent-qr">
+                            <img src="<?php echo h($consent_qr_image); ?>" alt="電子簽署 QR Code">
+                        </div>
+                        <div class="signature-consent-text">
+                            請確認內容無誤後掃描 QR Code 完成電子簽署，提交即代表同意本報價條款。
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="signature-consent-text">
+                        前述內容請務必確認無誤，繼續閱覽或使用本系統提供的確認操作，即代表您接受本報價條款並完成電子簽署。
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- 金額匯總 -->
+            <div class="amount-summary">
+                <?php if ($total_discount_cents > 0): ?>
+                    <div class="summary-row">
+                        <span class="summary-label">折扣:</span>
+                        <span class="summary-value negative">-<?php echo format_currency_cents_compact($total_discount_cents); ?></span>
+                    </div>
+                <?php endif; ?>
                 <div class="summary-row">
-                    <span class="summary-label">折扣:</span>
-                    <span class="summary-value negative">-<?php echo format_currency_cents_compact($total_discount_cents); ?></span>
+                    <span class="summary-label">小計:</span>
+                    <span class="summary-value"><?php echo format_currency_cents_compact($quote['subtotal_cents']); ?></span>
                 </div>
-            <?php endif; ?>
-            <div class="summary-row">
-                <span class="summary-label">小計:</span>
-                <span class="summary-value"><?php echo format_currency_cents_compact($quote['subtotal_cents']); ?></span>
-            </div>
-            <div class="summary-row no-border">
-                <span class="summary-label">稅額:</span>
-                <span class="summary-value"><?php echo format_currency_cents_compact($quote['tax_cents']); ?></span>
-            </div>
-            <div class="summary-row total">
-                <span class="summary-label">總計:</span>
-                <span class="summary-value"><?php echo format_currency_cents_compact($quote['total_cents']); ?></span>
+                <div class="summary-row no-border">
+                    <span class="summary-label">稅額:</span>
+                    <span class="summary-value"><?php echo format_currency_cents_compact($quote['tax_cents']); ?></span>
+                </div>
+                <div class="summary-row total">
+                    <span class="summary-label">總計:</span>
+                    <span class="summary-value"><?php echo format_currency_cents_compact($quote['total_cents']); ?></span>
+                </div>
             </div>
         </div>
 
@@ -484,14 +594,14 @@ if ($error) {
         <?php endif; ?>
 
         <!-- 列印條款 -->
-        <?php if (!empty($print_terms)): ?>
+        <?php if (!empty($print_terms_html)): ?>
             <div class="print-terms avoid-break">
-                <h3>條款與條件</h3>
                 <div class="print-terms-content">
-                    <?php echo nl2br(h($print_terms)); ?>
+                    <?php echo $print_terms_html; ?>
                 </div>
             </div>
         <?php endif; ?>
+
     </div>
 
     <!-- 頁尾 -->
