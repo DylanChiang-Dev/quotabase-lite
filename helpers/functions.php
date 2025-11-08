@@ -116,6 +116,41 @@ function get_current_org_id() {
 }
 
 /**
+ * 偵測應用基底 URL
+ */
+function detect_app_base_url(): string {
+    $configured = getenv('APP_URL') ?: (defined('APP_URL') ? APP_URL : '');
+    if (!empty($configured)) {
+        return rtrim($configured, '/');
+    }
+
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
+        return $scheme . '://' . $_SERVER['HTTP_HOST'];
+    }
+
+    return 'http://localhost:8080';
+}
+
+/**
+ * 建立完整 URL
+ *
+ * @param string $path
+ * @param array $query
+ */
+function app_url(string $path = '', array $query = []): string {
+    $base = detect_app_base_url();
+    $path = '/' . ltrim($path, '/');
+    $url = rtrim($base, '/') . $path;
+
+    if (!empty($query)) {
+        $url .= '?' . http_build_query($query);
+    }
+
+    return $url;
+}
+
+/**
  * 生成隨機密碼
  *
  * @param int $length 密碼長度，預設12
@@ -2170,10 +2205,21 @@ function get_quotes($page = 1, $limit = 20, $search = '', $status = '') {
     // 獲取資料
     $sql = "
         SELECT
-            q.id, q.quote_number, q.status, q.issue_date, q.valid_until,
-            q.subtotal_cents, q.tax_cents, q.total_cents,
-            customer.name as customer_name,
-            q.created_at
+            q.id,
+            q.quote_number,
+            q.status,
+            q.issue_date,
+            q.valid_until,
+            q.subtotal_cents,
+            q.tax_cents,
+            q.total_cents,
+            customer.name AS customer_name,
+            q.created_at,
+            (
+                SELECT MAX(rc.consented_at)
+                FROM receipt_consents rc
+                WHERE rc.quote_id = q.id AND rc.org_id = q.org_id
+            ) AS latest_consent_at
         FROM quotes q
         LEFT JOIN customers customer ON q.customer_id = customer.id
         WHERE {$where_clause}

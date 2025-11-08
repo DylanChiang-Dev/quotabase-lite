@@ -1048,7 +1048,7 @@ function install_database_schema() {
                 org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
                 quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
                 customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID',
-                method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
+                method ENUM('checkbox', 'email', 'other', 'qr') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
                 counterparty_ip VARCHAR(45) NULL COMMENT '相對人IP',
                 recorded_ip VARCHAR(45) NULL COMMENT '記錄者IP',
                 user_agent VARCHAR(255) NULL COMMENT '記錄者UA',
@@ -1065,6 +1065,26 @@ function install_database_schema() {
                 CONSTRAINT fk_receipt_consents_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
                 CONSTRAINT fk_receipt_consents_user FOREIGN KEY (recorded_by) REFERENCES users(id)
             ) ENGINE=InnoDB COMMENT='電子同意紀錄'",
+
+            "CREATE TABLE IF NOT EXISTS quote_consent_tokens (
+                id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+                org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+                quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+                token VARCHAR(128) NOT NULL COMMENT '公開 token（提供掃碼使用）',
+                token_hash CHAR(64) NOT NULL COMMENT 'token SHA-256 雜湊',
+                status ENUM('active', 'consumed', 'revoked', 'expired') NOT NULL DEFAULT 'active' COMMENT '狀態',
+                expires_at DATETIME NOT NULL COMMENT '有效期限',
+                consumed_at DATETIME NULL COMMENT '被使用時間',
+                consent_id BIGINT UNSIGNED NULL COMMENT '電子同意紀錄ID',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+                UNIQUE KEY uq_quote_consent_token_hash (token_hash),
+                INDEX idx_quote_consent_quote (quote_id),
+                INDEX idx_quote_consent_status (status),
+                INDEX idx_quote_consent_expires (expires_at),
+                CONSTRAINT fk_quote_consent_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+                CONSTRAINT fk_quote_consent_consent FOREIGN KEY (consent_id) REFERENCES receipt_consents(id)
+            ) ENGINE=InnoDB COMMENT='報價電子簽署 token'",
 
             "CREATE TABLE IF NOT EXISTS receipts (
                 id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -1231,6 +1251,10 @@ function ensure_schema_upgrades(PDO $pdo) {
         create_receipt_consents_table($pdo);
     }
 
+    if (!table_exists($pdo, 'quote_consent_tokens')) {
+        create_quote_consent_tokens_table($pdo);
+    }
+
     if (!table_exists($pdo, 'receipts')) {
         create_receipts_table($pdo);
     }
@@ -1272,7 +1296,7 @@ function create_receipt_consents_table(PDO $pdo) {
             org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
             quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
             customer_id BIGINT UNSIGNED NOT NULL COMMENT '客戶ID',
-            method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
+            method ENUM('checkbox', 'email', 'other', 'qr') NOT NULL DEFAULT 'checkbox' COMMENT '同意方式',
             counterparty_ip VARCHAR(45) NULL COMMENT '相對人IP',
             recorded_ip VARCHAR(45) NULL COMMENT '記錄者IP',
             user_agent VARCHAR(255) NULL COMMENT '記錄者UA',
@@ -1289,6 +1313,32 @@ function create_receipt_consents_table(PDO $pdo) {
             CONSTRAINT fk_receipt_consents_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
             CONSTRAINT fk_receipt_consents_user FOREIGN KEY (recorded_by) REFERENCES users(id)
         ) ENGINE=InnoDB COMMENT='電子同意紀錄'
+    ";
+
+    $pdo->exec($sql);
+}
+
+function create_quote_consent_tokens_table(PDO $pdo) {
+    $sql = "
+        CREATE TABLE quote_consent_tokens (
+            id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+            org_id BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '組織ID',
+            quote_id BIGINT UNSIGNED NOT NULL COMMENT '報價單ID',
+            token VARCHAR(128) NOT NULL COMMENT '公開 token（提供掃碼使用）',
+            token_hash CHAR(64) NOT NULL COMMENT 'token SHA-256 雜湊',
+            status ENUM('active', 'consumed', 'revoked', 'expired') NOT NULL DEFAULT 'active' COMMENT '狀態',
+            expires_at DATETIME NOT NULL COMMENT '有效期限',
+            consumed_at DATETIME NULL COMMENT '被使用時間',
+            consent_id BIGINT UNSIGNED NULL COMMENT '電子同意紀錄ID',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+            UNIQUE KEY uq_quote_consent_token_hash (token_hash),
+            INDEX idx_quote_consent_quote (quote_id),
+            INDEX idx_quote_consent_status (status),
+            INDEX idx_quote_consent_expires (expires_at),
+            CONSTRAINT fk_quote_consent_quote FOREIGN KEY (quote_id) REFERENCES quotes(id),
+            CONSTRAINT fk_quote_consent_consent FOREIGN KEY (consent_id) REFERENCES receipt_consents(id)
+        ) ENGINE=InnoDB COMMENT='報價電子簽署 token'
     ";
 
     $pdo->exec($sql);

@@ -292,12 +292,14 @@ function form_field($name, $label, $type = 'text', $options = [], $attributes = 
     echo '<div class="form-group' . ($error ? ' has-error' : '') . '">';
 
     // 標籤
-    echo '<label for="' . h($id) . '" class="form-label">';
-    echo h($label);
-    if ($required) {
-        echo ' <span class="required-mark">*</span>';
+    if ($label !== '') {
+        echo '<label for="' . h($id) . '" class="form-label">';
+        echo h($label);
+        if ($required) {
+            echo ' <span class="required-mark">*</span>';
+        }
+        echo '</label>';
     }
-    echo '</label>';
 
     // 輸入欄位
     switch ($type) {

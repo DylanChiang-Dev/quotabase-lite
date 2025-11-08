@@ -9,6 +9,7 @@ if (!defined('QUOTABASE_SYSTEM')) {
 }
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/markdown.php';
 
 use chillerlan\QRCode\QROptions;
 use chillerlan\QRCode\QRCode;
@@ -31,7 +32,7 @@ function ensure_receipt_tables_exist(): void {
                 org_id BIGINT UNSIGNED NOT NULL DEFAULT 1,
                 quote_id BIGINT UNSIGNED NOT NULL,
                 customer_id BIGINT UNSIGNED NOT NULL,
-                method ENUM('checkbox', 'email', 'other') NOT NULL DEFAULT 'checkbox',
+                method ENUM('checkbox', 'email', 'other', 'qr') NOT NULL DEFAULT 'checkbox',
                 counterparty_ip VARCHAR(45) NULL,
                 recorded_ip VARCHAR(45) NULL,
                 user_agent VARCHAR(255) NULL,
@@ -279,7 +280,7 @@ function create_receipt_consent(int $quoteId, array $payload): array {
     $method = $payload['method'] ?? 'checkbox';
     $consentedAt = $payload['consented_at'] ?? null;
 
-    if (!in_array($method, ['checkbox', 'email', 'other'], true)) {
+    if (!in_array($method, ['checkbox', 'email', 'other', 'qr'], true)) {
         return ['success' => false, 'error' => '無效的同意方式'];
     }
 
@@ -433,6 +434,7 @@ function generate_personal_receipt(int $quoteId, ?int $consentId = null): array 
 
     $company = get_company_info();
     $printTerms = get_print_terms();
+    $printTermsHtml = $printTerms !== '' ? render_markdown_to_html($printTerms) : '';
 
     $qrImage = build_receipt_qr_image($qrPayload);
     $stampImage = load_receipt_stamp_image();
@@ -455,6 +457,7 @@ function generate_personal_receipt(int $quoteId, ?int $consentId = null): array 
         'qr_payload' => $qrPayload,
         'stamp_image' => $stampImage,
         'print_terms' => $printTerms,
+        'print_terms_html' => $printTermsHtml,
         'consent' => $consent,
         'amount_uppercase' => convert_amount_to_chinese($totalCents / 100),
     ]);
@@ -760,6 +763,7 @@ function receipt_method_label(?string $method): string {
     $map = [
         'checkbox' => '頁面勾選',
         'email' => 'Email 同意',
+        'qr' => 'QR 簽署',
         'other' => '其他',
     ];
 
