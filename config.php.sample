@@ -58,6 +58,15 @@ define('DEFAULT_ORG_ID', 1);              // 預設組織 ID（MVP 使用 1）
 define('DEFAULT_PAGE_SIZE', 20);
 
 /**
+ * 個人收據設定
+ */
+define('RECEIPT_SERVER_SECRET', getenv('RECEIPT_SERVER_SECRET') ?: 'change_this_receipt_secret');
+define('RECEIPT_SECRET_VERSION', getenv('RECEIPT_SECRET_VERSION') ?: 'v1');
+define('RECEIPT_STORAGE_PATH', getenv('RECEIPT_STORAGE_PATH') ?: __DIR__ . '/storage/receipts');
+define('RECEIPT_RETENTION_YEARS', 5);
+define('RECEIPT_STAMP_PATH', getenv('RECEIPT_STAMP_PATH') ?: __DIR__ . '/assets/stamps/company-stamp.png');
+
+/**
  * ========================================
  * 錯誤處理 (Error Handling)
  * ========================================

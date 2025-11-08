@@ -1,0 +1,3 @@
+# Ignore generated receipt print files
+*
+!.gitignore

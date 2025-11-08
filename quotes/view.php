@@ -33,6 +33,9 @@ if ($quote_id <= 0) {
 
 $error = '';
 $quote = null;
+$consents = [];
+$latest_consent = null;
+$receipt_record = null;
 
 // 獲取報價單資訊
 try {
@@ -48,19 +51,62 @@ try {
     $error = '載入報價單資訊失敗';
 }
 
+if ($quote) {
+    $consents = get_receipt_consents($quote_id);
+    $latest_consent = $consents[0] ?? null;
+    $receipt_record = get_receipt_by_quote($quote_id);
+}
+
 // 處理狀態更新
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = '無效的請求，請重新提交。';
     } else {
-        $new_status = $_POST['status'] ?? '';
-        $result = update_quote_status($quote_id, $new_status);
+        $action = $_POST['action'] ?? '';
+        switch ($action) {
+            case 'update_status':
+                $new_status = $_POST['status'] ?? '';
+                $result = update_quote_status($quote_id, $new_status);
 
-        if ($result['success']) {
-            header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('狀態更新成功'));
-            exit;
-        } else {
-            $error = $result['error'];
+                if ($result['success']) {
+                    header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('狀態更新成功'));
+                    exit;
+                } else {
+                    $error = $result['error'];
+                }
+                break;
+
+            case 'save_consent':
+                $consent_payload = [
+                    'method' => $_POST['consent_method'] ?? 'checkbox',
+                    'consented_at' => $_POST['consented_at'] ?? '',
+                    'counterparty_ip' => $_POST['counterparty_ip'] ?? '',
+                    'evidence_ref' => $_POST['evidence_ref'] ?? '',
+                    'notes' => $_POST['consent_notes'] ?? '',
+                ];
+                $result = create_receipt_consent($quote_id, $consent_payload);
+                if ($result['success']) {
+                    header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('電子同意紀錄已新增'));
+                    exit;
+                } else {
+                    $error = $result['error'] ?? '新增電子同意紀錄失敗';
+                }
+                break;
+
+            case 'generate_receipt':
+                $selectedConsent = trim($_POST['consent_id'] ?? '');
+                $consentId = $selectedConsent !== '' ? intval($selectedConsent) : null;
+                $result = generate_personal_receipt($quote_id, $consentId);
+                if ($result['success']) {
+                    header('Location: /quotes/view.php?id=' . $quote_id . '&success=' . urlencode('個人收據已產出，可於下方開啟列印頁。'));
+                    exit;
+                } else {
+                    $error = $result['error'] ?? '產出個人收據失敗';
+                }
+                break;
+
+            default:
+                $error = '未知的操作。';
         }
     }
 }
@@ -339,6 +385,212 @@ page_header('報價單詳情', [
                 </form>
             </div>
         <?php endif; ?>
+
+        <!-- 電子同意紀錄 -->
+        <div style="margin-bottom: 32px; padding: 24px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 20px;">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;">電子同意紀錄</h4>
+                    <p style="font-size: 13px; color: var(--text-tertiary); margin: 4px 0 0;">追蹤同意紀錄並保留稽核證據</p>
+                </div>
+                <?php if ($latest_consent): ?>
+                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; min-width: 220px;">
+                        <div style="font-size: 12px; color: var(--text-tertiary); letter-spacing: 0.4px;">最新紀錄</div>
+                        <div style="font-weight: 600; color: var(--text-primary); margin: 2px 0;">
+                            <?php echo h(format_datetime($latest_consent['consented_at'])); ?>
+                        </div>
+                        <div><?php echo h(receipt_method_label($latest_consent['method'])); ?></div>
+                        <div style="font-size: 12px;">
+                            IP：<?php echo h($latest_consent['counterparty_ip'] ?: '—'); ?> / <?php echo h($latest_consent['recorded_ip'] ?: '—'); ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (empty($consents)): ?>
+                <div style="padding: 16px; background: var(--bg-primary); border: 1px dashed var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    尚未記錄任何電子同意。完成同意紀錄後才能產出個人收據。
+                </div>
+            <?php else: ?>
+                <div class="table-responsive" style="margin-bottom: 20px;">
+                    <table class="table" style="min-width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 150px;">時間</th>
+                                <th style="width: 120px;">方式</th>
+                                <th>備註 / 證據</th>
+                                <th style="width: 200px;">IP / 記錄者</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($consents as $consent): ?>
+                                <tr>
+                                    <td><?php echo h(format_datetime($consent['consented_at'])); ?></td>
+                                    <td><?php echo h(receipt_method_label($consent['method'])); ?></td>
+                                    <td style="font-size: 13px; color: var(--text-secondary);">
+                                        <?php if (!empty($consent['evidence_ref'])): ?>
+                                            <div>證據：<?php echo h($consent['evidence_ref']); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($consent['notes'])): ?>
+                                            <div>備註：<?php echo nl2br(h($consent['notes'])); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (empty($consent['evidence_ref']) && empty($consent['notes'])): ?>
+                                            <span>—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="font-size: 13px; color: var(--text-secondary);">
+                                        <div>相對人IP：<?php echo h($consent['counterparty_ip'] ?: '—'); ?></div>
+                                        <div>記錄IP：<?php echo h($consent['recorded_ip'] ?: '—'); ?></div>
+                                        <div>記錄者：<?php echo h($consent['recorded_by_username'] ?? '系統'); ?></div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 4px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
+                    <div>
+                        <strong style="display:block; font-size:14px; color:var(--text-primary);">新增電子同意</strong>
+                        <span style="font-size:12px; color:var(--text-tertiary);">紀錄來源與時間以備審計追蹤</span>
+                    </div>
+                </div>
+                <form method="POST" action="/quotes/view.php?id=<?php echo $quote_id; ?>" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+                    <?php echo csrf_input(); ?>
+                    <input type="hidden" name="action" value="save_consent">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label for="consent_method" style="font-weight:600;">同意方式</label>
+                        <select
+                            id="consent_method"
+                            name="consent_method"
+                            required
+                            style="height:42px; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); background:var(--bg-primary); color:var(--text-primary);">
+                            <option value="checkbox">頁面勾選</option>
+                            <option value="email">Email 同意</option>
+                            <option value="other">其他</option>
+                        </select>
+                        <span style="font-size:12px; color: var(--text-tertiary); display:block;">請依實際取得同意的管道選擇</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label for="consented_at" style="font-weight:600;">同意時間</label>
+                        <input
+                            type="datetime-local"
+                            id="consented_at"
+                            name="consented_at"
+                            value="<?php echo h(date('Y-m-d\TH:i')); ?>"
+                            required
+                            style="height:42px; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); background:var(--bg-primary); color:var(--text-primary);">
+                        <span style="font-size:12px; color: var(--text-tertiary); display:block;">預設為現在時間，可依實際情況調整</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label for="counterparty_ip" style="font-weight:600;">相對人IP（可選）</label>
+                        <input
+                            type="text"
+                            id="counterparty_ip"
+                            name="counterparty_ip"
+                            value=""
+                            style="height:42px; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); background:var(--bg-primary); color:var(--text-primary);">
+                        <span style="font-size:12px; color: var(--text-tertiary); display:block;">若同意來自線上操作，建議填寫</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label for="evidence_ref" style="font-weight:600;">佐證資訊（例如 Email ID）</label>
+                        <input
+                            type="text"
+                            id="evidence_ref"
+                            name="evidence_ref"
+                            value=""
+                            style="height:42px; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); background:var(--bg-primary); color:var(--text-primary);">
+                        <span style="font-size:12px; color: var(--text-tertiary); display:block;">可填寫郵件編號、檔案連結等</span>
+                    </div>
+                    <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:6px;">
+                        <label for="consent_notes" style="font-weight:600;">備註</label>
+                        <textarea
+                            id="consent_notes"
+                            name="consent_notes"
+                            rows="3"
+                            style="padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); background:var(--bg-primary); color:var(--text-primary); resize: vertical;"></textarea>
+                        <span style="font-size:12px; color: var(--text-tertiary); display:block;">例如聯繫經過、附件位置等補充資訊</span>
+                    </div>
+                    <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end;">
+                        <button type="submit" class="btn btn-secondary">新增電子同意紀錄</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 個人收據 -->
+        <div style="margin-bottom: 8px; padding: 24px; background: var(--bg-secondary); border-radius: var(--border-radius-md);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:20px;">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin:0;">個人收據</h4>
+                    <p style="font-size: 13px; color: var(--text-tertiary); margin:4px 0 0;">列印頁會儲存於 storage/receipts/，並自動嵌入 QR / hash_short</p>
+                </div>
+                <?php if ($receipt_record): ?>
+                    <span style="padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border-color); color:<?php echo $receipt_record['status'] === 'issued' ? 'var(--success-color)' : 'var(--danger-color)'; ?>;">
+                        <?php echo $receipt_record['status'] === 'issued' ? '已發行' : '已撤銷'; ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($receipt_record): ?>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-bottom: 18px;">
+                    <div style="padding:12px; background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+                        <div style="font-size:12px; color:var(--text-tertiary);">序號</div>
+                        <div style="font-size:16px; font-weight:600; font-family:monospace; color:var(--text-primary);"><?php echo h($receipt_record['serial']); ?></div>
+                    </div>
+                    <div style="padding:12px; background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+                        <div style="font-size:12px; color:var(--text-tertiary);">開立日期</div>
+                        <div style="font-size:15px;"><?php echo h(format_date($receipt_record['issued_on'])); ?></div>
+                    </div>
+                    <div style="padding:12px; background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+                        <div style="font-size:12px; color:var(--text-tertiary);">hash_short</div>
+                        <div style="font-size:15px; font-weight:600; font-family:monospace;"><?php echo h($receipt_record['hash_short']); ?></div>
+                    </div>
+                    <div style="padding:12px; background: var(--bg-primary); border:1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+                        <div style="font-size:12px; color:var(--text-tertiary);">保存期限</div>
+                        <div style="font-size:15px;"><?php echo h(format_date($receipt_record['expires_at'])); ?></div>
+                    </div>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom: 20px;">
+                    <a class="btn btn-secondary" href="/receipts/download.php?quote_id=<?php echo $quote_id; ?>" target="_blank" rel="noopener">開啟列印頁</a>
+                    <?php if (!empty($receipt_record['qr_token'])): ?>
+                        <a class="btn" href="<?php echo h(build_verify_url($receipt_record['serial'], $receipt_record['qr_token'])); ?>" target="_blank">開啟查驗頁</a>
+                    <?php endif; ?>
+                    <span style="align-self:center; font-size:13px; color:var(--text-tertiary);">token：<?php echo h(substr($receipt_record['qr_token'], 0, 12)); ?>...</span>
+                </div>
+            <?php else: ?>
+                <div style="padding: 16px; background: var(--bg-primary); border: 1px dashed var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    尚未產出個人收據。請確認已有電子同意紀錄後再執行。
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="/quotes/view.php?id=<?php echo $quote_id; ?>" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; align-items:end;">
+                <?php echo csrf_input(); ?>
+                <input type="hidden" name="action" value="generate_receipt">
+                <div>
+                    <label for="consent_id">選擇電子同意</label>
+                    <select id="consent_id" name="consent_id" <?php echo empty($consents) ? 'disabled' : ''; ?>>
+                        <option value="">最新紀錄（<?php echo $latest_consent ? h(format_datetime($latest_consent['consented_at'])) : '無'; ?>）</option>
+                        <?php foreach ($consents as $consent): ?>
+                            <option value="<?php echo $consent['id']; ?>">
+                                #<?php echo $consent['id']; ?> · <?php echo h(receipt_method_label($consent['method'])); ?> · <?php echo h(format_datetime($consent['consented_at'])); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary" <?php echo empty($consents) ? 'disabled' : ''; ?>>產出個人收據 (列印頁)</button>
+                    <?php if ($receipt_record): ?>
+                        <a class="btn btn-secondary" href="/verify?serial=<?php echo urlencode($receipt_record['serial']); ?>&token=<?php echo urlencode($receipt_record['qr_token']); ?>" target="_blank">查驗頁示範</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+            <?php if (empty($consents)): ?>
+                <p style="font-size: 13px; color: var(--danger-color); margin-top: 8px;">請先新增電子同意紀錄。</p>
+            <?php endif; ?>
+        </div>
 
         <?php card_end(); ?>
     <?php endif; ?>

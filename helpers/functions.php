@@ -3232,8 +3232,29 @@ function get_settings() {
  * @param array $data 設定資料
  * @return array ['success' => bool, 'error' => string]
  */
+function ensure_settings_schema_up_to_date(): void {
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+
+    $checked = true;
+
+    try {
+        $pdo = getDB()->getConnection();
+        $column = $pdo->query("SHOW COLUMNS FROM settings LIKE 'company_tax_id'")->fetch();
+
+        if (!$column) {
+            $pdo->exec("ALTER TABLE settings ADD COLUMN company_tax_id VARCHAR(50) NULL AFTER company_contact");
+        }
+    } catch (Throwable $e) {
+        error_log('[settings] schema sync failed: ' . $e->getMessage());
+    }
+}
+
 function update_settings($data) {
     try {
+        ensure_settings_schema_up_to_date();
         $org_id = get_current_org_id();
 
         $errors = [];
@@ -3552,5 +3573,8 @@ function redirect_to_init_if_needed() {
     header('Location: /init.php');
     exit;
 }
+
+// 載入個人收據專用 helper
+require_once __DIR__ . '/receipts.php';
 
 // 檔案末尾不需要關閉PHP標籤，避免非預期輸出
