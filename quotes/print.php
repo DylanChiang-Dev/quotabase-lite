@@ -559,16 +559,18 @@ if ($error) {
             </div>
 
             <!-- 金額匯總 -->
+            <?php $original_subtotal_cents = $quote['subtotal_cents'] + $total_discount_cents; ?>
             <div class="amount-summary">
-                <?php if ($total_discount_cents > 0): ?>
-                    <div class="summary-row">
-                        <span class="summary-label">折扣:</span>
-                        <span class="summary-value negative">-<?php echo format_currency_cents_compact($total_discount_cents); ?></span>
-                    </div>
-                <?php endif; ?>
                 <div class="summary-row">
-                    <span class="summary-label">小計:</span>
-                    <span class="summary-value"><?php echo format_currency_cents_compact($quote['subtotal_cents']); ?></span>
+                    <span class="summary-label">原價:</span>
+                    <span class="summary-value"><?php echo format_currency_cents_compact($original_subtotal_cents); ?></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">折扣:</span>
+                    <span class="summary-value <?php echo $total_discount_cents > 0 ? 'negative' : ''; ?>">
+                        <?php echo $total_discount_cents > 0 ? '-' : ''; ?>
+                        <?php echo format_currency_cents_compact($total_discount_cents); ?>
+                    </span>
                 </div>
                 <div class="summary-row no-border">
                     <span class="summary-label">稅額:</span>
