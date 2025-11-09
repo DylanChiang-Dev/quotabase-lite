@@ -205,19 +205,31 @@ if ($error) {
             margin-bottom: 30px;
         }
 
+        .quote-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            table-layout: fixed;
+        }
+
         .quote-items-table th {
             background: #f5f5f5;
-            padding: 12px;
+            padding: 10px;
             font-weight: 600;
-            border: 1px solid #ddd;
-            font-size: 13px;
+            border: 0.4px solid #d0d0d0;
+            font-size: 12px;
             text-align: center;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .quote-items-table td {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            font-size: 13px;
+            padding: 8px 10px;
+            border: 0.4px solid #d0d0d0;
+            font-size: 11.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .quote-items-table td:nth-child(1) {
@@ -239,7 +251,7 @@ if ($error) {
             justify-content: space-between;
             gap: 16px;
             align-items: flex-start;
-            margin-bottom: 24px;
+            margin-bottom: 1px;
         }
 
         /* 金額匯總 */
@@ -247,7 +259,7 @@ if ($error) {
             width: 320px;
             margin-left: auto;
             margin-bottom: 18px;
-            border: 1px solid #e0e0e0;
+            border: 0.4px solid #d5d5d5;
             border-radius: 6px;
             padding: 10px 14px;
             font-size: 12px;
@@ -258,7 +270,7 @@ if ($error) {
             display: flex;
             justify-content: space-between;
             padding: 6px 0;
-            border-bottom: 1px dashed #ddd;
+            border-bottom: 0.4px dashed #ccc;
         }
 
         .summary-row.no-border {
@@ -271,7 +283,7 @@ if ($error) {
             border-bottom: none;
             padding-top: 10px;
             margin-top: 6px;
-            border-top: 1px solid #bbb;
+            border-top: 0.6px solid #bbb;
         }
 
         .summary-label {
@@ -303,15 +315,15 @@ if ($error) {
         .quote-notes-content {
             padding: 15px;
             background: #f9f9f9;
-            border-left: 4px solid #333;
+            border-left: 2px solid #333;
             line-height: 1.8;
         }
 
         /* 列印條款 */
         .print-terms {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 0.5px solid #d0d0d0;
         }
 
         .print-terms h3 {
@@ -333,7 +345,7 @@ if ($error) {
             flex: 1 1 240px;
             max-width: 320px;
             padding: 10px 12px;
-            border: 1px dashed #aaa;
+            border: 0.4px dashed #aaa;
             font-size: 12px;
             color: #333;
             text-align: center;
@@ -442,53 +454,16 @@ if ($error) {
         <!-- 報價單標題 -->
         <div class="quote-title">報價單 QUOTATION</div>
 
-        <!-- 報價單資訊 -->
-        <div class="quote-info">
-            <div class="info-section">
-                <h3>報價單資訊</h3>
-                <div class="info-row">
-                    <span class="info-label">編號:</span>
-                    <span class="info-value"><?php echo h($quote['quote_number']); ?></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">日期:</span>
-                    <span class="info-value"><?php echo format_date($quote['issue_date']); ?></span>
-                </div>
-                <?php if (!empty($quote['valid_until'])): ?>
-                    <div class="info-row">
-                        <span class="info-label">有效期:</span>
-                        <span class="info-value"><?php echo format_date($quote['valid_until']); ?></span>
-                    </div>
-                <?php endif; ?>
-                <div class="info-row">
-                    <span class="info-label">狀態:</span>
-                    <span class="info-value"><?php echo get_status_label($quote['status']); ?></span>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <h3>客戶資訊</h3>
-                <div class="info-row">
-                    <span class="info-label">名稱:</span>
-                    <span class="info-value"><?php echo h($quote['customer_name']); ?></span>
-                </div>
+        <!-- 客戶資訊簡報 -->
+        <div class="quote-info" style="margin-bottom: 10px; border-bottom: 0.4px solid #ddd; padding-bottom: 10px; display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-weight: 600; color: #000; font-size: 13px;">客戶資訊</div>
+            <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:12px;">
+                <span>名稱：<?php echo h($quote['customer_name']); ?></span>
                 <?php if (!empty($quote['tax_id'])): ?>
-                    <div class="info-row">
-                        <span class="info-label">統編:</span>
-                        <span class="info-value"><?php echo h($quote['tax_id']); ?></span>
-                    </div>
-                <?php endif; ?>
-                <?php if (!empty($quote['email'])): ?>
-                    <div class="info-row">
-                        <span class="info-label">信箱:</span>
-                        <span class="info-value"><?php echo h($quote['email']); ?></span>
-                    </div>
+                    <span>統編：<?php echo h($quote['tax_id']); ?></span>
                 <?php endif; ?>
                 <?php if (!empty($quote['phone'])): ?>
-                    <div class="info-row">
-                        <span class="info-label">電話:</span>
-                        <span class="info-value"><?php echo h($quote['phone']); ?></span>
-                    </div>
+                    <span>電話：<?php echo h($quote['phone']); ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -517,12 +492,12 @@ if ($error) {
                         $total_discount_cents += $discount_cents;
                     ?>
                     <tr>
-                        <td>
+                        <td class="description-cell">
                             <?php
                                 $category_path = $item['category_path'] ?? '';
                                 $display_name = $category_path ? ($category_path . ' · ' . $item['item_name']) : $item['item_name'];
                             ?>
-                            <div class="table-text-strong" style="display: inline-block;"><?php echo h($display_name); ?></div>
+                            <span class="table-text-strong"><?php echo h($display_name); ?></span>
                         </td>
                         <td class="number">
                             <span><?php echo h(format_quantity($quantity_value)); ?></span>

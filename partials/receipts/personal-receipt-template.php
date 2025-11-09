@@ -19,81 +19,84 @@ $verifyUrl = $data['verify_url'] ?? '';
 <style>
     body {
         font-family: "Noto Sans TC", "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
-        font-size: 12pt;
+        font-size: 10pt;
         color: #111;
-        line-height: 1.6;
+        line-height: 1.35;
         margin: 0;
     }
     .receipt-container {
         width: 100%;
         max-width: 190mm;
         margin: 0 auto;
-        padding: 0 5mm;
+        padding: 0 4mm;
         box-sizing: border-box;
     }
     .receipt-header {
         text-align: center;
-        margin-bottom: 12mm;
+        margin-bottom: 6mm;
     }
     .receipt-header h1 {
-        font-size: 22pt;
-        margin-bottom: 6pt;
-        letter-spacing: 1pt;
+        font-size: 18pt;
+        margin-bottom: 4pt;
+        letter-spacing: 0.5pt;
     }
     .info-grid {
         display: table;
         width: 100%;
-        margin-bottom: 10mm;
+        margin-bottom: 3mm;
     }
     .info-cell {
         display: table-cell;
         width: 50%;
         vertical-align: top;
-        padding-right: 5mm;
+        padding-right: 3mm;
     }
     .info-block h3 {
-        font-size: 11pt;
-        margin-bottom: 4pt;
+        font-size: 10pt;
+        margin-bottom: 2pt;
         color: #555;
     }
     .info-block p {
         margin: 0;
-        font-size: 11pt;
+        font-size: 9.5pt;
     }
     table.items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 8mm;
-        font-size: 10.5pt;
+        margin-bottom: 4mm;
+        font-size: 9pt;
         table-layout: fixed;
     }
     table.items th,
     table.items td {
         border: 1px solid #ccc;
-        padding: 6pt 4pt;
-        word-break: break-word;
-        overflow-wrap: anywhere;
+        padding: 4pt 3pt;
+        word-break: keep-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     table.items th {
         background: #f5f5f5;
+        font-size: 9.5pt;
     }
     .totals {
         width: 60%;
         margin-left: auto;
         border-collapse: collapse;
-        font-size: 11pt;
+        font-size: 9.5pt;
     }
     .totals td {
-        padding: 4pt 6pt;
+        padding: 3pt 5pt;
     }
     .totals tr:last-child td {
         font-weight: bold;
-        border-top: 2px solid #444;
-        font-size: 12pt;
+        border-top: 1px solid #444;
+        font-size: 10.5pt;
     }
     .signature-block {
         width: 100%;
-        margin-top: 12mm;
+        margin-top: 6mm;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
@@ -101,27 +104,27 @@ $verifyUrl = $data['verify_url'] ?? '';
     .signature-area {
         width: 55%;
         border-top: 1px solid #444;
-        padding-top: 6mm;
-        font-size: 10pt;
+        padding-top: 4mm;
+        font-size: 9pt;
     }
     .stamp-area {
         width: 40%;
         text-align: right;
     }
     .stamp-area img {
-        width: 45mm;
+        width: 30mm;
         height: auto;
     }
     .qr-block {
         display: flex;
         justify-content: flex-end;
-        gap: 8mm;
+        gap: 4mm;
         align-items: center;
-        margin-top: 8mm;
+        margin-top: 4mm;
     }
     .qr-block img {
-        width: 32mm;
-        height: 32mm;
+        width: 25mm;
+        height: 25mm;
     }
     .qr-text {
         font-size: 9pt;
@@ -130,13 +133,7 @@ $verifyUrl = $data['verify_url'] ?? '';
         font-size: 9pt;
         color: #444;
         text-align: right;
-        margin-top: 2mm;
-    }
-    .terms {
-        margin-top: 8mm;
-        font-size: 9.5pt;
-        color: #666;
-        line-height: 1.4;
+        margin-top: 1mm;
     }
 </style>
 
@@ -275,10 +272,4 @@ $verifyUrl = $data['verify_url'] ?? '';
         hash_short：<?php echo h($hashShort); ?>
     </div>
 
-    <?php if (!empty($printTermsHtml)): ?>
-        <div class="terms">
-            <strong>備註／條款</strong><br>
-            <?php echo $printTermsHtml; ?>
-        </div>
-    <?php endif; ?>
 </div>
