@@ -6,7 +6,7 @@ $subtotalCents = $data['subtotal_cents'] ?? 0;
 $taxCents = $data['tax_cents'] ?? 0;
 $totalCents = $data['total_cents'] ?? 0;
 $issuedOnDisplay = $data['issued_on_display'] ?? '';
-$customerTaxMasked = $data['customer_tax_masked'] ?? '';
+$customerTaxId = $data['customer_tax_id'] ?? '';
 $qrImage = $data['qr_image'] ?? '';
 $hashShort = $data['hash_short'] ?? '';
 $stampImage = $data['stamp_image'] ?? null;
@@ -94,26 +94,17 @@ $verifyUrl = $data['verify_url'] ?? '';
         border-top: 1px solid #444;
         font-size: 10.5pt;
     }
-    .signature-block {
-        width: 100%;
-        margin-top: 6mm;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-    .signature-area {
-        width: 55%;
-        border-top: 1px solid #444;
-        padding-top: 4mm;
-        font-size: 9pt;
-    }
     .stamp-area {
-        width: 40%;
+        margin-top: 6mm;
         text-align: right;
     }
     .stamp-area img {
-        width: 30mm;
+        width: 15mm;
         height: auto;
+    }
+    .stamp-placeholder {
+        font-size: 10pt;
+        color: #b71c1c;
     }
     .qr-block {
         display: flex;
@@ -154,7 +145,7 @@ $verifyUrl = $data['verify_url'] ?? '';
                     <p><?php echo h($company['contact']); ?></p>
                 <?php endif; ?>
                 <?php if (!empty($company['tax_id'])): ?>
-                    <p>統編：<?php echo h($company['tax_id']); ?></p>
+                    <p>證號：<?php echo h($company['tax_id']); ?></p>
                 <?php endif; ?>
             </div>
         </div>
@@ -168,8 +159,8 @@ $verifyUrl = $data['verify_url'] ?? '';
                 <?php if (!empty($quote['phone'])): ?>
                     <p>電話：<?php echo h($quote['phone']); ?></p>
                 <?php endif; ?>
-                <?php if (!empty($customerTaxMasked)): ?>
-                    <p>證號：<?php echo h($customerTaxMasked); ?></p>
+                <?php if (!empty($customerTaxId)): ?>
+                    <p>統編：<?php echo h($customerTaxId); ?></p>
                 <?php endif; ?>
             </div>
         </div>
@@ -242,18 +233,12 @@ $verifyUrl = $data['verify_url'] ?? '';
         </tr>
     </table>
 
-    <div class="signature-block">
-        <div class="signature-area">
-            <div>簽名：</div>
-            <div style="margin-top: 8mm; font-size: 10pt; color: #666;">相對人簽名 / 日期</div>
-        </div>
-        <div class="stamp-area">
-            <?php if ($stampImage): ?>
-                <img src="<?php echo $stampImage; ?>" alt="公司圖章">
-            <?php else: ?>
-                <div style="font-size: 10pt; color: #b71c1c;">公司印章缺漏</div>
-            <?php endif; ?>
-        </div>
+    <div class="stamp-area">
+        <?php if ($stampImage): ?>
+            <img src="<?php echo $stampImage; ?>" alt="公司圖章">
+        <?php else: ?>
+            <div class="stamp-placeholder">公司印章缺漏</div>
+        <?php endif; ?>
     </div>
 
     <div class="qr-block">

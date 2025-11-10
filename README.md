@@ -88,6 +88,11 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    chmod -R 755 /path/to/quotabase-lite
    ```
 
+5. **設定公司印章（可選）**
+   - 系統預設會讀取 `assets/stamps/company-stamp.png` 作為列印收據的章圖（目前內建的是 `assets/stamps/company-stamp.png`，大小約 513×486 px）。
+   - 若要換成自己的印章，只需將 PNG/JPG 檔覆蓋到同一路徑，或在 `config.php` 設定 `RECEIPT_STAMP_PATH` 指向自訂檔案。
+   - Docker 環境請確保該檔案已掛載或複製至容器的 `/var/www/html/assets/stamps/company-stamp.png`。
+
 ## 🛠️ 部署指南
 
 1. **伺服器就緒**：確保系統具備 PHP 8.3、MySQL 8+/MariaDB 10.6+、Nginx/Apache 以及 `php-cli`。
@@ -101,6 +106,7 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    亦可透過 `https://your-domain/init.php` 的初始化精靈完成上述流程。
 5. **設定 Web Server**：Nginx 範例可參考 `docker/nginx` 配置，將根目錄指向專案根並允許 `index.php`。部署完成後建議封鎖 `init.php`。
 6. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull`、執行 `composer install` 並跑 `php init.php install` 以套用新結構。
+7. **部署實際印章**：將公司章圖放到 `assets/stamps/company-stamp.png`（或設定 `RECEIPT_STAMP_PATH` 指向其他檔案），即可在收據列印頁顯示；同一地址亦可直接瀏覽 `https://your-domain/assets/stamps/company-stamp.png` 確認是否已更新。
 
 ### 使用 Docker 快速啟動
 
