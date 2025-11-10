@@ -105,8 +105,16 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
    ```
    亦可透過 `https://your-domain/init.php` 的初始化精靈完成上述流程。
 5. **設定 Web Server**：Nginx 範例可參考 `docker/nginx` 配置，將根目錄指向專案根並允許 `index.php`。部署完成後建議封鎖 `init.php`。
-6. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull`、執行 `composer install` 並跑 `php init.php install` 以套用新結構。
-7. **部署實際印章**：將公司章圖放到 `assets/stamps/company-stamp.png`（或設定 `RECEIPT_STAMP_PATH` 指向其他檔案），即可在收據列印頁顯示；同一地址亦可直接瀏覽 `https://your-domain/assets/stamps/company-stamp.png` 確認是否已更新。
+6. **安裝 PHP 套件（⚠ 必做）**：
+   ```bash
+   cd /var/www/quotabase-lite   # 依實際路徑調整
+   composer install --no-dev --prefer-dist --optimize-autoloader
+   ```
+   - 首次安裝或佈版後都必須執行，否則 `vendor/autoload.php`、`vendor/erusev/parsedown/Parsedown.php` 等檔案不存在會導致 HTTP 500。
+   - 若環境沒有全域 Composer，可下載 `composer.phar` 改用 `php composer.phar install …`。
+   - 若要單獨補齊套件（例如後續新增 Markdown 功能），可執行 `composer require erusev/parsedown:^1.7 --prefer-dist --optimize-autoloader`。
+7. **健康檢查**：登入系統、建立測試產品/報價單並檢視 `logs/error.log`。若日後更新版本，只需重新 `git pull`、執行 `composer install` 並跑 `php init.php install` 以套用新結構。
+8. **部署實際印章**：將公司章圖放到 `assets/stamps/company-stamp.png`（或設定 `RECEIPT_STAMP_PATH` 指向其他檔案），即可在收據列印頁顯示；同一地址亦可直接瀏覽 `https://your-domain/assets/stamps/company-stamp.png` 確認是否已更新。
 
 ### 使用 Docker 快速啟動
 
@@ -148,6 +156,17 @@ Quotabase-Lite 以 MIT 授權釋出，任何人都可以自由使用、複製與
 
 - 帳號：`admin`
 - 密碼：`Admin1234`（可用環境變數 `DEFAULT_ADMIN_PASSWORD` 覆寫；上線後務必於「設定 → 帳號與安全」立即修改）
+
+### 依賴清單與部署規則
+
+- **必要套件（透過 Composer 安裝）**
+  1. `mpdf/mpdf`：PDF/列印輸出。
+  2. `chillerlan/php-qrcode`：產生收據驗證 QR Code。
+  3. `erusev/parsedown`：將 Markdown 條款轉 HTML。
+- **部署守則**
+  - 每次佈版後**務必**在網站根目錄執行 `composer install --no-dev --prefer-dist --optimize-autoloader`，確保 `vendor/` 內檔案完整。
+  - 若出現 `Failed opening required vendor/...`、`autoload.php not found` 之類的錯誤，先確認 `vendor/` 是否存在並具讀取權限，再重新執行 Composer。
+  - 正式環境建議使用與程式庫相容的 PHP 版本（8.3+）與 Composer 2.x，以避免舊版 Composer 的 deprecation 訊息干擾部署流程。
 
 ## 🔄 升級指南
 
