@@ -500,31 +500,46 @@ function get_current_datetime_utc($format = 'Y-m-d H:i:s') {
 /**
  * 格式化日期（顯示時區）
  *
- * @param string $date 日期字串或日期時間
+ * @param string|DateTimeInterface $date 日期字串或日期時間
  * @param string $format 輸出格式，預設Y-m-d
+ * @param DateTimeZone|string $storageTimezone 儲存時區，預設 UTC
+ * @param DateTimeZone|string|null $displayTimezone 顯示時區，預設 DISPLAY_TIMEZONE
  * @return string 格式化後的日期
  */
-function format_date($date, $format = 'Y-m-d') {
-    $display_tz = defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei';
+function format_date($date, $format = 'Y-m-d', $storageTimezone = 'UTC', $displayTimezone = null) {
+    if ($date === null || $date === '') {
+        return '';
+    }
+
+    $displayTimezone = $displayTimezone ?: (defined('DISPLAY_TIMEZONE') ? DISPLAY_TIMEZONE : 'Asia/Taipei');
 
     try {
-        $dt = new DateTime($date, new DateTimeZone('UTC'));
-        $dt->setTimezone(new DateTimeZone($display_tz));
-        return $dt->format($format);
+        $storageTz = $storageTimezone instanceof DateTimeZone ? $storageTimezone : new DateTimeZone($storageTimezone);
+        $displayTz = $displayTimezone instanceof DateTimeZone ? $displayTimezone : new DateTimeZone($displayTimezone);
+
+        if ($date instanceof DateTimeInterface) {
+            $dt = DateTimeImmutable::createFromInterface($date);
+        } else {
+            $dt = new DateTime((string)$date, $storageTz);
+        }
+
+        return $dt->setTimezone($displayTz)->format($format);
     } catch (Exception $e) {
-        return $date; // 如果解析失敗，返回原始值
+        return is_scalar($date) ? (string)$date : '';
     }
 }
 
 /**
  * 格式化日期時間（顯示時區）
  *
- * @param string $datetime 日期時間字串
+ * @param string|DateTimeInterface $datetime 日期時間
  * @param string $format 輸出格式，預設Y-m-d H:i
+ * @param DateTimeZone|string $storageTimezone 儲存時區，預設 UTC
+ * @param DateTimeZone|string|null $displayTimezone 顯示時區，預設 DISPLAY_TIMEZONE
  * @return string 格式化後的日期時間
  */
-function format_datetime($datetime, $format = 'Y-m-d H:i') {
-    return format_date($datetime, $format);
+function format_datetime($datetime, $format = 'Y-m-d H:i', $storageTimezone = 'UTC', $displayTimezone = null) {
+    return format_date($datetime, $format, $storageTimezone, $displayTimezone);
 }
 
 /**

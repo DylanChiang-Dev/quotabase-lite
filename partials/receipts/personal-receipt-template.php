@@ -179,7 +179,7 @@ $verifyUrl = $data['verify_url'] ?? '';
             <div class="info-block">
                 <h3>付款摘要</h3>
                 <?php if ($consent): ?>
-                    <p>電子同意：<?php echo h(receipt_method_label($consent['method'] ?? '')); ?> / <?php echo h(format_datetime($consent['consented_at'] ?? '')); ?></p>
+                    <p>電子同意：<?php echo h(receipt_method_label($consent['method'] ?? '')); ?> / <?php echo h(format_datetime($consent['consented_at'] ?? '', 'Y-m-d H:i', defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei')); ?></p>
                 <?php endif; ?>
                 <p>付款條件：<?php echo !empty($quote['payment_terms'] ?? '') ? h($quote['payment_terms']) : '未指定'; ?></p>
             </div>

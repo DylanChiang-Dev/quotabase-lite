@@ -36,6 +36,7 @@ $status_filters = [
     'rejected' => '已拒絕',
     'expired' => '已過期'
 ];
+$consent_storage_timezone = defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei';
 
 // 獲取報價單列表
 try {
@@ -217,7 +218,7 @@ page_header('報價管理', [
                                 <?php if (!empty($quote['latest_consent_at'])): ?>
                                     <div style="font-size: 13px; color: var(--text-secondary);">
                                         <strong style="display:block; color: var(--text-primary);">已簽署</strong>
-                                        <?php echo h(format_datetime($quote['latest_consent_at'])); ?>
+                                        <?php echo h(format_datetime($quote['latest_consent_at'], 'Y-m-d H:i', $consent_storage_timezone)); ?>
                                     </div>
                                 <?php else: ?>
                                     <span style="font-size: 13px; color: var(--text-tertiary);">尚未簽署</span>

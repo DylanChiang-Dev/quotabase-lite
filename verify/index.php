@@ -13,6 +13,7 @@ $receipt = null;
 $quote = null;
 $consent = null;
 $errorCode = null;
+$consent_storage_timezone = defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei';
 $extraHead = ['<style>
     .info-panel {
         background: var(--bg-secondary);
@@ -100,7 +101,7 @@ page_header('個人收據查驗', [
                         <div class="info-panel">
                             <h3>電子同意紀錄</h3>
                             <p>方式：<?php echo h(receipt_method_label($consent['method'] ?? '')); ?></p>
-                            <p>時間：<?php echo h(format_datetime($consent['consented_at'])); ?></p>
+                            <p>時間：<?php echo h(format_datetime($consent['consented_at'], 'Y-m-d H:i', $consent_storage_timezone)); ?></p>
                             <?php if (!empty($consent['evidence_ref'])): ?>
                                 <p>證據：<?php echo h($consent['evidence_ref']); ?></p>
                             <?php endif; ?>

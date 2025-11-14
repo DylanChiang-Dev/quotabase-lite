@@ -42,6 +42,7 @@ $active_consent_token = null;
 $consent_public_url = '';
 $consent_input_id = null;
 $has_copy_button = false;
+$consent_storage_timezone = defined('DEFAULT_TIMEZONE') ? DEFAULT_TIMEZONE : 'Asia/Taipei';
 
 // 獲取報價單資訊
 try {
@@ -466,7 +467,7 @@ page_header('報價單詳情', [
                     <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; min-width: 220px;">
                         <div style="font-size: 12px; color: var(--text-tertiary); letter-spacing: 0.4px;">最新紀錄</div>
                         <div style="font-weight: 600; color: var(--text-primary); margin: 2px 0;">
-                            <?php echo h(format_datetime($latest_consent['consented_at'])); ?>
+                            <?php echo h(format_datetime($latest_consent['consented_at'], 'Y-m-d H:i', $consent_storage_timezone)); ?>
                         </div>
                         <div><?php echo h(receipt_method_label($latest_consent['method'])); ?></div>
                         <div style="font-size: 12px;">
@@ -494,7 +495,7 @@ page_header('報價單詳情', [
                         <tbody>
                             <?php foreach ($consents as $consent): ?>
                                 <tr>
-                                    <td><?php echo h(format_datetime($consent['consented_at'])); ?></td>
+                                    <td><?php echo h(format_datetime($consent['consented_at'], 'Y-m-d H:i', $consent_storage_timezone)); ?></td>
                                     <td><?php echo h(receipt_method_label($consent['method'])); ?></td>
                                     <td style="font-size: 13px; color: var(--text-secondary);">
                                         <?php if (!empty($consent['evidence_ref'])): ?>
@@ -641,10 +642,10 @@ page_header('報價單詳情', [
                 <div>
                     <label for="consent_id">選擇電子同意</label>
                     <select id="consent_id" name="consent_id" <?php echo empty($consents) ? 'disabled' : ''; ?>>
-                        <option value="">最新紀錄（<?php echo $latest_consent ? h(format_datetime($latest_consent['consented_at'])) : '無'; ?>）</option>
+                        <option value="">最新紀錄（<?php echo $latest_consent ? h(format_datetime($latest_consent['consented_at'], 'Y-m-d H:i', $consent_storage_timezone)) : '無'; ?>）</option>
                         <?php foreach ($consents as $consent): ?>
                             <option value="<?php echo $consent['id']; ?>">
-                                #<?php echo $consent['id']; ?> · <?php echo h(receipt_method_label($consent['method'])); ?> · <?php echo h(format_datetime($consent['consented_at'])); ?>
+                                #<?php echo $consent['id']; ?> · <?php echo h(receipt_method_label($consent['method'])); ?> · <?php echo h(format_datetime($consent['consented_at'], 'Y-m-d H:i', $consent_storage_timezone)); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
