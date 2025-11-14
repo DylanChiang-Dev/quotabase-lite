@@ -121,6 +121,7 @@ function render_category_tree(array $nodes, string $type): void {
         $has_children = !empty($node['children']);
         $level = intval($node['level'] ?? 1);
         $is_collapsible = $has_children && $level <= 2;
+        $default_collapsed = $is_collapsible && $level > 1;
         $li_classes = ['category-tree-item'];
         if ($has_children) {
             $li_classes[] = 'has-children';
@@ -128,14 +129,17 @@ function render_category_tree(array $nodes, string $type): void {
         if ($is_collapsible) {
             $li_classes[] = 'is-collapsible';
         }
-        echo '<li class="' . implode(' ', $li_classes) . '" data-category-id="' . $node['id'] . '" data-level="' . $level . '"';
+        $item_id = 'category-node-' . $node['id'];
+        echo '<li id="' . h($item_id) . '" class="' . implode(' ', $li_classes) . '" data-category-id="' . $node['id'] . '" data-level="' . $level . '"';
         if ($is_collapsible) {
-            echo ' data-collapsed="false"';
+            echo ' data-collapsed="' . ($default_collapsed ? 'true' : 'false') . '"';
         }
         echo '>';
         echo '<div class="category-node">';
         if ($is_collapsible) {
-            echo '<button type="button" class="category-toggle" aria-expanded="true" aria-label="收合子分類" data-category-toggle>';
+            $initial_label = $default_collapsed ? '展開子分類' : '收合子分類';
+            $initial_expanded = $default_collapsed ? 'false' : 'true';
+            echo '<button type="button" class="category-toggle" aria-expanded="' . $initial_expanded . '" aria-label="' . $initial_label . '" data-category-toggle data-target-id="' . h($item_id) . '" onclick="return window.toggleCategoryNode ? window.toggleCategoryNode(this) : false;">';
             echo '<span class="category-toggle-icon" aria-hidden="true"></span>';
             echo '</button>';
         } elseif ($has_children) {
@@ -253,56 +257,77 @@ function render_category_tree(array $nodes, string $type): void {
     <?php card_end(); ?>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const treeWrapper = document.querySelector('[data-category-tree]');
-            if (!treeWrapper) {
-                return;
-            }
-            const storageKey = 'category-collapse-' + (treeWrapper.getAttribute('data-category-type') || 'product');
-            let savedState = {};
+        (function () {
+            var treeWrapper = null;
+            var storageKey = 'category-collapse-product';
+            var savedState = {};
 
-            try {
-                const stored = localStorage.getItem(storageKey);
-                savedState = stored ? JSON.parse(stored) : {};
-            } catch (err) {
-                savedState = {};
-            }
-
-            const applyState = function (item, collapsed) {
+            function applyState(item, collapsed) {
+                if (!item) {
+                    return;
+                }
                 item.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
-                const toggle = item.querySelector('[data-category-toggle]');
+                var toggle = item.querySelector('[data-category-toggle]');
                 if (toggle) {
                     toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
                     toggle.setAttribute('aria-label', collapsed ? '展開子分類' : '收合子分類');
                 }
-            };
+            }
 
-            const collapsibleItems = treeWrapper.querySelectorAll('.category-tree-item.is-collapsible');
-            collapsibleItems.forEach(function (item) {
-                const id = item.getAttribute('data-category-id');
-                if (!id) {
+            function initTree() {
+                treeWrapper = document.querySelector('[data-category-tree]');
+                if (!treeWrapper) {
                     return;
                 }
-                const shouldCollapse = savedState[id] === true;
-                if (shouldCollapse) {
-                    applyState(item, true);
+                var type = treeWrapper.getAttribute('data-category-type') || 'product';
+                storageKey = 'category-collapse-' + type;
+                savedState = {};
+                try {
+                    var stored = localStorage.getItem(storageKey);
+                    savedState = stored ? JSON.parse(stored) : {};
+                } catch (err) {
+                    savedState = {};
                 }
-            });
 
-            treeWrapper.addEventListener('click', function (event) {
-                const toggle = event.target.closest('[data-category-toggle]');
-                if (!toggle) {
-                    return;
+                var items = treeWrapper.querySelectorAll('.category-tree-item.is-collapsible');
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var id = item.getAttribute('data-category-id');
+                    if (!id) {
+                        continue;
+                    }
+                    var desired = savedState[id];
+                    if (typeof desired === 'boolean') {
+                        applyState(item, desired);
+                    }
                 }
-                const item = toggle.closest('.category-tree-item.is-collapsible');
+            }
+
+            window.toggleCategoryNode = function (button) {
+                if (!treeWrapper) {
+                    initTree();
+                }
+                if (!treeWrapper || !button) {
+                    return false;
+                }
+
+                var targetId = button.getAttribute('data-target-id');
+                var item = targetId ? document.getElementById(targetId) : null;
                 if (!item) {
-                    return;
+                    item = button;
+                    while (item && (!item.className || item.className.indexOf('category-tree-item') === -1)) {
+                        item = item.parentNode;
+                    }
                 }
-                event.preventDefault();
-                const categoryId = item.getAttribute('data-category-id');
-                const collapsed = item.getAttribute('data-collapsed') === 'true';
-                const nextState = !collapsed;
+                if (!item) {
+                    return false;
+                }
+
+                var collapsed = item.getAttribute('data-collapsed') === 'true';
+                var nextState = !collapsed;
                 applyState(item, nextState);
+
+                var categoryId = item.getAttribute('data-category-id');
                 if (categoryId) {
                     savedState[categoryId] = nextState;
                     try {
@@ -311,8 +336,15 @@ function render_category_tree(array $nodes, string $type): void {
                         // ignore storage errors
                     }
                 }
-            });
-        });
+                return false;
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initTree);
+            } else {
+                initTree();
+            }
+        })();
     </script>
 </div>
 
