@@ -139,13 +139,19 @@ function render_category_tree(array $nodes, string $type): void {
         if ($is_collapsible) {
             $initial_label = $default_collapsed ? '展開子分類' : '收合子分類';
             $initial_expanded = $default_collapsed ? 'false' : 'true';
-            echo '<button type="button" class="category-toggle" aria-expanded="' . $initial_expanded . '" aria-label="' . $initial_label . '" data-category-toggle data-target-id="' . h($item_id) . '" onclick="return window.toggleCategoryNode ? window.toggleCategoryNode(this) : false;">';
-            echo '<span class="category-toggle-icon" aria-hidden="true"></span>';
+            $toggle_icon_char = $default_collapsed ? '＋' : '－';
+            echo '<button type="button" class="category-toggle" aria-expanded="' . $initial_expanded . '" aria-label="' . $initial_label . '" data-category-toggle data-target-id="' . h($item_id) . '">';
+            echo '<span class="category-toggle-icon" aria-hidden="true" data-category-toggle-icon>' . $toggle_icon_char . '</span>';
             echo '</button>';
         } elseif ($has_children) {
             echo '<span class="category-toggle category-toggle--spacer" aria-hidden="true"></span>';
         }
-        echo '<div class="category-info">';
+        if ($is_collapsible) {
+            $info_label = '切換「' . $node['name'] . '」子分類顯示';
+            echo '<div class="category-info" role="button" tabindex="0" aria-expanded="' . ($default_collapsed ? 'false' : 'true') . '" aria-label="' . h($info_label) . '" data-category-toggle-area data-target-id="' . h($item_id) . '">';
+        } else {
+            echo '<div class="category-info">';
+        }
         echo '<div class="category-name">' . h($node['name']) . '</div>';
         echo '<div class="category-meta">第 ' . $node['level'] . ' 級 · 排序 ' . intval($node['sort_order']) . '</div>';
         echo '</div>';
@@ -271,10 +277,21 @@ function render_category_tree(array $nodes, string $type): void {
                 if (toggle) {
                     toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
                     toggle.setAttribute('aria-label', collapsed ? '展開子分類' : '收合子分類');
+                    var icon = toggle.querySelector('[data-category-toggle-icon]');
+                    if (icon) {
+                        icon.textContent = collapsed ? '＋' : '－';
+                    }
+                }
+                var info = item.querySelector('[data-category-toggle-area]');
+                if (info) {
+                    info.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
                 }
             }
 
             function initTree() {
+                if (treeWrapper) {
+                    return;
+                }
                 treeWrapper = document.querySelector('[data-category-tree]');
                 if (!treeWrapper) {
                     return;
@@ -301,6 +318,29 @@ function render_category_tree(array $nodes, string $type): void {
                         applyState(item, desired);
                     }
                 }
+
+                treeWrapper.addEventListener('click', function (event) {
+                    var target = event.target;
+                    while (target && target !== treeWrapper) {
+                        if (target.hasAttribute('data-category-toggle') || target.hasAttribute('data-category-toggle-area')) {
+                            event.preventDefault();
+                            window.toggleCategoryNode(target);
+                            return;
+                        }
+                        target = target.parentNode;
+                    }
+                });
+
+                treeWrapper.addEventListener('keydown', function (event) {
+                    var key = event.key || event.code;
+                    if (!event.target || !event.target.hasAttribute('data-category-toggle-area')) {
+                        return;
+                    }
+                    if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Space') {
+                        event.preventDefault();
+                        window.toggleCategoryNode(event.target);
+                    }
+                });
             }
 
             window.toggleCategoryNode = function (button) {

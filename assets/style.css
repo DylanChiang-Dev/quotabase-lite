@@ -756,6 +756,15 @@ select.form-control {
   min-width: 0;
 }
 
+.category-info[data-category-toggle-area] {
+  cursor: pointer;
+}
+
+.category-info[data-category-toggle-area]:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
 .category-name {
   font-weight: 600;
   color: var(--text-primary);
@@ -821,16 +830,10 @@ select.form-control {
 }
 
 .category-toggle-icon {
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--text-secondary);
-  border-bottom: 2px solid var(--text-secondary);
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-}
-
-.category-tree-item[data-collapsed="true"] .category-toggle-icon {
-  transform: rotate(-45deg);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1;
 }
 
 .category-form-card {
