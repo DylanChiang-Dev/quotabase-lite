@@ -126,7 +126,7 @@ if ($error) {
         .a4-container {
             max-width: 210mm;
             margin: 0 auto;
-            padding: 10mm 20mm 20mm;
+            padding: 6mm 10mm 10mm;
             background: #fff;
         }
 
