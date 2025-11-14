@@ -107,7 +107,7 @@ if ($error) {
 
             @page {
                 size: A4;
-                margin: 15mm;
+                margin: 10mm 5mm;
             }
 
             /* 表頭固定 */
@@ -126,7 +126,7 @@ if ($error) {
         .a4-container {
             max-width: 210mm;
             margin: 0 auto;
-            padding: 6mm 3mm 10mm;
+            padding: 5mm 0;
             background: #fff;
         }
 
