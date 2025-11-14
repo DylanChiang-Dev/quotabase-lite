@@ -118,8 +118,29 @@ function render_category_tree(array $nodes, string $type): void {
 
     echo '<ul class="category-tree">';
     foreach ($nodes as $node) {
-        echo '<li>';
+        $has_children = !empty($node['children']);
+        $level = intval($node['level'] ?? 1);
+        $is_collapsible = $has_children && $level <= 2;
+        $li_classes = ['category-tree-item'];
+        if ($has_children) {
+            $li_classes[] = 'has-children';
+        }
+        if ($is_collapsible) {
+            $li_classes[] = 'is-collapsible';
+        }
+        echo '<li class="' . implode(' ', $li_classes) . '" data-category-id="' . $node['id'] . '" data-level="' . $level . '"';
+        if ($is_collapsible) {
+            echo ' data-collapsed="false"';
+        }
+        echo '>';
         echo '<div class="category-node">';
+        if ($is_collapsible) {
+            echo '<button type="button" class="category-toggle" aria-expanded="true" aria-label="收合子分類" data-category-toggle>';
+            echo '<span class="category-toggle-icon" aria-hidden="true"></span>';
+            echo '</button>';
+        } elseif ($has_children) {
+            echo '<span class="category-toggle category-toggle--spacer" aria-hidden="true"></span>';
+        }
         echo '<div class="category-info">';
         echo '<div class="category-name">' . h($node['name']) . '</div>';
         echo '<div class="category-meta">第 ' . $node['level'] . ' 級 · 排序 ' . intval($node['sort_order']) . '</div>';
@@ -174,7 +195,9 @@ function render_category_tree(array $nodes, string $type): void {
         <div>
             <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">分類結構</h3>
             <p style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px;">最多支援三級分類。刪除分類會清除其子分類，並將相關產品/服務的分類置為空。</p>
-            <?php render_category_tree($category_tree, $type); ?>
+            <div class="category-tree-wrapper" data-category-tree data-category-type="<?php echo h($type); ?>">
+                <?php render_category_tree($category_tree, $type); ?>
+            </div>
         </div>
 
         <div id="create">
@@ -228,6 +251,69 @@ function render_category_tree(array $nodes, string $type): void {
     </div>
 
     <?php card_end(); ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const treeWrapper = document.querySelector('[data-category-tree]');
+            if (!treeWrapper) {
+                return;
+            }
+            const storageKey = 'category-collapse-' + (treeWrapper.getAttribute('data-category-type') || 'product');
+            let savedState = {};
+
+            try {
+                const stored = localStorage.getItem(storageKey);
+                savedState = stored ? JSON.parse(stored) : {};
+            } catch (err) {
+                savedState = {};
+            }
+
+            const applyState = function (item, collapsed) {
+                item.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+                const toggle = item.querySelector('[data-category-toggle]');
+                if (toggle) {
+                    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                    toggle.setAttribute('aria-label', collapsed ? '展開子分類' : '收合子分類');
+                }
+            };
+
+            const collapsibleItems = treeWrapper.querySelectorAll('.category-tree-item.is-collapsible');
+            collapsibleItems.forEach(function (item) {
+                const id = item.getAttribute('data-category-id');
+                if (!id) {
+                    return;
+                }
+                const shouldCollapse = savedState[id] === true;
+                if (shouldCollapse) {
+                    applyState(item, true);
+                }
+            });
+
+            treeWrapper.addEventListener('click', function (event) {
+                const toggle = event.target.closest('[data-category-toggle]');
+                if (!toggle) {
+                    return;
+                }
+                const item = toggle.closest('.category-tree-item.is-collapsible');
+                if (!item) {
+                    return;
+                }
+                event.preventDefault();
+                const categoryId = item.getAttribute('data-category-id');
+                const collapsed = item.getAttribute('data-collapsed') === 'true';
+                const nextState = !collapsed;
+                applyState(item, nextState);
+                if (categoryId) {
+                    savedState[categoryId] = nextState;
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(savedState));
+                    } catch (err) {
+                        // ignore storage errors
+                    }
+                }
+            });
+        });
+    </script>
 </div>
 
 <?php

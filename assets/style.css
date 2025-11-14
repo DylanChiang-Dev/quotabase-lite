@@ -724,6 +724,12 @@ select.form-control {
   list-style: none;
 }
 
+.category-tree-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .category-node {
   display: flex;
   align-items: center;
@@ -734,6 +740,15 @@ select.form-control {
   border-radius: var(--border-radius-md);
   padding: var(--spacing-md);
   box-shadow: var(--card-shadow);
+}
+
+.category-node > .category-toggle {
+  flex-shrink: 0;
+}
+
+.category-node > .category-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .category-info {
@@ -756,6 +771,8 @@ select.form-control {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .category-actions form {
@@ -769,6 +786,51 @@ select.form-control {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.category-tree-item[data-collapsed="true"] > .category-children {
+  display: none;
+}
+
+.category-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.category-toggle:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.category-toggle:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.category-toggle--spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.category-toggle-icon {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.category-tree-item[data-collapsed="true"] .category-toggle-icon {
+  transform: rotate(-45deg);
 }
 
 .category-form-card {
