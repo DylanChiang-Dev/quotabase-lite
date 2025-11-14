@@ -923,7 +923,8 @@ define('PRODUCT_UNITS', [
     'case'  => '箱',
     'pair'  => '雙',
     'roll'  => '卷',
-    'sheet' => '張'
+    'sheet' => '張',
+    'times' => '次'
 ]);
 
 define('SERVICE_UNITS', [
